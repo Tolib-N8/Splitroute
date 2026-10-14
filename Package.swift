@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "Splitroute",
-    platforms: [.macOS(.v14)],
+    platforms: [.macOS(.v15)],
     products: [
         .executable(name: "Splitroute", targets: ["Splitroute"]),
         .executable(name: "splitroute-helper", targets: ["splitroute-helper"]),

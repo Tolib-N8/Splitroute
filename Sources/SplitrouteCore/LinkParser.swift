@@ -3,6 +3,11 @@ import Foundation
 public struct ParsedProxy: Sendable, Equatable {
     public var name: String
     public var config: ProxyConfig
+
+    public init(name: String, config: ProxyConfig) {
+        self.name = name
+        self.config = config
+    }
 }
 
 public enum ParseError: Error, Equatable, LocalizedError {

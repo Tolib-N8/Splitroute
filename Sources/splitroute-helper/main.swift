@@ -138,6 +138,8 @@ func install(user: String, appBundle: String) throws {
     try writeFile(Data(sudoers.utf8), to: Paths.sudoers, mode: 0o440)
 
     _ = pw
+    // До первого apply конфига нет — не даём launchd запускать ядро при загрузке.
+    try run("/bin/launchctl", ["disable", "system/\(Paths.daemonLabel)"], allowFailure: true)
     print("installed")
 }
 
@@ -160,6 +162,7 @@ func apply() throws {
     let credData = try JSONEncoder().encode(credentials)
     try writeFile(credData, to: Paths.apiCredentials, mode: 0o600, owner: user.uid, group: user.gid)
 
+    try run("/bin/launchctl", ["enable", "system/\(Paths.daemonLabel)"])
     if daemonLoaded() {
         try run("/bin/launchctl", ["kickstart", "-k", "system/\(Paths.daemonLabel)"])
     } else {
@@ -171,6 +174,8 @@ func apply() throws {
 
 func stop() throws {
     requireRoot()
+    // Выключено пользователем — не поднимать ядро и после перезагрузки.
+    try run("/bin/launchctl", ["disable", "system/\(Paths.daemonLabel)"], allowFailure: true)
     if daemonLoaded() {
         try run("/bin/launchctl", ["bootout", "system/\(Paths.daemonLabel)"])
     }

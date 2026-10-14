@@ -70,6 +70,11 @@ public struct ConnectionsSnapshot: Decodable, Sendable, Equatable {
 public struct TrafficSample: Decodable, Sendable, Equatable {
     public var up: Int64
     public var down: Int64
+
+    public init(up: Int64, down: Int64) {
+        self.up = up
+        self.down = down
+    }
 }
 
 /// Клиент Clash API, который поднимает sing-box.
