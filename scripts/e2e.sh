@@ -9,7 +9,11 @@ VPN_NAME=${1:-ZoogVPN}
 HELPER=/Library/PrivilegedHelperTools/com.splitroute/splitroute-helper
 PROFILE="$HOME/Library/Application Support/Splitroute/profile.json"
 BACKUP=$(mktemp)
-IPURL='http://ip-api.com/line/?fields=query,country'
+# IP на выходе: ip-api, а если он недоступен (бывает из Китая напрямую) — myip.ipip.net.
+myip() {
+  "$1" -s -m 8 'http://ip-api.com/line/?fields=query' | head -1 | grep -Eo '([0-9]+\.){3}[0-9]+' ||
+  "$1" -s -m 8 https://myip.ipip.net | grep -Eo '([0-9]+\.){3}[0-9]+' | head -1
+}
 fail=0
 
 [ -x "$HELPER" ] || { echo "Компонент не установлен"; exit 1; }
@@ -42,8 +46,8 @@ echo "1. Разделение"
 write_profile "$SERVICE"
 sudo -n "$HELPER" apply || exit 1
 sleep 3
-VPN_IP=$(/tmp/sr-vpn/curl -s -m 10 "$IPURL" | tr '\n' ' ')
-DIRECT_IP=$(/tmp/sr-direct/curl -s -m 10 "$IPURL" | tr '\n' ' ')
+VPN_IP=$(myip /tmp/sr-vpn/curl)
+DIRECT_IP=$(myip /tmp/sr-direct/curl)
 echo "  VPN-копия:    $VPN_IP"
 echo "  Прямая копия: $DIRECT_IP"
 check "оба запроса прошли" '[ -n "$VPN_IP" ] && [ -n "$DIRECT_IP" ]'
@@ -55,7 +59,7 @@ echo "2. Kill switch (VPN-сервис недоступен)"
 write_profile "00000000-0000-0000-0000-000000000000"
 sudo -n "$HELPER" apply || exit 1
 sleep 3
-KS=$(/tmp/sr-vpn/curl -s -m 8 "$IPURL" | tr '\n' ' ')
+KS=$(myip /tmp/sr-vpn/curl)
 echo "  VPN-копия: ${KS:-отказ}"
 check "VPN-копия заблокирована" '[ -z "$KS" ]'
 
