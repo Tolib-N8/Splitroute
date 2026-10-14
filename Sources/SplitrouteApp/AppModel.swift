@@ -70,7 +70,16 @@ final class AppModel {
     private var lastSeenBytes: [String: Int64] = [:]
     private var applyTask: Task<Void, Never>?
     private var appliedEnvironment: NetworkEnvironment?
-    private var iconCache: [String: NSImage] = [:]
+    @ObservationIgnored private var iconCache: [String: NSImage] = [:]
+    @ObservationIgnored private var appInfoCache: [String: InstalledApp?] = [:]
+
+    /// `AppCatalog.app(at:)` с кэшем — читает Info.plist с диска только один раз.
+    func appInfo(at path: String) -> InstalledApp? {
+        if let cached = appInfoCache[path] { return cached }
+        let info = AppCatalog.app(at: path)
+        appInfoCache[path] = info
+        return info
+    }
     private var started = false
 
     init() {
@@ -273,7 +282,7 @@ final class AppModel {
 
     /// `appPath` — бандл .app, папка или путь к программе (для неё правило ставится на папку).
     func setRoute(appPath: String, exitID: String) {
-        if let app = AppCatalog.app(at: appPath) {
+        if AppCatalog.versionedFolder(for: appPath) == nil, let app = appInfo(at: appPath) {
             profile.setRoute(AppRoute(bundleID: app.bundleID, name: app.name, path: app.path, exitID: exitID))
             return
         }
@@ -313,7 +322,10 @@ final class AppModel {
         if key == AppKey.system {
             return AppEntry(key: key, name: "Системные службы", detail: "macOS", route: nil)
         }
-        if let app = AppCatalog.app(at: key) {
+        if let route = profile.routes.first(where: { $0.path == key }) {
+            return AppEntry(key: key, bundleID: route.bundleID, name: route.name, detail: key, route: route)
+        }
+        if AppCatalog.versionedFolder(for: key) == nil, let app = appInfo(at: key) {
             return AppEntry(key: key, bundleID: app.bundleID, name: app.name, detail: app.bundleID, route: profile.route(for: app.bundleID))
         }
         let target = AppCatalog.routeTarget(forProcessPath: key)
@@ -329,7 +341,8 @@ final class AppModel {
         let image: NSImage
         if key == AppKey.system {
             image = NSImage(systemSymbolName: "cpu", accessibilityDescription: nil) ?? NSImage()
-        } else if key.contains("/.local/share/claude/"), FileManager.default.fileExists(atPath: "/Applications/Claude.app") {
+        } else if key.contains("/.local/share/claude/") || key.contains("/Application Support/Claude/claude-code/"),
+                  FileManager.default.fileExists(atPath: "/Applications/Claude.app") {
             image = NSWorkspace.shared.icon(forFile: "/Applications/Claude.app")
         } else {
             image = NSWorkspace.shared.icon(forFile: key)

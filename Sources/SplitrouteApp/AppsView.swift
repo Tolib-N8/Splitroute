@@ -305,9 +305,9 @@ struct AddAppSheet: View {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 0) {
                     Text("Программы из терминала").font(Theme.font(11, .medium)).foregroundStyle(Theme.text2).padding(.top, 4)
-                    if let claude = AppCatalog.claudeCodeFolder, model.profile.routes.allSatisfy({ $0.path != claude }) {
-                        pickRow(key: claude, name: "Claude Code", detail: "~/.local/share/claude/versions/ — правило переживёт обновления") { kind in
-                            add(path: claude, kind)
+                    ForEach(AppCatalog.installedVersionedFolders.filter { f in model.profile.routes.allSatisfy { $0.path != f.path } }, id: \.path) { f in
+                        pickRow(key: f.path, name: f.name, detail: f.path.replacingOccurrences(of: NSHomeDirectory(), with: "~") + " — правило переживёт обновления") { kind in
+                            add(path: f.path, kind)
                         }
                     }
                     Button("Выбрать программу или папку…") { pickProgram() }

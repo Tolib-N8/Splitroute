@@ -41,24 +41,35 @@ public enum AppCatalog {
         return InstalledApp(bundleID: id, name: name, path: path)
     }
 
-    /// Папка Claude Code: бинарник лежит в `versions/<номер>` и меняется при каждом обновлении.
-    public static var claudeCodeFolder: String? {
-        let path = NSHomeDirectory() + "/.local/share/claude/versions/"
-        return FileManager.default.fileExists(atPath: path) ? path : nil
+    /// Программы, путь к которым содержит номер версии: правило ставится на общую папку.
+    static let versionedFolders: [(marker: String, name: String)] = [
+        ("/.local/share/claude/versions/", "Claude Code"),
+        ("/Library/Application Support/Claude/claude-code/", "Claude Code в приложении Claude"),
+    ]
+
+    /// Папка для версионной программы, если путь внутри одной из известных.
+    public static func versionedFolder(for path: String) -> (path: String, name: String)? {
+        for v in versionedFolders {
+            if let r = path.range(of: v.marker) { return (String(path[..<r.upperBound]), v.name) }
+        }
+        return nil
+    }
+
+    /// Папки версионных программ, которые есть на этом Mac (для подсказок при добавлении).
+    public static var installedVersionedFolders: [(path: String, name: String)] {
+        let home = NSHomeDirectory()
+        return versionedFolders.map { (home + $0.marker, $0.name) }.filter { FileManager.default.fileExists(atPath: $0.0) }
     }
 
     /// Что поставить в правило для процесса: бандл .app или папку (с «/» на конце),
     /// чтобы правило пережило обновление программы.
     public static func routeTarget(forProcessPath path: String) -> (path: String, name: String) {
+        if let folder = versionedFolder(for: path) { return folder }
         if let bundle = bundlePath(forProcessPath: path) ?? (path.hasSuffix(".app") ? path : nil) {
             return (bundle, app(at: bundle)?.name ?? ((bundle as NSString).lastPathComponent as NSString).deletingPathExtension)
         }
         if path.hasSuffix("/") {
             return (path, (path as NSString).lastPathComponent)
-        }
-        if path.contains("/.local/share/claude/versions/") {
-            let folder = String(path[..<path.range(of: "/versions/")!.upperBound])
-            return (folder, "Claude Code")
         }
         return ((path as NSString).deletingLastPathComponent + "/", (path as NSString).lastPathComponent)
     }

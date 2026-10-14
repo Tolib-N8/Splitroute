@@ -122,6 +122,8 @@ struct LinkParserTests {
     @Test func routeTargetForPrograms() {
         let claude = AppCatalog.routeTarget(forProcessPath: "/Users/u/.local/share/claude/versions/2.1.300")
         #expect(claude.path == "/Users/u/.local/share/claude/versions/" && claude.name == "Claude Code")
+        let desktop = AppCatalog.routeTarget(forProcessPath: "/Users/u/Library/Application Support/Claude/claude-code/2.1.295/9d64/claude.app/Contents/MacOS/claude")
+        #expect(desktop.path == "/Users/u/Library/Application Support/Claude/claude-code/")
         let cli = AppCatalog.routeTarget(forProcessPath: "/opt/tools/bin/mytool")
         #expect(cli.path == "/opt/tools/bin/" && cli.name == "mytool")
         #expect(AppCatalog.routeTarget(forProcessPath: "/Applications/X.app/Contents/MacOS/X").path == "/Applications/X.app")

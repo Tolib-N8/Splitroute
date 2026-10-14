@@ -190,24 +190,49 @@ struct FlowLayout {
 
 // MARK: - Отрисовка
 
+/// Состояние анимации между кадрами. Класс, а не @State: меняется в каждом кадре и не должен
+/// вызывать перерисовку SwiftUI.
+final class FlowAnimator {
+    struct Flow {
+        var y0, y1, h0, h1: Double
+        var activity: Double
+        var phase: Double
+    }
+
+    var flows: [String: Flow] = [:]
+    var lastTime: Double?
+    let start = Date.timeIntervalSinceReferenceDate
+
+    /// Сдвигает состояние к целевому плавно (экспоненциально), не скачком.
+    func step(now: Double) -> (dt: Double, ease: Double) {
+        let dt = min(max(now - (lastTime ?? now), 0), 0.1)
+        lastTime = now
+        return (dt, 1 - exp(-dt * 3))
+    }
+}
+
 struct FlowDiagram: View {
     @Environment(AppModel.self) private var model
     var graph: FlowGraph
     var size: CGSize
     var paused: Bool
+    @State private var animator = FlowAnimator()
 
     private let labelWidth: CGFloat = 220
     private let exitLabelWidth: CGFloat = 230
+    /// Предел частиц на поток; видимая часть зависит от плотности, края гаснут плавно.
+    private static let maxParticles = 360
+    private static let hueSteps = 8
+    private static let alphaSteps = 5
 
     var body: some View {
         let layout = FlowLayout(graph: graph, height: size.height)
         let left = labelWidth + 16
         let right = size.width - exitLabelWidth - 16
         ZStack(alignment: .topLeading) {
-            TimelineView(.animation(paused: paused)) { context in
-                Canvas { ctx, _ in
-                    let t = context.date.timeIntervalSinceReferenceDate
-                    draw(ctx: ctx, layout: layout, x0: left, x1: right, time: t)
+            TimelineView(.animation(minimumInterval: 1.0 / 60, paused: paused)) { context in
+                Canvas(rendersAsynchronously: true) { ctx, _ in
+                    draw(ctx: ctx, layout: layout, x0: left, x1: right, now: context.date.timeIntervalSinceReferenceDate)
                 }
             }
             ForEach(graph.apps) { node in
@@ -217,10 +242,12 @@ struct FlowDiagram: View {
                             Text(node.title).font(Theme.font(13, .medium)).lineLimit(1)
                             Text(node.subtitle).font(Theme.font(11)).foregroundStyle(Theme.text3)
                         }
+                        .transaction { $0.animation = nil }
                         AppIcon(key: node.id, size: 30)
                     }
                     .frame(width: labelWidth, alignment: .trailing)
                     .position(x: labelWidth / 2, y: band.y + band.height / 2)
+                    .animation(.easeInOut(duration: 0.8), value: band.y + band.height / 2)
                 }
             }
             ForEach(graph.exits) { node in
@@ -232,16 +259,21 @@ struct FlowDiagram: View {
                         }
                         Text(node.subtitle).font(Theme.font(11)).foregroundStyle(Theme.text3)
                     }
+                    .transaction { $0.animation = nil }
                     .frame(width: exitLabelWidth, alignment: .leading)
                     .position(x: size.width - exitLabelWidth / 2, y: band.y + band.height / 2)
+                    .animation(.easeInOut(duration: 0.8), value: band.y + band.height / 2)
                 }
             }
         }
         .frame(width: size.width, height: size.height)
     }
 
-    private func draw(ctx: GraphicsContext, layout: FlowLayout, x0: CGFloat, x1: CGFloat, time: Double) {
-        let width = x1 - x0
+    private func draw(ctx: GraphicsContext, layout: FlowLayout, x0: CGFloat, x1: CGFloat, now: Double) {
+        let width = Double(x1 - x0)
+        guard width > 0 else { return }
+        let (dt, k) = animator.step(now: now)
+        let time = now - animator.start
 
         // Вертикальные планки узлов.
         for (_, band) in layout.appBands {
@@ -252,54 +284,80 @@ struct FlowDiagram: View {
             ctx.fill(Path(roundedRect: CGRect(x: x1 + 6, y: band.y, width: 3, height: band.height), cornerRadius: 1.5), with: .color(node.color))
         }
 
+        var alive = Set<String>()
         for (index, flow) in graph.flows.enumerated() {
             guard let ends = layout.flowEnds[flow.id] else { continue }
-            let y0 = ends.left.y + ends.left.height / 2
-            let y1 = ends.right.y + ends.right.height / 2
-            let h0 = max(ends.left.height, 4)
-            let h1 = max(ends.right.height, 4)
+            alive.insert(flow.id)
+            // Целевые значения; текущие плавно к ним тянутся.
+            let target = FlowAnimator.Flow(
+                y0: ends.left.y + ends.left.height / 2, y1: ends.right.y + ends.right.height / 2,
+                h0: max(ends.left.height, 4), h1: max(ends.right.height, 4),
+                activity: min(1, log10(1 + flow.rate / 1024) / 3),  // 0 … ~1 МБ/с
+                phase: 0
+            )
+            var f = animator.flows[flow.id] ?? target
+            f.y0 += (target.y0 - f.y0) * k
+            f.y1 += (target.y1 - f.y1) * k
+            f.h0 += (target.h0 - f.h0) * k
+            f.h1 += (target.h1 - f.h1) * k
+            f.activity += (target.activity - f.activity) * k * 0.5
+            // Фаза накапливается, поэтому смена скорости меняет только темп, а не положение частиц.
+            f.phase += dt * (0.55 + 0.9 * f.activity)
+            animator.flows[flow.id] = f
 
-            // Мягкое свечение ленты.
-            var ribbon = Path()
-            let steps = 24
-            for i in 0...steps {
-                let p = Double(i) / Double(steps)
-                let c = mix(y0, y1, ease(p)), hw = mix(h0, h1, p) * 0.5 * pinch(p)
-                let pt = CGPoint(x: x0 + width * p, y: c - hw)
-                if i == 0 { ribbon.move(to: pt) } else { ribbon.addLine(to: pt) }
-            }
-            for i in stride(from: steps, through: 0, by: -1) {
-                let p = Double(i) / Double(steps)
-                let c = mix(y0, y1, ease(p)), hw = mix(h0, h1, p) * 0.5 * pinch(p)
-                ribbon.addLine(to: CGPoint(x: x0 + width * p, y: c + hw))
-            }
-            ribbon.closeSubpath()
-            ctx.fill(ribbon, with: .linearGradient(
-                Gradient(colors: [Color.white.opacity(0.015), flow.color.opacity(0.05)]),
-                startPoint: CGPoint(x: x0, y: 0), endPoint: CGPoint(x: x1, y: 0)))
+            drawRibbon(ctx: ctx, f, color: flow.color, x0: Double(x0), width: width)
 
-            // Частицы: плотность растёт с текущей скоростью потока.
-            let activity = min(1, log10(1 + flow.rate / 1024) / 3)  // 0 … ~1 МБ/с
-            let count = Int(18 + (h0 + h1) * 0.9 + 160 * activity)
-            let speedScale = 0.55 + 0.9 * activity
             let seed = Double(index) * 17.31
-            for k in 0..<count {
-                let hk = hash(Double(k), seed)
-                let v = (36 + 44 * hash(seed, Double(k) * 1.7)) * speedScale
-                let x = (hk * Double(width) + time * v).truncatingRemainder(dividingBy: Double(width))
-                let p = x / Double(width)
-                let lane = hash(Double(k) * 3.1, seed + 1) - 0.5
-                let c = mix(y0, y1, ease(p))
-                let hw = mix(h0, h1, p) * 0.5 * pinch(p)
+            let density = 18 + (f.h0 + f.h1) * 0.9 + 160 * f.activity
+            let count = min(Self.maxParticles, Int(density) + 8)
+            // Частицы собираются в пути по (оттенок × прозрачность) — десятки вызовов fill вместо сотен.
+            var buckets = [Path](repeating: Path(), count: Self.hueSteps * Self.alphaSteps)
+            for i in 0..<count {
+                let fade = min(1, max(0, (density - Double(i)) / 8))   // мягкий край плотности
+                guard fade > 0 else { break }
+                let hk = hash(Double(i), seed)
+                let v = 36 + 44 * hash(seed, Double(i) * 1.7)
+                let x = (hk * width + f.phase * v).truncatingRemainder(dividingBy: width)
+                let p = x / width
+                let lane = hash(Double(i) * 3.1, seed + 1) - 0.5
+                let c = mix(f.y0, f.y1, ease(p))
+                let hw = mix(f.h0, f.h1, p) * 0.5 * pinch(p)
                 let y = c + lane * 2 * hw * 1.05
-                let r = 0.5 + 1.1 * pow(hash(Double(k) * 0.7, seed + 2), 3)
-                var alpha = 0.35 + 0.55 * hash(Double(k) * 1.9, seed + 3)
+                let r = 0.5 + 1.1 * pow(hash(Double(i) * 0.7, seed + 2), 3)
+                var alpha = 0.35 + 0.55 * hash(Double(i) * 1.9, seed + 3)
                 alpha *= 0.7 + 0.3 * sin(time * 2.5 + hk * 60)
-                alpha *= min(1, p * 12) * min(1, (1 - p) * 12)
-                let col = Color.white.mix(with: flow.color, by: smoothstep(0.15, 0.85, p))
-                ctx.fill(Path(ellipseIn: CGRect(x: Double(x0) + x - r, y: y - r, width: r * 2, height: r * 2)), with: .color(col.opacity(alpha)))
+                alpha *= min(1, p * 12) * min(1, (1 - p) * 12) * fade
+                let hue = min(Self.hueSteps - 1, Int(smoothstep(0.15, 0.85, p) * Double(Self.hueSteps)))
+                let a = min(Self.alphaSteps - 1, Int(alpha * Double(Self.alphaSteps)))
+                guard a > 0 || alpha > 0.05 else { continue }
+                buckets[hue * Self.alphaSteps + a].addEllipse(in: CGRect(x: Double(x0) + x - r, y: y - r, width: r * 2, height: r * 2))
+            }
+            for h in 0..<Self.hueSteps {
+                let col = Color.white.mix(with: flow.color, by: (Double(h) + 0.5) / Double(Self.hueSteps))
+                for a in 0..<Self.alphaSteps where !buckets[h * Self.alphaSteps + a].isEmpty {
+                    ctx.fill(buckets[h * Self.alphaSteps + a], with: .color(col.opacity((Double(a) + 0.5) / Double(Self.alphaSteps))))
+                }
             }
         }
+        animator.flows = animator.flows.filter { alive.contains($0.key) }
+    }
+
+    private func drawRibbon(ctx: GraphicsContext, _ f: FlowAnimator.Flow, color: Color, x0: Double, width: Double) {
+        var ribbon = Path()
+        let steps = 24
+        for i in 0...steps {
+            let p = Double(i) / Double(steps)
+            let pt = CGPoint(x: x0 + width * p, y: mix(f.y0, f.y1, ease(p)) - mix(f.h0, f.h1, p) * 0.5 * pinch(p))
+            if i == 0 { ribbon.move(to: pt) } else { ribbon.addLine(to: pt) }
+        }
+        for i in stride(from: steps, through: 0, by: -1) {
+            let p = Double(i) / Double(steps)
+            ribbon.addLine(to: CGPoint(x: x0 + width * p, y: mix(f.y0, f.y1, ease(p)) + mix(f.h0, f.h1, p) * 0.5 * pinch(p)))
+        }
+        ribbon.closeSubpath()
+        ctx.fill(ribbon, with: .linearGradient(
+            Gradient(colors: [Color.white.opacity(0.015), color.opacity(0.05)]),
+            startPoint: CGPoint(x: x0, y: 0), endPoint: CGPoint(x: x0 + width, y: 0)))
     }
 
     // Функции из flow.glsl.
@@ -318,12 +376,7 @@ struct FlowDiagram: View {
     }
 
     private func hash(_ a: Double, _ b: Double) -> Double {
-        var x = (a * 0.1031).truncatingRemainder(dividingBy: 1)
-        var y = (b * 0.1031).truncatingRemainder(dividingBy: 1)
-        var z = x
-        let d = x * (y + 33.33) + y * (z + 33.33) + z * (x + 33.33)
-        x += d; y += d; z += d
-        let r = ((x + y) * z).truncatingRemainder(dividingBy: 1)
-        return abs(r)
+        let x = sin(a * 127.1 + b * 311.7) * 43758.5453
+        return x - x.rounded(.down)
     }
 }
