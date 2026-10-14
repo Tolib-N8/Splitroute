@@ -1,0 +1,107 @@
+import Foundation
+import SystemConfiguration
+
+/// VPN-сервис из Системных настроек (ZoogVPN, AIRLINK, Tailscale…).
+public struct VPNServiceInfo: Sendable, Equatable, Identifiable, Hashable {
+    public var id: String
+    public var name: String
+    /// Например `com.zoogvpn.ios` — бандл провайдера Network Extension.
+    public var providerBundleID: String?
+    /// utun, если сервис подключён.
+    public var interface: String?
+    public var serverAddress: String?
+
+    public var isConnected: Bool { interface != nil }
+    /// Tailscale — это mesh-сеть, а не выход в интернет; в списке выходов его не показываем.
+    public var isMesh: Bool { providerBundleID?.contains("tailscale") == true || name.localizedCaseInsensitiveContains("tailscale") }
+}
+
+/// Чтение сетевого состояния из SCDynamicStore / SCPreferences.
+public enum NetworkState {
+
+    public static func environment() -> NetworkEnvironment {
+        var vpn: [String: NetworkEnvironment.VPNService] = [:]
+        for s in vpnServices() {
+            if let iface = s.interface {
+                vpn[s.id] = .init(interface: iface, serverAddress: s.serverAddress)
+            }
+        }
+        return NetworkEnvironment(physicalInterface: physicalInterface(), vpnServices: vpn)
+    }
+
+    /// Все VPN-сервисы из текущего набора сетевых настроек.
+    public static func vpnServices() -> [VPNServiceInfo] {
+        guard let prefs = SCPreferencesCreate(nil, "Splitroute" as CFString, nil),
+              let services = SCNetworkServiceCopyAll(prefs) as? [SCNetworkService]
+        else { return [] }
+        let store = SCDynamicStoreCreate(nil, "Splitroute" as CFString, nil, nil)
+
+        return services.compactMap { service -> VPNServiceInfo? in
+            guard let iface = SCNetworkServiceGetInterface(service),
+                  let type = SCNetworkInterfaceGetInterfaceType(iface) as String?,
+                  type == "VPN" || type == (kSCNetworkInterfaceTypeIPSec as String),
+                  let id = SCNetworkServiceGetServiceID(service) as String?
+            else { return nil }
+            let name = (SCNetworkServiceGetName(service) as String?) ?? id
+            let state = ipv4State(store: store, serviceID: id)
+            return VPNServiceInfo(
+                id: id,
+                name: name,
+                providerBundleID: providerBundleID(service: service, interface: iface),
+                interface: state?["InterfaceName"] as? String,
+                serverAddress: state?["ServerAddress"] as? String
+            )
+        }
+        .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+    }
+
+    /// Первый физический интерфейс с маршрутизатором по порядку сервисов (en0 и т. п.).
+    public static func physicalInterface() -> String? {
+        guard let store = SCDynamicStoreCreate(nil, "Splitroute" as CFString, nil, nil) else { return nil }
+        let setup = SCDynamicStoreCopyValue(store, "Setup:/Network/Global/IPv4" as CFString) as? [String: Any]
+        var order = (setup?["ServiceOrder"] as? [String]) ?? []
+
+        // Сервисы, у которых есть состояние, но которых нет в ServiceOrder, проверяем в конце.
+        let keys = (SCDynamicStoreCopyKeyList(store, "State:/Network/Service/[^/]+/IPv4" as CFString) as? [String]) ?? []
+        for key in keys {
+            let id = key.components(separatedBy: "/")[3]
+            if !order.contains(id) { order.append(id) }
+        }
+
+        for id in order {
+            guard let state = ipv4State(store: store, serviceID: id),
+                  let name = state["InterfaceName"] as? String,
+                  isPhysical(name),
+                  state["Router"] != nil
+            else { continue }
+            return name
+        }
+        return nil
+    }
+
+    static func isPhysical(_ name: String) -> Bool {
+        let virtual = ["utun", "ipsec", "ppp", "gif", "stf", "awdl", "llw", "lo", "bridge", "anpi", "ap", "nan", "vmenet"]
+        return !virtual.contains { name.hasPrefix($0) }
+    }
+
+    private static func ipv4State(store: SCDynamicStore?, serviceID: String) -> [String: Any]? {
+        guard let store else { return nil }
+        return SCDynamicStoreCopyValue(store, "State:/Network/Service/\(serviceID)/IPv4" as CFString) as? [String: Any]
+    }
+
+    private static func providerBundleID(service: SCNetworkService, interface: SCNetworkInterface) -> String? {
+        // У Network Extension VPN подтип интерфейса — это бандл провайдера ("VPN:com.zoogvpn.ios").
+        if let cfg = SCNetworkInterfaceGetConfiguration(interface) as? [String: Any],
+           let id = cfg["ProviderBundleIdentifier"] as? String {
+            return id
+        }
+        let protocols = (SCNetworkServiceCopyProtocols(service) as? [SCNetworkProtocol]) ?? []
+        for proto in protocols {
+            if let cfg = SCNetworkProtocolGetConfiguration(proto) as? [String: Any],
+               let id = cfg["ProviderBundleIdentifier"] as? String {
+                return id
+            }
+        }
+        return nil
+    }
+}
