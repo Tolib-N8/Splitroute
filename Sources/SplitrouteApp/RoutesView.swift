@@ -81,14 +81,15 @@ struct FlowGraph {
         let stats = model.stats
         let entries = model.appEntries
             .map { ($0, stats.total("app:" + $0.key)) }
-            .sorted { $0.1 > $1.1 }
+            .sorted { $0.1 != $1.1 ? $0.1 > $1.1 : $0.0.key < $1.0.key }
             .prefix(maxApps)
 
         var exitWeights: [String: Double] = [:]
         var exitApps: [String: Int] = [:]
         for (entry, bytes) in entries {
             // Реальные потоки из статистики; если трафика ещё не было — показываем настроенный маршрут.
-            var appFlows: [(String, Double)] = stats.keys(prefix: "flow:\(entry.key)|")
+            // keys(prefix:) — Set с произвольным порядком; сортируем, чтобы порядок не менялся между пересчётами.
+            var appFlows: [(String, Double)] = stats.keys(prefix: "flow:\(entry.key)|").sorted()
                 .map { (String($0.split(separator: "|").last ?? ""), Double(stats.total($0))) }
                 .filter { $0.1 > 0 }
             if appFlows.isEmpty {
@@ -131,7 +132,7 @@ struct FlowGraph {
             let w = fs.reduce(0) { $0 + $1.weight }
             center[e.id] = fs.reduce(0) { $0 + (appIndex[$1.app] ?? 0) * $1.weight } / max(w, 1e-9)
         }
-        exits.sort { center[$0.id]! < center[$1.id]! }
+        exits.sort { center[$0.id]! != center[$1.id]! ? center[$0.id]! < center[$1.id]! : $0.id < $1.id }
     }
 }
 
@@ -154,8 +155,16 @@ struct FlowLayout {
         let appTotals = Dictionary(grouping: graph.flows, by: \.app).mapValues { $0.reduce(0) { $0 + $1.weight } }
         let exitTotals = Dictionary(grouping: graph.flows, by: \.exit).mapValues { $0.reduce(0) { $0 + $1.weight } }
 
-        // Порядок потоков на правом краю — по положению приложения, чтобы ленты меньше пересекались.
-        let ordered = graph.flows.sorted { (appBands[$0.app]?.y ?? 0) < (appBands[$1.app]?.y ?? 0) }
+        // Детерминированный порядок: по приложению, затем по выходу, затем по id. Без второго и третьего
+        // ключа потоки одного приложения менялись местами при каждом пересчёте (сортировка нестабильна),
+        // и тонкий поток прыгал вверх-вниз по полосе приложения.
+        let ordered = graph.flows.sorted { a, b in
+            let ay = appBands[a.app]?.y ?? 0, by = appBands[b.app]?.y ?? 0
+            if ay != by { return ay < by }
+            let ey = exitBands[a.exit]?.y ?? 0, fy = exitBands[b.exit]?.y ?? 0
+            if ey != fy { return ey < fy }
+            return a.id < b.id
+        }
         for f in ordered {
             guard let ab = appBands[f.app], let eb = exitBands[f.exit] else { continue }
             let lh = ab.height * CGFloat(f.weight / max(appTotals[f.app] ?? 1, 1e-9))
