@@ -83,7 +83,14 @@ final class AppModel {
     private var started = false
 
     init() {
-        profile = (try? Profile.load(from: Paths.userProfile)) ?? Profile()
+        var loaded = (try? Profile.load(from: Paths.userProfile)) ?? Profile()
+        // Правила на папку из ранних версий назывались по имени папки («versions»).
+        for i in loaded.routes.indices {
+            if let folder = AppCatalog.versionedFolder(for: loaded.routes[i].path), loaded.routes[i].path == folder.path {
+                loaded.routes[i].name = folder.name
+            }
+        }
+        profile = loaded
         let enableOnLaunch = UserDefaults.standard.object(forKey: "enableOnLaunch") as? Bool ?? true
         enabled = enableOnLaunch || (UserDefaults.standard.object(forKey: "enabled") as? Bool ?? true)
     }
