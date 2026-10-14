@@ -3,7 +3,7 @@ import Foundation
 /// Версия протокола между приложением и root-helper'ом. Повышается, только когда меняется то,
 /// что делает helper (сборка конфига, команды, версия sing-box) — тогда приложение попросит обновить компонент.
 public enum HelperProtocol {
-    public static let version = 1
+    public static let version = 2
 }
 
 /// Пути, общие для приложения и root-helper'а.
@@ -20,6 +20,12 @@ public enum Paths {
     public static let launchDaemonPlist = "/Library/LaunchDaemons/\(daemonLabel).plist"
     public static let sudoers = "/etc/sudoers.d/splitroute"
     public static let log = "/Library/Logs/Splitroute/core.log"
+    /// Файлы готовых наборов (.srs), которые helper скопировал из папки пользователя.
+    public static let ruleSetsDir = dataDir + "/rulesets"
+
+    public static func userRuleSets(home: String) -> String {
+        home + "/Library/Application Support/Splitroute/rulesets"
+    }
 
     public static func profile(home: String) -> String {
         home + "/Library/Application Support/Splitroute/profile.json"

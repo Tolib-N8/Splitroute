@@ -35,12 +35,20 @@ public struct ConfigOptions: Sendable, Equatable {
     public var apiSecret: String
     public var cacheFilePath: String?
     public var logLevel: String
+    /// Папка с файлами `<tag>.srs` и какие из них на месте. Наборы без файлов пропускаются.
+    public var ruleSetsDir: String
+    public var availableRuleSets: Set<String>
 
-    public init(apiListen: String = "127.0.0.1:9095", apiSecret: String, cacheFilePath: String? = nil, logLevel: String = "warn") {
+    public init(
+        apiListen: String = "127.0.0.1:9095", apiSecret: String, cacheFilePath: String? = nil, logLevel: String = "warn",
+        ruleSetsDir: String = Paths.ruleSetsDir, availableRuleSets: Set<String> = []
+    ) {
         self.apiListen = apiListen
         self.apiSecret = apiSecret
         self.cacheFilePath = cacheFilePath
         self.logLevel = logLevel
+        self.ruleSetsDir = ruleSetsDir
+        self.availableRuleSets = availableRuleSets
     }
 }
 
@@ -91,6 +99,7 @@ public struct ConfigBuilder: Sendable {
     /// Работает ли IPv6 через выход. Если нет — IPv6-соединения отклоняются сразу,
     /// и приложения мгновенно переходят на IPv4, а не ждут таймаута.
     public func supportsIPv6(exitID id: String) -> Bool {
+        if profile.disableIPv6 { return false }
         guard let exit = profile.exit(id: id) else { return environment.physicalIPv6 }
         switch exit.kind {
         case .direct: return environment.physicalIPv6
@@ -142,7 +151,7 @@ public struct ConfigBuilder: Sendable {
             "dns": .compact([
                 ("servers", .array(dnsServers)),
                 ("final", .string(finalDNSTag)),
-                ("strategy", environment.physicalIPv6 ? nil : "ipv4_only"),
+                ("strategy", ipv6Network ? nil : "ipv4_only"),
             ]),
             "inbounds": [tunInbound()],
             "outbounds": .array(outbounds),
@@ -178,7 +187,7 @@ public struct ConfigBuilder: Sendable {
         [
             "type": "tun", "tag": "tun-in",
             // IPv6 на TUN — только если он есть в сети: иначе macOS начинает предпочитать IPv6.
-            "address": .strings(environment.physicalIPv6 ? [Self.tunAddress4, Self.tunAddress6] : [Self.tunAddress4]),
+            "address": .strings(ipv6Network ? [Self.tunAddress4, Self.tunAddress6] : [Self.tunAddress4]),
             "auto_route": true,
             "strict_route": false,
             "route_exclude_address": .strings(Self.baseExcludedRoutes + vpnServerAddresses),
@@ -194,6 +203,27 @@ public struct ConfigBuilder: Sendable {
             rules.append(["ip_cidr": .strings(vpnServerAddresses), "outbound": "direct"])
         }
 
+        // 1. Свои правила, 2. готовые наборы, 3. маршруты приложений, 4. по умолчанию.
+        for rule in profile.rules where rule.enabled && !rule.values.isEmpty {
+            var m = rule.matchers()
+            guard !m.isEmpty else { continue }
+            if !rule.appPaths.isEmpty {
+                m["process_path_regex"] = .strings(rule.appPaths.map(Self.processPattern(forBundlePath:)))
+            }
+            appendRule(&rules, matchers: m, exitID: rule.exitID)
+        }
+        for preset in profile.presets where preset.enabled {
+            guard let info = PresetInfo.info(preset.id) else { continue }
+            if info.ruleSets.isEmpty {
+                appendRule(&rules, matchers: ["ip_is_private": true], exitID: preset.exitID)
+                appendRule(&rules, matchers: ["domain_suffix": ["local", "lan", "home.arpa"]], exitID: preset.exitID)
+                continue
+            }
+            let tags = info.ruleSets.filter(options.availableRuleSets.contains)
+            guard !tags.isEmpty else { continue }
+            appendRule(&rules, matchers: ["rule_set": .strings(tags)], exitID: preset.exitID)
+        }
+
         // Одно правило на выход, в порядке появления выходов в маршрутах.
         var order: [String] = []
         var patterns: [String: [String]] = [:]
@@ -202,16 +232,7 @@ public struct ConfigBuilder: Sendable {
             patterns[r.exitID, default: []].append(Self.processPattern(forBundlePath: r.path))
         }
         for exitID in order {
-            let match: JSONValue = .strings(patterns[exitID] ?? [])
-            switch target(forExitID: exitID) {
-            case .outbound(let tag):
-                if !supportsIPv6(exitID: tag == "direct" ? Exit.directID : exitID) {
-                    rules.append(["process_path_regex": match, "ip_version": 6, "action": "reject"])
-                }
-                rules.append(["process_path_regex": match, "outbound": .string(tag)])
-            case .reject:
-                rules.append(["process_path_regex": match, "action": "reject"])
-            }
+            appendRule(&rules, matchers: ["process_path_regex": .strings(patterns[exitID] ?? [])], exitID: exitID)
         }
 
         var route: [String: JSONValue] = [
@@ -234,7 +255,36 @@ public struct ConfigBuilder: Sendable {
             route["final"] = "direct"
         }
         route["rules"] = .array(rules)
+        let usedSets = Set(profile.presets.filter(\.enabled).compactMap { PresetInfo.info($0.id) }.flatMap(\.ruleSets))
+            .intersection(options.availableRuleSets).sorted()
+        if !usedSets.isEmpty {
+            route["rule_set"] = .array(usedSets.map {
+                ["type": "local", "tag": .string($0), "format": "binary", "path": .string("\(options.ruleSetsDir)/\($0).srs")]
+            })
+        }
         return .object(route)
+    }
+
+    private var ipv6Network: Bool { environment.physicalIPv6 && !profile.disableIPv6 }
+
+    /// Правило → выход, с отдельным мгновенным отказом для IPv6, если у выхода его нет.
+    private func appendRule(_ rules: inout [JSONValue], matchers: [String: JSONValue], exitID: String) {
+        switch target(forExitID: exitID) {
+        case .outbound(let tag):
+            if !supportsIPv6(exitID: tag == "direct" ? Exit.directID : exitID) {
+                var v6 = matchers
+                v6["ip_version"] = 6
+                v6["action"] = "reject"
+                rules.append(.object(v6))
+            }
+            var m = matchers
+            m["outbound"] = .string(tag)
+            rules.append(.object(m))
+        case .reject:
+            var m = matchers
+            m["action"] = "reject"
+            rules.append(.object(m))
+        }
     }
 
     private func experimental() -> JSONValue {

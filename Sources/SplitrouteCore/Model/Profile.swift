@@ -79,13 +79,22 @@ public struct Profile: Codable, Sendable, Equatable {
     public var killSwitch: Bool
     /// DNS-сервер, который опрашивается через VPN-выходы.
     public var tunnelDNS: String
+    /// Свои правила по доменам/IP/портам, сверху вниз.
+    public var rules: [Rule]
+    /// Включённые готовые наборы и их выходы.
+    public var presets: [RulePreset]
+    /// Не пускать IPv6 никуда, даже если сеть его поддерживает.
+    public var disableIPv6: Bool
 
     public init(
         exits: [Exit] = [],
         routes: [AppRoute] = [],
         defaultExitID: String = Exit.directID,
         killSwitch: Bool = true,
-        tunnelDNS: String = "1.1.1.1"
+        tunnelDNS: String = "1.1.1.1",
+        rules: [Rule] = [],
+        presets: [RulePreset] = [],
+        disableIPv6: Bool = false
     ) {
         self.version = Self.currentVersion
         self.exits = exits
@@ -93,6 +102,27 @@ public struct Profile: Codable, Sendable, Equatable {
         self.defaultExitID = defaultExitID
         self.killSwitch = killSwitch
         self.tunnelDNS = tunnelDNS
+        self.rules = rules
+        self.presets = presets
+        self.disableIPv6 = disableIPv6
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case version, exits, routes, defaultExitID, killSwitch, tunnelDNS, rules, presets, disableIPv6
+    }
+
+    /// Новые поля необязательны — профили прошлых версий читаются без ошибок.
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        version = try c.decodeIfPresent(Int.self, forKey: .version) ?? Self.currentVersion
+        exits = try c.decodeIfPresent([Exit].self, forKey: .exits) ?? []
+        routes = try c.decodeIfPresent([AppRoute].self, forKey: .routes) ?? []
+        defaultExitID = try c.decodeIfPresent(String.self, forKey: .defaultExitID) ?? Exit.directID
+        killSwitch = try c.decodeIfPresent(Bool.self, forKey: .killSwitch) ?? true
+        tunnelDNS = try c.decodeIfPresent(String.self, forKey: .tunnelDNS) ?? "1.1.1.1"
+        rules = try c.decodeIfPresent([Rule].self, forKey: .rules) ?? []
+        presets = try c.decodeIfPresent([RulePreset].self, forKey: .presets) ?? []
+        disableIPv6 = try c.decodeIfPresent(Bool.self, forKey: .disableIPv6) ?? false
     }
 
     /// Все выходы, включая встроенные.
@@ -113,7 +143,15 @@ public struct Profile: Codable, Sendable, Equatable {
     public mutating func removeExit(id: String) {
         exits.removeAll { $0.id == id }
         routes.removeAll { $0.exitID == id }
+        rules.removeAll { $0.exitID == id }
+        for i in presets.indices where presets[i].exitID == id { presets[i].enabled = false; presets[i].exitID = Exit.directID }
         if defaultExitID == id { defaultExitID = Exit.directID }
+    }
+
+    public func preset(_ id: String) -> RulePreset? { presets.first { $0.id == id } }
+
+    public mutating func setPreset(_ preset: RulePreset) {
+        if let i = presets.firstIndex(where: { $0.id == preset.id }) { presets[i] = preset } else { presets.append(preset) }
     }
 }
 

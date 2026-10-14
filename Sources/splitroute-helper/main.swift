@@ -71,6 +71,33 @@ func readProfile(home: String, uid: uid_t) throws -> Profile {
     }
 }
 
+/// Читает файл пользователя: обычный файл, без симлинков, его владелец — пользователь, размер ограничен.
+func readUserFile(_ path: String, uid: uid_t, maxSize: Int) throws -> Data {
+    let fd = open(path, O_RDONLY | O_NOFOLLOW)
+    guard fd >= 0 else { throw HelperError("нет файла \(path)") }
+    let handle = FileHandle(fileDescriptor: fd, closeOnDealloc: true)
+    var st = stat()
+    guard fstat(fd, &st) == 0, (st.st_mode & S_IFMT) == S_IFREG, st.st_uid == uid, Int(st.st_size) <= maxSize else {
+        throw HelperError("недопустимый файл \(path)")
+    }
+    return try handle.readToEnd() ?? Data()
+}
+
+/// Копирует скачанные приложением наборы правил в системную папку. Возвращает теги, которые на месте.
+func syncRuleSets(home: String, uid: uid_t) -> Set<String> {
+    try? fm.createDirectory(atPath: Paths.ruleSetsDir, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o755])
+    var available = Set<String>()
+    for tag in PresetInfo.allowedRuleSets {
+        let src = Paths.userRuleSets(home: home) + "/\(tag).srs"
+        let dst = Paths.ruleSetsDir + "/\(tag).srs"
+        if let data = try? readUserFile(src, uid: uid, maxSize: 32 * 1024 * 1024), !data.isEmpty {
+            try? writeFile(data, to: dst, mode: 0o644)
+        }
+        if fm.fileExists(atPath: dst) { available.insert(tag) }
+    }
+    return available
+}
+
 func randomSecret() -> String {
     var bytes = [UInt8](repeating: 0, count: 24)
     _ = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
@@ -150,7 +177,11 @@ func apply() throws {
 
     let credentials = APICredentials.load() ?? APICredentials(listen: "127.0.0.1:9095", secret: randomSecret())
     let env = NetworkState.environment()
-    let options = ConfigOptions(apiListen: credentials.listen, apiSecret: credentials.secret, cacheFilePath: Paths.cacheFile)
+    let ruleSets = syncRuleSets(home: user.home, uid: user.uid)
+    let options = ConfigOptions(
+        apiListen: credentials.listen, apiSecret: credentials.secret, cacheFilePath: Paths.cacheFile,
+        availableRuleSets: ruleSets
+    )
     let data = try ConfigBuilder(profile: profile, environment: env, options: options).build().encoded()
 
     let candidate = Paths.dataDir + "/config.candidate.json"
@@ -216,7 +247,9 @@ do {
     case "status": status()
     case "preview":
         let profile = try Profile.load(from: Paths.userProfile)
-        let options = ConfigOptions(apiSecret: "preview", cacheFilePath: Paths.cacheFile)
+        let dir = Paths.userRuleSets(home: NSHomeDirectory())
+        let sets = PresetInfo.allowedRuleSets.filter { fm.fileExists(atPath: "\(dir)/\($0).srs") }
+        let options = ConfigOptions(apiSecret: "preview", cacheFilePath: Paths.cacheFile, ruleSetsDir: dir, availableRuleSets: sets)
         let data = try ConfigBuilder(profile: profile, environment: NetworkState.environment(), options: options).build().encoded()
         print(String(data: data, encoding: .utf8)!)
     case "env":
