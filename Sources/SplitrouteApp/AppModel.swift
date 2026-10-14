@@ -186,6 +186,7 @@ final class AppModel {
         vpnServices = NetworkState.vpnServices()
         physicalInterface = NetworkState.physicalInterface()
         ensureVPNExits()
+        ensureSelfRoute()
 
         // Сменился utun у VPN-приложения или Wi‑Fi — пересобираем конфиг.
         let env = NetworkState.environment()
@@ -193,6 +194,15 @@ final class AppModel {
             appliedEnvironment = env
             scheduleApply(immediately: true)
         }
+    }
+
+    /// Сам Splitroute (скачивание баз и подписок) — через VPN, если он есть: напрямую из Китая
+    /// GitHub и многие подписки недоступны. Это обычный маршрут приложения, его можно поменять.
+    private func ensureSelfRoute() {
+        guard HelperClient.runningFromBundle, let id = Bundle.main.bundleIdentifier,
+              profile.route(for: id) == nil, let tunnel = tunnelExits.first(where: isAvailable)
+        else { return }
+        profile.setRoute(AppRoute(bundleID: id, name: "Splitroute", path: Bundle.main.bundlePath, exitID: tunnel.id))
     }
 
     /// Каждый VPN-сервис из Системных настроек (кроме Tailscale) доступен как выход.

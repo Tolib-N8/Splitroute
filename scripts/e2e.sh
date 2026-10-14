@@ -55,6 +55,14 @@ check "IP различаются" '[ "$VPN_IP" != "$DIRECT_IP" ]'
 TS=$(curl -s -o /dev/null -m 5 -w '%{http_code}' http://100.100.100.100/ 2>/dev/null)
 check "Tailscale отвечает ($TS)" '[ "$TS" != "000" ]'
 
+# Базы для раздела 3 — через VPN-копию: напрямую из Китая GitHub часто недоступен.
+RS="$HOME/Library/Application Support/Splitroute/rulesets"
+mkdir -p "$RS"
+for tag in geosite-cn geoip-cn; do
+  repo=sing-geosite; [ "${tag#geoip}" != "$tag" ] && repo=sing-geoip
+  [ -s "$RS/$tag.srs" ] || /tmp/sr-vpn/curl -fsSL -m 30 -o "$RS/$tag.srs" "https://raw.githubusercontent.com/SagerNet/$repo/rule-set/$tag.srs"
+done
+
 echo "2. Kill switch (VPN-сервис недоступен)"
 write_profile "00000000-0000-0000-0000-000000000000"
 sudo -n "$HELPER" apply || exit 1
@@ -62,5 +70,31 @@ sleep 3
 KS=$(myip /tmp/sr-vpn/curl)
 echo "  VPN-копия: ${KS:-отказ}"
 check "VPN-копия заблокирована" '[ -z "$KS" ]'
+
+echo "3. Правила и наборы (свои правила → наборы → маршрут приложения)"
+cat > "$PROFILE" <<JSON
+{"version":1,"defaultExitID":"direct","killSwitch":true,"tunnelDNS":"1.1.1.1",
+ "exits":[{"id":"e2e-vpn","name":"$VPN_NAME","kind":{"vpnApp":{"serviceID":"$SERVICE"}}}],
+ "routes":[
+  {"bundleID":"e2e.vpn","name":"curl-vpn","path":"/private/tmp/sr-vpn/","exitID":"e2e-vpn"},
+  {"bundleID":"e2e.direct","name":"curl-direct","path":"/private/tmp/sr-direct/","exitID":"direct"}],
+ "rules":[{"id":"r1","enabled":true,"kind":"domain","values":["ifconfig.me"],"appPaths":[],"exitID":"e2e-vpn"}],
+ "presets":[{"id":"cn","enabled":true,"exitID":"direct"}]}
+JSON
+sudo -n "$HELPER" apply || exit 1
+sleep 3
+trace() { "$1" -s -m 8 https://www.cloudflare.com/cdn-cgi/trace | sed -n 's/^ip=//p'; }
+RULE_IP=$(/tmp/sr-direct/curl -s -m 8 https://ifconfig.me)
+APP_DIRECT=$(trace /tmp/sr-direct/curl)
+APP_VPN=$(trace /tmp/sr-vpn/curl)
+PRESET_IP=$(/tmp/sr-vpn/curl -s -m 8 https://myip.ipip.net | grep -Eo '([0-9]+\.){3}[0-9]+' | head -1)
+echo "  прямая копия → ifconfig.me (правило №1 → VPN):  $RULE_IP"
+echo "  прямая копия → cloudflare (маршрут приложения): $APP_DIRECT"
+echo "  VPN-копия → cloudflare (маршрут приложения):    $APP_VPN"
+echo "  VPN-копия → myip.ipip.net (набор «Китай»):      $PRESET_IP"
+check "правило по домену перебивает маршрут приложения" '[ -n "$RULE_IP" ] && [ "$RULE_IP" = "$VPN_IP" ]'
+check "без правил работает маршрут приложения (напрямую)" '[ -n "$APP_DIRECT" ] && [ "$APP_DIRECT" = "$DIRECT_IP" ]'
+check "без правил работает маршрут приложения (VPN)" '[ -n "$APP_VPN" ] && [ "$APP_VPN" = "$VPN_IP" ]'
+check "набор «Китайские сервисы» перебивает маршрут приложения" '[ -n "$PRESET_IP" ] && [ "$PRESET_IP" = "$DIRECT_IP" ]'
 
 exit $fail
