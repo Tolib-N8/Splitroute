@@ -52,6 +52,8 @@ echo "  VPN-копия:    $VPN_IP"
 echo "  Прямая копия: $DIRECT_IP"
 check "оба запроса прошли" '[ -n "$VPN_IP" ] && [ -n "$DIRECT_IP" ]'
 check "IP различаются" '[ "$VPN_IP" != "$DIRECT_IP" ]'
+G=$(/tmp/sr-vpn/curl -s -m 10 -o /dev/null -w '%{http_code}' https://www.google.com)
+check "Google через VPN открывается — системный DNS без подмены ($G)" '[ "$G" = "200" ] || [ "$G" = "301" ] || [ "$G" = "302" ]'
 TS=$(curl -s -o /dev/null -m 5 -w '%{http_code}' http://100.100.100.100/ 2>/dev/null)
 check "Tailscale отвечает ($TS)" '[ "$TS" != "000" ]'
 

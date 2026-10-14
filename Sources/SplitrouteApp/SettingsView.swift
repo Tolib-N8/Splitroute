@@ -71,6 +71,9 @@ struct SettingsView: View {
                             }
                             .padding(.vertical, 14)
                             Divider().overlay(Theme.line)
+                            SettingRow("Перехватывать системный DNS", "Ответы для VPN-приложений — через VPN, без подмены провайдером. Китайские и локальные домены — напрямую") {
+                                LimeToggle(isOn: $model.profile.hijackSystemDNS)
+                            }
                             SettingRow("Отключить IPv6", "Даже если сеть его поддерживает. Сейчас IPv6 \(model.networkHasIPv6 ? "есть" : "нет") — без него он и так отключён") {
                                 LimeToggle(isOn: $model.profile.disableIPv6)
                             }

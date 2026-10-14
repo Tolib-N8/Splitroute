@@ -85,6 +85,8 @@ public struct Profile: Codable, Sendable, Equatable {
     public var presets: [RulePreset]
     /// Не пускать IPv6 никуда, даже если сеть его поддерживает.
     public var disableIPv6: Bool
+    /// Сделать DNS ядра системным: ответы для VPN-приложений будут без подмены провайдером.
+    public var hijackSystemDNS: Bool
 
     public init(
         exits: [Exit] = [],
@@ -94,7 +96,8 @@ public struct Profile: Codable, Sendable, Equatable {
         tunnelDNS: String = "1.1.1.1",
         rules: [Rule] = [],
         presets: [RulePreset] = [],
-        disableIPv6: Bool = false
+        disableIPv6: Bool = false,
+        hijackSystemDNS: Bool = true
     ) {
         self.version = Self.currentVersion
         self.exits = exits
@@ -105,10 +108,11 @@ public struct Profile: Codable, Sendable, Equatable {
         self.rules = rules
         self.presets = presets
         self.disableIPv6 = disableIPv6
+        self.hijackSystemDNS = hijackSystemDNS
     }
 
     private enum CodingKeys: String, CodingKey {
-        case version, exits, routes, defaultExitID, killSwitch, tunnelDNS, rules, presets, disableIPv6
+        case version, exits, routes, defaultExitID, killSwitch, tunnelDNS, rules, presets, disableIPv6, hijackSystemDNS
     }
 
     /// Новые поля необязательны — профили прошлых версий читаются без ошибок.
@@ -123,6 +127,7 @@ public struct Profile: Codable, Sendable, Equatable {
         rules = try c.decodeIfPresent([Rule].self, forKey: .rules) ?? []
         presets = try c.decodeIfPresent([RulePreset].self, forKey: .presets) ?? []
         disableIPv6 = try c.decodeIfPresent(Bool.self, forKey: .disableIPv6) ?? false
+        hijackSystemDNS = try c.decodeIfPresent(Bool.self, forKey: .hijackSystemDNS) ?? true
     }
 
     /// Все выходы, включая встроенные.

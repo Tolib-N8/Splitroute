@@ -58,6 +58,10 @@ public struct ConfigBuilder: Sendable {
     /// уйдут мимо TUN и ни одно соединение не заработает (так было с 172.19.0.1 внутри 172.16.0.0/12).
     public static let tunAddress4 = "198.18.0.1/30"
     public static let tunAddress6 = "fdfe:dcba:9876::1/126"
+    /// DNS ядра внутри TUN: следующий адрес после tunAddress4; sing-box перехватывает запросы к нему.
+    public static let tunDNS = "198.18.0.2"
+    /// Локальные имена всегда резолвит роутер.
+    public static let localDomains = ["lan", "local", "home.arpa", "localhost"]
 
     /// Не забираем в TUN: локальные сети, Tailscale, link-local, мультикаст.
     public static let baseExcludedRoutes = [
@@ -150,6 +154,7 @@ public struct ConfigBuilder: Sendable {
             "log": ["level": .string(options.logLevel), "timestamp": true],
             "dns": .compact([
                 ("servers", .array(dnsServers)),
+                ("rules", .array(dnsRules)),
                 ("final", .string(finalDNSTag)),
                 ("strategy", ipv6Network ? nil : "ipv4_only"),
             ]),
@@ -255,8 +260,9 @@ public struct ConfigBuilder: Sendable {
             route["final"] = "direct"
         }
         route["rules"] = .array(rules)
-        let usedSets = Set(profile.presets.filter(\.enabled).compactMap { PresetInfo.info($0.id) }.flatMap(\.ruleSets))
-            .intersection(options.availableRuleSets).sorted()
+        var presetSets = Set(profile.presets.filter(\.enabled).compactMap { PresetInfo.info($0.id) }.flatMap(\.ruleSets))
+        if cnDNSRuleSet { presetSets.insert("geosite-cn") }
+        let usedSets = presetSets.intersection(options.availableRuleSets).sorted()
         if !usedSets.isEmpty {
             route["rule_set"] = .array(usedSets.map {
                 ["type": "local", "tag": .string($0), "format": "binary", "path": .string("\(options.ruleSetsDir)/\($0).srs")]
@@ -266,6 +272,17 @@ public struct ConfigBuilder: Sendable {
     }
 
     private var ipv6Network: Bool { environment.physicalIPv6 && !profile.disableIPv6 }
+
+    /// Китайские домены резолвим напрямую (ближайшие серверы), остальное — через VPN (без подмены).
+    private var cnDNSRuleSet: Bool { finalDNSTag != "dns-direct" && options.availableRuleSets.contains("geosite-cn") }
+
+    private var dnsRules: [JSONValue] {
+        var rules: [JSONValue] = [["domain_suffix": .strings(Self.localDomains), "action": "route", "server": "dns-direct"]]
+        if cnDNSRuleSet {
+            rules.append(["rule_set": ["geosite-cn"], "action": "route", "server": "dns-direct"])
+        }
+        return rules
+    }
 
     /// Правило → выход, с отдельным мгновенным отказом для IPv6, если у выхода его нет.
     private func appendRule(_ rules: inout [JSONValue], matchers: [String: JSONValue], exitID: String) {

@@ -118,6 +118,17 @@ struct ConfigBuilderTests {
         #expect(config["dns"]?["strategy"] == nil)
     }
 
+    @Test func cnDomainsResolveDirectWhenRuleSetAvailable() {
+        var options = Self.options
+        options.availableRuleSets = ["geosite-cn"]
+        let config = ConfigBuilder(profile: Self.sampleProfile(), environment: Self.connected, options: options).build()
+        guard case .array(let dnsRules)? = config["dns"]?["rules"] else { Issue.record("no dns rules"); return }
+        #expect(dnsRules.contains(["rule_set": ["geosite-cn"], "action": "route", "server": "dns-direct"]))
+        #expect(dnsRules.first?["domain_suffix"] == .strings(ConfigBuilder.localDomains))
+        guard case .array(let sets)? = config["route"]?["rule_set"] else { Issue.record("no rule_set"); return }
+        #expect(sets.contains { $0["tag"] == "geosite-cn" })
+    }
+
     @Test func dnsGoesThroughConnectedVPN() {
         let up = ConfigBuilder(profile: Self.sampleProfile(), environment: Self.connected, options: Self.options).build()
         #expect(up["dns"]?["final"] == "dns-exit-zoog")

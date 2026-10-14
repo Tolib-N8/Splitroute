@@ -1,5 +1,6 @@
 import Foundation
 import SplitrouteCore
+import SystemConfiguration
 
 // Root-helper Splitroute.
 //
@@ -137,6 +138,10 @@ func install(user: String, appBundle: String) throws {
         throw HelperError("в бандле нет \(p)")
     }
 
+    // Старое задание launchd держит прежний ProgramArguments — выгружаем, новое поднимет apply.
+    if daemonLoaded() {
+        try run("/bin/launchctl", ["bootout", "system/\(Paths.daemonLabel)"], allowFailure: true)
+    }
     try fm.createDirectory(atPath: Paths.installDir, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o755])
     try fm.createDirectory(atPath: Paths.dataDir, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o755])
     try fm.createDirectory(atPath: (Paths.log as NSString).deletingLastPathComponent, withIntermediateDirectories: true)
@@ -146,7 +151,8 @@ func install(user: String, appBundle: String) throws {
 
     let plist: [String: Any] = [
         "Label": Paths.daemonLabel,
-        "ProgramArguments": [Paths.singBox, "run", "-c", Paths.config, "-D", Paths.dataDir],
+        // helper — обёртка: держит системный DNS ядра, пока жив sing-box.
+        "ProgramArguments": [Paths.helper, "run"],
         "RunAtLoad": true,
         "KeepAlive": true,
         "StandardOutPath": Paths.log,
@@ -190,11 +196,20 @@ func apply() throws {
     try run(Paths.singBox, ["check", "-c", candidate])
     try writeFile(data, to: Paths.config, mode: 0o600)
 
+    // Флаг перехвата DNS читает `run` при старте — если он поменялся, ядро нужно перезапустить.
+    let hijackBefore = fm.fileExists(atPath: Paths.dnsHijackFlag)
+    if profile.hijackSystemDNS {
+        try writeFile(Data(), to: Paths.dnsHijackFlag, mode: 0o644)
+    } else {
+        try? fm.removeItem(atPath: Paths.dnsHijackFlag)
+    }
+    let restartNeeded = hijackBefore != profile.hijackSystemDNS
+
     let credData = try JSONEncoder().encode(credentials)
     try writeFile(credData, to: Paths.apiCredentials, mode: 0o600, owner: user.uid, group: user.gid)
 
     try run("/bin/launchctl", ["enable", "system/\(Paths.daemonLabel)"])
-    if daemonPID() != nil {
+    if daemonPID() != nil && !restartNeeded {
         // Горячая перезагрузка: sing-box перечитывает конфиг по SIGHUP без перезапуска процесса.
         try run("/bin/launchctl", ["kill", "SIGHUP", "system/\(Paths.daemonLabel)"])
     } else if daemonLoaded() {
@@ -204,6 +219,41 @@ func apply() throws {
     }
     let vpn = env.vpnServices.map { "\($0.key)=\($0.value.interface)" }.sorted().joined(separator: ",")
     print("applied physical=\(env.physicalInterface ?? "-") ipv6=\(env.physicalIPv6) vpn=[\(vpn)]")
+}
+
+/// Запуск ядра под launchd. DNS ядра публикуется временным ключом SCDynamicStore: configd удалит его
+/// сам, как только этот процесс завершится (в том числе аварийно), и система вернётся к прежнему DNS.
+func runCore() -> Never {
+    requireRoot()
+    let store = SCDynamicStoreCreate(nil, "com.splitroute.core" as CFString, nil, nil)
+    if fm.fileExists(atPath: Paths.dnsHijackFlag), let store {
+        let dns: [String: Any] = [
+            "ServerAddresses": [ConfigBuilder.tunDNS],
+            "SupplementalMatchDomains": [""],   // все домены; более точные (ts.net) остаются у Tailscale
+            "SearchOrder": 1,                    // выше Tailscale (101600) и VPN-приложений
+        ]
+        if !SCDynamicStoreAddTemporaryValue(store, Paths.dnsStoreKey as CFString, dns as CFDictionary) {
+            FileHandle.standardError.write(Data("splitroute-helper: не удалось опубликовать DNS\n".utf8))
+        }
+    }
+
+    let child = Process()
+    child.executableURL = URL(fileURLWithPath: Paths.singBox)
+    child.arguments = ["run", "-c", Paths.config, "-D", Paths.dataDir]
+    do { try child.run() } catch { fail("не удалось запустить sing-box: \(error)") }
+
+    var sources: [DispatchSourceSignal] = []
+    for sig in [SIGHUP, SIGTERM, SIGINT] {
+        signal(sig, SIG_IGN)
+        let src = DispatchSource.makeSignalSource(signal: sig, queue: .global())
+        src.setEventHandler { kill(child.processIdentifier, sig) }
+        src.resume()
+        sources.append(src)
+    }
+    child.waitUntilExit()
+    _ = sources
+    if let store { SCDynamicStoreRemoveValue(store, Paths.dnsStoreKey as CFString) }
+    exit(child.terminationStatus)
 }
 
 func stop() throws {
@@ -242,6 +292,7 @@ do {
         guard args.count == 3 else { fail("usage: install <user> <app-bundle>") }
         try install(user: args[args.startIndex + 1], appBundle: args[args.startIndex + 2])
     case "apply": try apply()
+    case "run": runCore()
     case "start": try apply()
     case "stop": try stop()
     case "status": status()
