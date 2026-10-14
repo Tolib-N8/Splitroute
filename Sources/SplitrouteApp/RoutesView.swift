@@ -230,8 +230,8 @@ struct FlowDiagram: View {
         let left = labelWidth + 16
         let right = size.width - exitLabelWidth - 16
         ZStack(alignment: .topLeading) {
-            TimelineView(.animation(minimumInterval: 1.0 / 60, paused: paused)) { context in
-                Canvas(rendersAsynchronously: true) { ctx, _ in
+            TimelineView(.animation(paused: paused)) { context in
+                Canvas { ctx, _ in
                     draw(ctx: ctx, layout: layout, x0: left, x1: right, now: context.date.timeIntervalSinceReferenceDate)
                 }
             }
@@ -273,6 +273,7 @@ struct FlowDiagram: View {
         let width = Double(x1 - x0)
         guard width > 0 else { return }
         let (dt, k) = animator.step(now: now)
+        FrameLog.shared.frame(dt)
         let time = now - animator.start
 
         // Вертикальные планки узлов.
@@ -285,7 +286,7 @@ struct FlowDiagram: View {
         }
 
         var alive = Set<String>()
-        for (index, flow) in graph.flows.enumerated() {
+        for flow in graph.flows {
             guard let ends = layout.flowEnds[flow.id] else { continue }
             alive.insert(flow.id)
             // Целевые значения; текущие плавно к ним тянутся.
@@ -307,7 +308,9 @@ struct FlowDiagram: View {
 
             drawRibbon(ctx: ctx, f, color: flow.color, x0: Double(x0), width: width)
 
-            let seed = Double(index) * 17.31
+            // Зерно — от id потока, а не от его номера: порядок потоков меняется вместе с трафиком,
+            // и с номером все частицы потока перескакивали бы в новые места.
+            let seed = Self.seed(flow.id)
             let density = 18 + (f.h0 + f.h1) * 0.9 + 160 * f.activity
             let count = min(Self.maxParticles, Int(density) + 8)
             // Частицы собираются в пути по (оттенок × прозрачность) — десятки вызовов fill вместо сотен.
@@ -360,6 +363,12 @@ struct FlowDiagram: View {
             startPoint: CGPoint(x: x0, y: 0), endPoint: CGPoint(x: x0 + width, y: 0)))
     }
 
+    private static func seed(_ id: String) -> Double {
+        var h: UInt32 = 2_166_136_261
+        for b in id.utf8 { h = (h ^ UInt32(b)) &* 16_777_619 }
+        return Double(h % 10_000) * 0.731
+    }
+
     // Функции из flow.glsl.
     private func ease(_ t: Double) -> Double {
         let t = min(max(t, 0), 1)
@@ -378,5 +387,27 @@ struct FlowDiagram: View {
     private func hash(_ a: Double, _ b: Double) -> Double {
         let x = sin(a * 127.1 + b * 311.7) * 43758.5453
         return x - x.rounded(.down)
+    }
+}
+
+/// Замер ровности кадров: SPLITROUTE_FRAME_LOG=1 — раз в 5 с пишет в stderr интервалы между кадрами.
+final class FrameLog: @unchecked Sendable {
+    static let shared = FrameLog()
+    private let enabled = ProcessInfo.processInfo.environment["SPLITROUTE_FRAME_LOG"] == "1"
+    private var samples: [Double] = []
+    private let lock = NSLock()
+
+    func frame(_ dt: Double) {
+        guard enabled, dt > 0 else { return }
+        lock.lock(); defer { lock.unlock() }
+        samples.append(dt * 1000)
+        guard samples.reduce(0, +) > 5000 else { return }
+        let sorted = samples.sorted()
+        let median = sorted[sorted.count / 2]
+        let hitches = samples.filter { $0 > median * 1.6 }.count
+        let line = String(format: "frames=%d median=%.1fms p99=%.1fms max=%.1fms hitches=%d\n",
+                          samples.count, median, sorted[Int(Double(sorted.count) * 0.99)], sorted.last!, hitches)
+        FileHandle.standardError.write(Data(line.utf8))
+        samples.removeAll()
     }
 }

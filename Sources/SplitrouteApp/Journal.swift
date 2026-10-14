@@ -31,12 +31,14 @@ struct Journal {
         Paths.userProfile.deletingLastPathComponent().appendingPathComponent("journal", isDirectory: true)
     }
 
-    static func dayString(_ d: Date) -> String {
+    private static let dayFormatter: DateFormatter = {
         let f = DateFormatter()
         f.dateFormat = "yyyy-MM-dd"
         f.locale = Locale(identifier: "en_US_POSIX")
-        return f.string(from: d)
-    }
+        return f
+    }()
+
+    static func dayString(_ d: Date) -> String { dayFormatter.string(from: d) }
 
     static func load() -> Journal {
         var j = Journal()

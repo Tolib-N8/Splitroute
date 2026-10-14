@@ -105,7 +105,7 @@ final class AppModel {
         guard !started else { return }
         started = true
         Theme.registerFonts()
-        refreshNetwork()
+        Task { await refreshNetwork() }
         Task.detached(priority: .utility) {
             let apps = AppCatalog.scan()
             await MainActor.run { self.installedApps = apps }
@@ -160,7 +160,7 @@ final class AppModel {
         do {
             try profile.save(to: Paths.userProfile)
             try await HelperClient.call("apply")
-            appliedEnvironment = NetworkState.environment()
+            appliedEnvironment = await Task.detached(priority: .utility) { NetworkState.environment() }.value
             state = .running
             lastError = nil
         } catch {
@@ -185,18 +185,25 @@ final class AppModel {
     private func networkLoop() async {
         while !Task.isCancelled {
             try? await Task.sleep(for: .seconds(3))
-            refreshNetwork()
+            await refreshNetwork()
         }
     }
 
-    private func refreshNetwork() {
-        vpnServices = NetworkState.vpnServices()
-        physicalInterface = NetworkState.physicalInterface()
+    /// Последнее прочитанное окружение (для настроек и сравнения).
+    private(set) var environment = NetworkEnvironment(physicalInterface: nil)
+
+    /// Чтение SystemConfiguration занимает десятки миллисекунд — делаем его в фоне,
+    /// иначе раз в 3 секунды подвисает анимация.
+    private func refreshNetwork() async {
+        let snap = await Task.detached(priority: .utility) { NetworkState.snapshot() }.value
+        if vpnServices != snap.services { vpnServices = snap.services }
+        if physicalInterface != snap.environment.physicalInterface { physicalInterface = snap.environment.physicalInterface }
+        if environment != snap.environment { environment = snap.environment }
         ensureVPNExits()
         ensureSelfRoute()
 
         // Сменился utun у VPN-приложения или Wi‑Fi — пересобираем конфиг.
-        let env = NetworkState.environment()
+        let env = snap.environment
         if state == .running, let applied = appliedEnvironment, applied != env {
             appliedEnvironment = env
             scheduleApply(immediately: true)

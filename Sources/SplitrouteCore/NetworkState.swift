@@ -20,15 +20,19 @@ public struct VPNServiceInfo: Sendable, Equatable, Identifiable, Hashable {
 /// Чтение сетевого состояния из SCDynamicStore / SCPreferences.
 public enum NetworkState {
 
-    public static func environment() -> NetworkEnvironment {
+    public static func environment() -> NetworkEnvironment { snapshot().environment }
+
+    /// Одно чтение: список VPN-сервисов и окружение для конфига. Медленно (десятки мс) — не на главном потоке.
+    public static func snapshot() -> (services: [VPNServiceInfo], environment: NetworkEnvironment) {
+        let services = vpnServices()
         var vpn: [String: NetworkEnvironment.VPNService] = [:]
-        for s in vpnServices() {
+        for s in services {
             if let iface = s.interface {
                 vpn[s.id] = .init(interface: iface, serverAddress: s.serverAddress, ipv6: s.ipv6)
             }
         }
         let physical = physicalService()
-        return NetworkEnvironment(physicalInterface: physical?.interface, physicalIPv6: physical?.ipv6 ?? false, vpnServices: vpn)
+        return (services, NetworkEnvironment(physicalInterface: physical?.interface, physicalIPv6: physical?.ipv6 ?? false, vpnServices: vpn))
     }
 
     /// Все VPN-сервисы из текущего набора сетевых настроек.

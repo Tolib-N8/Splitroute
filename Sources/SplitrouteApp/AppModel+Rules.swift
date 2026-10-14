@@ -182,7 +182,7 @@ extension AppModel {
         return text.split(separator: "\n").first?.split(separator: " ").last.map(String.init) ?? "—"
     }()
 
-    var networkHasIPv6: Bool { NetworkState.environment().physicalIPv6 }
+    var networkHasIPv6: Bool { environment.physicalIPv6 }
 
     /// Сброс правил, маршрутов и своих конфигов. VPN-приложения подхватятся заново, журнал не трогаем.
     func resetProfile() {
