@@ -202,7 +202,7 @@ public enum CIDR {
         return true
     }
 
-    static func bytes(_ s: String) -> [UInt8]? {
+    public static func bytes(_ s: String) -> [UInt8]? {
         if s.contains(":") {
             var a = in6_addr()
             guard inet_pton(AF_INET6, s, &a) == 1 else { return nil }

@@ -59,6 +59,13 @@ final class AppModel {
     private(set) var pingHistory: [String: [Int]] = [:]
     private(set) var lastUpdate: Date?
     var lastError: String?
+    private(set) var journal = Journal.load()
+    /// «В реальном времени»: если выключено, журнал на экране не обновляется (запись продолжается).
+    var journalLive = true
+    private(set) var journalSnapshot: [JournalEntry] = []
+    private(set) var ruleSetStatus: [String: RuleSetStatus] = [:]
+
+    func setRuleSetStatus(_ id: String, _ status: RuleSetStatus?) { ruleSetStatus[id] = status }
 
     private var lastSeenBytes: [String: Int64] = [:]
     private var applyTask: Task<Void, Never>?
@@ -68,7 +75,12 @@ final class AppModel {
 
     init() {
         profile = (try? Profile.load(from: Paths.userProfile)) ?? Profile()
-        enabled = UserDefaults.standard.object(forKey: "enabled") as? Bool ?? true
+        let enableOnLaunch = UserDefaults.standard.object(forKey: "enableOnLaunch") as? Bool ?? true
+        enabled = enableOnLaunch || (UserDefaults.standard.object(forKey: "enabled") as? Bool ?? true)
+    }
+
+    func recheckInstall() async {
+        await bootstrap()
     }
 
     // MARK: Запуск
@@ -90,6 +102,8 @@ final class AppModel {
     }
 
     private func bootstrap() async {
+        journalSnapshot = journal.entries
+        refreshRuleSetStatus()
         if !HelperClient.isInstalled {
             state = .notInstalled
         } else if await HelperClient.needsUpdate() {
@@ -331,15 +345,21 @@ final class AppModel {
     private func statsLoop() async {
         var tick = 0
         while !Task.isCancelled {
-            try? await Task.sleep(for: .seconds(2))
+            try? await Task.sleep(for: .seconds(1))
             guard state == .running, let api else {
                 flowRates = flowRates.mapValues { $0 * 0.5 }.filter { $0.value > 1 }
                 continue
             }
             guard let snapshot = try? await api.connections() else { continue }
-            ingest(snapshot.connections ?? [], interval: 2)
+            let connections = snapshot.connections ?? []
+            ingest(connections, interval: 1)
+            let explainer = RouteExplainer(profile: profile)
+            journal.update(with: connections) { c in
+                (self.appKey(forProcessPath: c.metadata.executablePath), explainer.reason(clashRule: c.rule).title)
+            }
+            if journalLive { journalSnapshot = journal.entries }
             tick += 1
-            if tick % 15 == 0 { stats.prune(); stats.save() }
+            if tick % 30 == 0 { stats.prune(); stats.save() }
         }
     }
 

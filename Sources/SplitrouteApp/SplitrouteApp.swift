@@ -4,6 +4,7 @@ import SwiftUI
 @main
 struct SplitrouteApp: App {
     @State private var model = AppModel()
+    @AppStorage("showMenuBar") private var showMenuBar = true
 
     var body: some Scene {
         Window("Splitroute", id: "main") {
@@ -14,7 +15,7 @@ struct SplitrouteApp: App {
         .windowStyle(.hiddenTitleBar)
         .defaultSize(width: 1440, height: 960)
 
-        MenuBarExtra {
+        MenuBarExtra(isInserted: $showMenuBar) {
             MenuBarContent().environment(model)
         } label: {
             Image(systemName: model.state == .running ? "arrow.triangle.branch" : "arrow.triangle.branch")

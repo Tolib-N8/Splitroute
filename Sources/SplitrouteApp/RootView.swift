@@ -2,14 +2,19 @@ import SplitrouteCore
 import SwiftUI
 
 enum Screen: String, CaseIterable, Identifiable {
-    case routes, apps, servers
+    case routes, apps, servers, rules, journal, settings
     var id: String { rawValue }
+
+    static let main: [Screen] = [.routes, .apps, .servers, .rules, .journal]
 
     var title: String {
         switch self {
         case .routes: return "Маршруты"
         case .apps: return "Приложения"
         case .servers: return "Серверы"
+        case .rules: return "Правила"
+        case .journal: return "Журнал"
+        case .settings: return "Настройки"
         }
     }
 
@@ -18,6 +23,9 @@ enum Screen: String, CaseIterable, Identifiable {
         case .routes: return "point.3.connected.trianglepath.dotted"
         case .apps: return "square.grid.2x2"
         case .servers: return "globe"
+        case .rules: return "line.3.horizontal.decrease"
+        case .journal: return "waveform.path.ecg"
+        case .settings: return "slider.horizontal.3"
         }
     }
 }
@@ -25,6 +33,7 @@ enum Screen: String, CaseIterable, Identifiable {
 struct RootView: View {
     @Environment(AppModel.self) private var model
     @AppStorage("screen") private var screen: Screen = .apps
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         HStack(spacing: 0) {
@@ -45,6 +54,9 @@ struct RootView: View {
                     case .routes: RoutesView()
                     case .apps: AppsView()
                     case .servers: ServersView()
+                    case .rules: RulesView()
+                    case .journal: JournalView()
+                    case .settings: SettingsView()
                     }
                 }
                 .padding(.top, 28)
@@ -58,7 +70,10 @@ struct RootView: View {
         .background(Theme.bg)
         .foregroundStyle(Theme.text)
         .preferredColorScheme(.dark)
-        .onAppear { model.start() }
+        .onAppear {
+            model.start()
+            model.registerHotKeys { openWindow(id: "main"); NSApp.activate() }
+        }
     }
 }
 
@@ -73,23 +88,26 @@ struct Sidebar: View {
                 .overlay(Image(systemName: "arrow.triangle.branch").font(.system(size: 16, weight: .bold)).foregroundStyle(Theme.bg))
                 .padding(.top, 56)
                 .padding(.bottom, 8)
-            ForEach(Screen.allCases) { s in
-                Button { screen = s } label: {
-                    VStack(spacing: 6) {
-                        Image(systemName: s.icon)
-                            .font(.system(size: 16))
-                            .frame(width: 44, height: 34)
-                            .background(screen == s ? Theme.surface2 : .clear, in: RoundedRectangle(cornerRadius: 9))
-                        Text(s.title).font(Theme.font(11, screen == s ? .semibold : .regular))
-                    }
-                    .foregroundStyle(screen == s ? Theme.lime : Theme.text2)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-            }
+            ForEach(Screen.main) { item($0) }
             Spacer()
+            item(.settings).padding(.bottom, 8)
         }
         .frame(width: 92)
+    }
+
+    private func item(_ s: Screen) -> some View {
+        Button { screen = s } label: {
+            VStack(spacing: 6) {
+                Image(systemName: s.icon)
+                    .font(.system(size: 16))
+                    .frame(width: 44, height: 34)
+                    .background(screen == s ? Theme.surface2 : .clear, in: RoundedRectangle(cornerRadius: 9))
+                Text(s.title).font(Theme.font(11, screen == s ? .semibold : .regular))
+            }
+            .foregroundStyle(screen == s ? Theme.lime : Theme.text2)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 }
 

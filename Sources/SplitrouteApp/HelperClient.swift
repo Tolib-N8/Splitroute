@@ -42,6 +42,12 @@ enum HelperClient {
         _ = try await run("/usr/bin/osascript", ["-e", script])
     }
 
+    /// Удаление: через пароль администратора (в sudoers тоже есть, но так надёжнее, если правило сломано).
+    static func uninstall() async throws {
+        let script = "do shell script \(appleScriptQuote(shellQuote(Paths.helper) + " uninstall")) with administrator privileges"
+        _ = try await run("/usr/bin/osascript", ["-e", script])
+    }
+
     @discardableResult
     static func call(_ command: String) async throws -> String {
         try await run("/usr/bin/sudo", ["-n", Paths.helper, command])
