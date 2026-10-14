@@ -46,7 +46,10 @@ public struct ConfigOptions: Sendable, Equatable {
 
 /// Собирает конфиг sing-box из профиля пользователя.
 public struct ConfigBuilder: Sendable {
-    public static let tunAddress = ["172.19.0.1/30", "fdfe:dcba:9876::1/126"]
+    /// Адрес TUN не должен попадать ни в один исключённый диапазон, иначе ответы ядра
+    /// уйдут мимо TUN и ни одно соединение не заработает (так было с 172.19.0.1 внутри 172.16.0.0/12).
+    public static let tunAddress4 = "198.18.0.1/30"
+    public static let tunAddress6 = "fdfe:dcba:9876::1/126"
 
     /// Не забираем в TUN: локальные сети, Tailscale, link-local, мультикаст.
     public static let baseExcludedRoutes = [
@@ -174,7 +177,8 @@ public struct ConfigBuilder: Sendable {
     private func tunInbound() -> JSONValue {
         [
             "type": "tun", "tag": "tun-in",
-            "address": .strings(Self.tunAddress),
+            // IPv6 на TUN — только если он есть в сети: иначе macOS начинает предпочитать IPv6.
+            "address": .strings(environment.physicalIPv6 ? [Self.tunAddress4, Self.tunAddress6] : [Self.tunAddress4]),
             "auto_route": true,
             "strict_route": false,
             "route_exclude_address": .strings(Self.baseExcludedRoutes + vpnServerAddresses),

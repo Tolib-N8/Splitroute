@@ -125,6 +125,26 @@ struct ConfigBuilderTests {
         #expect(down["dns"]?["final"] == "dns-direct")
     }
 
+    @Test func tunAddressIsNotExcluded() {
+        func contains(_ cidr: String, _ ip: String) -> Bool {
+            let parts = cidr.split(separator: "/")
+            guard parts[0].contains("."), !ip.contains(":"), let bits = Int(parts[1]) else { return false }
+            func v4(_ s: Substring) -> UInt32 { s.split(separator: ".").reduce(0) { $0 << 8 | UInt32($1)! } }
+            let mask: UInt32 = bits == 0 ? 0 : ~UInt32(0) << (32 - bits)
+            return v4(parts[0]) & mask == v4(Substring(ip)) & mask
+        }
+        let tunIP = String(ConfigBuilder.tunAddress4.split(separator: "/")[0])
+        for cidr in ConfigBuilder.baseExcludedRoutes {
+            #expect(!contains(cidr, tunIP), "TUN \(tunIP) внутри исключённого \(cidr)")
+        }
+    }
+
+    @Test func noTunIPv6WithoutIPv6Network() {
+        let config = ConfigBuilder(profile: Self.sampleProfile(), environment: Self.connected, options: Self.options).build()
+        guard case .array(let inbounds)? = config["inbounds"] else { return }
+        #expect(inbounds.first?["address"] == [.string(ConfigBuilder.tunAddress4)])
+    }
+
     @Test func processPatternEscapesRegex() {
         #expect(ConfigBuilder.processPattern(forBundlePath: "/Applications/C++ (beta).app/") == #"^/Applications/C\+\+ \(beta\)\.app/"#)
     }
