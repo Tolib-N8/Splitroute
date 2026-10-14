@@ -16,9 +16,12 @@ mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources/Fonts"
 cp "$BIN/Splitroute" "$BIN/splitroute-helper" "$APP/Contents/MacOS/"
 cp Resources/bin/sing-box "$APP/Contents/Resources/sing-box"
 cp Resources/Fonts/*.ttf "$APP/Contents/Resources/Fonts/" 2>/dev/null || true
+mkdir -p "$APP/Contents/Resources/licenses"
+cp Resources/licenses/* "$APP/Contents/Resources/licenses/"
 [ -f Resources/AppIcon.icns ] && cp Resources/AppIcon.icns "$APP/Contents/Resources/"
 
-VERSION=$(git describe --tags --always 2>/dev/null || echo 0.1)
+VERSION=$(cat VERSION)
+BUILD=$(git rev-list --count HEAD 2>/dev/null || echo 1)
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -29,13 +32,14 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>CFBundleIdentifier</key><string>com.splitroute.app</string>
   <key>CFBundleExecutable</key><string>Splitroute</string>
   <key>CFBundlePackageType</key><string>APPL</string>
-  <key>CFBundleShortVersionString</key><string>0.1</string>
-  <key>CFBundleVersion</key><string>$VERSION</string>
+  <key>CFBundleShortVersionString</key><string>$VERSION</string>
+  <key>CFBundleVersion</key><string>$BUILD</string>
   <key>CFBundleIconFile</key><string>AppIcon</string>
   <key>LSMinimumSystemVersion</key><string>15.0</string>
   <key>ATSApplicationFontsPath</key><string>Fonts</string>
   <key>NSHighResolutionCapable</key><true/>
-  <key>NSHumanReadableCopyright</key><string>Splitroute</string>
+  <key>NSHumanReadableCopyright</key><string>© 2026 Splitroute</string>
+  <key>LSApplicationCategoryType</key><string>public.app-category.utilities</string>
 </dict>
 </plist>
 PLIST
@@ -43,4 +47,4 @@ PLIST
 codesign --force --sign - "$APP/Contents/Resources/sing-box"
 codesign --force --sign - "$APP/Contents/MacOS/splitroute-helper"
 codesign --force --sign - "$APP"
-echo "Готово: $APP"
+echo "Готово: $APP ($VERSION, сборка $BUILD)"

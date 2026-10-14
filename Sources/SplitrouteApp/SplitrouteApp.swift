@@ -4,12 +4,14 @@ import SwiftUI
 @main
 struct SplitrouteApp: App {
     @State private var model = AppModel()
+    @State private var updater = Updater()
     @AppStorage("showMenuBar") private var showMenuBar = true
 
     var body: some Scene {
         Window("Splitroute", id: "main") {
             RootView()
                 .environment(model)
+                .environment(updater)
                 .frame(minWidth: 1180, minHeight: 760)
         }
         .windowStyle(.hiddenTitleBar)

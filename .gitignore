@@ -4,3 +4,5 @@ build/
 Resources/bin/
 *.xcodeproj
 .DS_Store
+.build-tools/
+dist/

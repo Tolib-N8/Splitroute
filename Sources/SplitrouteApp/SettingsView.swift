@@ -11,6 +11,8 @@ struct SettingsView: View {
     @State private var dns = ""
     @State private var confirmReset = false
     @State private var confirmUninstall = false
+    @Environment(Updater.self) private var updater
+    @AppStorage("onboardingDone") private var onboardingDone = true
 
     var body: some View {
         @Bindable var model = model
@@ -20,7 +22,7 @@ struct SettingsView: View {
                 summary: "Изменения применяются сразу",
                 footnote: model.ruleSetsUpdated.map { "Базы доменов: " + $0.formatted(date: .abbreviated, time: .shortened) } ?? "Базы доменов не загружены"
             ) {
-                Text("Splitroute · ядро sing-box \(model.singBoxVersion)").font(Theme.font(13)).foregroundStyle(Theme.text2)
+                Text("Splitroute \(Updater.currentVersion) · ядро sing-box \(model.singBoxVersion)").font(Theme.font(13)).foregroundStyle(Theme.text2)
             }
             HStack(alignment: .top, spacing: 20) {
                 ScrollView {
@@ -35,6 +37,24 @@ struct SettingsView: View {
                             }
                             SettingRow("Значок в строке меню", "Переключать маршруты, не открывая окно") {
                                 LimeToggle(isOn: $showMenuBar)
+                            }
+                            SectionTitle("Обновления").padding(.top, 28)
+                            SettingRow("Проверять автоматически", updateStatus) {
+                                LimeToggle(isOn: Binding(get: { updater.autoCheck }, set: { updater.autoCheck = $0 }))
+                            }
+                            SettingRow("Версия \(Updater.currentVersion) (\(Updater.currentBuild))", "Обновления подписаны ключом разработчика и проверяются перед установкой") {
+                                if let a = updater.availableUpdate {
+                                    Button("Установить \(a.version)") { Task { await updater.install(a) } }
+                                        .buttonStyle(.plain).font(Theme.font(12, .semibold)).foregroundStyle(Theme.lime)
+                                } else {
+                                    Button(updater.state == .checking ? "Проверяю…" : "Проверить") { Task { await updater.check(userInitiated: true) } }
+                                        .buttonStyle(.plain).font(Theme.font(12, .semibold)).foregroundStyle(Theme.lime)
+                                        .disabled(updater.state == .checking)
+                                }
+                            }
+                            SettingRow("Приветствие", "Пройти первую настройку ещё раз") {
+                                Button("Показать") { onboardingDone = false }
+                                    .buttonStyle(.plain).font(Theme.font(12, .semibold)).foregroundStyle(Theme.lime)
                             }
                             SectionTitle("Туннель").padding(.top, 28)
                             SettingRow("Маршрут по умолчанию", "Для приложений и доменов без правил") {
@@ -122,6 +142,16 @@ struct SettingsView: View {
         .padding(16)
         .background(Theme.coral.opacity(0.05), in: RoundedRectangle(cornerRadius: 14))
         .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.coral.opacity(0.3)))
+    }
+
+    private var updateStatus: String {
+        switch updater.state {
+        case .upToDate: return "Установлена последняя версия"
+        case .available(let a): return "Доступна версия \(a.version)"
+        case .checking: return "Проверяю…"
+        case .failed(let e): return e
+        default: return updater.lastCheck.map { "Последняя проверка: " + $0.formatted(.relative(presentation: .named)) } ?? "Раз в 6 часов, через GitHub"
+        }
     }
 
     private func menuLabel(_ title: String) -> some View {
