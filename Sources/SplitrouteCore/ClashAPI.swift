@@ -3,7 +3,7 @@ import Foundation
 /// Версия протокола между приложением и root-helper'ом. Повышается, только когда меняется то,
 /// что делает helper (сборка конфига, команды, версия sing-box) — тогда приложение попросит обновить компонент.
 public enum HelperProtocol {
-    public static let version = 3
+    public static let version = 4
 }
 
 /// Пути, общие для приложения и root-helper'а.

@@ -227,12 +227,17 @@ func runCore() -> Never {
     requireRoot()
     let store = SCDynamicStoreCreate(nil, "com.splitroute.core" as CFString, nil, nil)
     if fm.fileExists(atPath: Paths.dnsHijackFlag), let store {
+        // Проверено на живой системе: приоритет задаёт SupplementalMatchOrders (меньше — выше).
+        // SearchOrder для сервиса вне ServiceOrder игнорируется (резолвер получал order 102000,
+        // ниже Tailscale), а вместе с SupplementalMatchOrders ломал приоритет.
         let dns: [String: Any] = [
             "ServerAddresses": [ConfigBuilder.tunDNS],
             "SupplementalMatchDomains": [""],   // все домены; более точные (ts.net) остаются у Tailscale
-            "SearchOrder": 1,                    // выше Tailscale (101600) и VPN-приложений
+            "SupplementalMatchOrders": [1],
         ]
-        if !SCDynamicStoreAddTemporaryValue(store, Paths.dnsStoreKey as CFString, dns as CFDictionary) {
+        if SCDynamicStoreAddTemporaryValue(store, Paths.dnsStoreKey as CFString, dns as CFDictionary) {
+            flushDNSCache()
+        } else {
             FileHandle.standardError.write(Data("splitroute-helper: не удалось опубликовать DNS\n".utf8))
         }
     }
@@ -252,8 +257,14 @@ func runCore() -> Never {
     }
     child.waitUntilExit()
     _ = sources
-    if let store { SCDynamicStoreRemoveValue(store, Paths.dnsStoreKey as CFString) }
+    if let store, SCDynamicStoreRemoveValue(store, Paths.dnsStoreKey as CFString) { flushDNSCache() }
     exit(child.terminationStatus)
+}
+
+/// Сбросить кэш mDNSResponder: иначе приложения ещё долго получают старые (подменённые) ответы.
+func flushDNSCache() {
+    _ = try? run("/usr/bin/dscacheutil", ["-flushcache"], allowFailure: true)
+    _ = try? run("/usr/bin/killall", ["-HUP", "mDNSResponder"], allowFailure: true)
 }
 
 func stop() throws {
