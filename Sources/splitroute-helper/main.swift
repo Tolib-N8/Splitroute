@@ -163,13 +163,16 @@ func apply() throws {
     try writeFile(credData, to: Paths.apiCredentials, mode: 0o600, owner: user.uid, group: user.gid)
 
     try run("/bin/launchctl", ["enable", "system/\(Paths.daemonLabel)"])
-    if daemonLoaded() {
+    if daemonPID() != nil {
+        // Горячая перезагрузка: sing-box перечитывает конфиг по SIGHUP без перезапуска процесса.
+        try run("/bin/launchctl", ["kill", "SIGHUP", "system/\(Paths.daemonLabel)"])
+    } else if daemonLoaded() {
         try run("/bin/launchctl", ["kickstart", "-k", "system/\(Paths.daemonLabel)"])
     } else {
         try run("/bin/launchctl", ["bootstrap", "system", Paths.launchDaemonPlist])
     }
     let vpn = env.vpnServices.map { "\($0.key)=\($0.value.interface)" }.sorted().joined(separator: ",")
-    print("applied physical=\(env.physicalInterface ?? "-") vpn=[\(vpn)]")
+    print("applied physical=\(env.physicalInterface ?? "-") ipv6=\(env.physicalIPv6) vpn=[\(vpn)]")
 }
 
 func stop() throws {
@@ -211,11 +214,16 @@ do {
     case "start": try apply()
     case "stop": try stop()
     case "status": status()
+    case "preview":
+        let profile = try Profile.load(from: Paths.userProfile)
+        let options = ConfigOptions(apiSecret: "preview", cacheFilePath: Paths.cacheFile)
+        let data = try ConfigBuilder(profile: profile, environment: NetworkState.environment(), options: options).build().encoded()
+        print(String(data: data, encoding: .utf8)!)
     case "env":
         let env = NetworkState.environment()
-        print("physical:", env.physicalInterface ?? "-")
+        print("physical:", env.physicalInterface ?? "-", env.physicalIPv6 ? "ipv6" : "ipv4-only")
         for s in NetworkState.vpnServices() {
-            print("vpn:", s.name, s.id, s.providerBundleID ?? "-", s.interface ?? "disconnected", s.serverAddress ?? "-")
+            print("vpn:", s.name, s.id, s.providerBundleID ?? "-", s.interface ?? "disconnected", s.serverAddress ?? "-", s.ipv6 ? "ipv6" : "ipv4-only")
         }
     case "uninstall": try uninstall()
     default: fail("usage: splitroute-helper install|apply|start|stop|status|uninstall")

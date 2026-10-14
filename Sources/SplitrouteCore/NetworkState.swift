@@ -10,6 +10,7 @@ public struct VPNServiceInfo: Sendable, Equatable, Identifiable, Hashable {
     /// utun, если сервис подключён.
     public var interface: String?
     public var serverAddress: String?
+    public var ipv6: Bool = false
 
     public var isConnected: Bool { interface != nil }
     /// Tailscale — это mesh-сеть, а не выход в интернет; в списке выходов его не показываем.
@@ -23,10 +24,11 @@ public enum NetworkState {
         var vpn: [String: NetworkEnvironment.VPNService] = [:]
         for s in vpnServices() {
             if let iface = s.interface {
-                vpn[s.id] = .init(interface: iface, serverAddress: s.serverAddress)
+                vpn[s.id] = .init(interface: iface, serverAddress: s.serverAddress, ipv6: s.ipv6)
             }
         }
-        return NetworkEnvironment(physicalInterface: physicalInterface(), vpnServices: vpn)
+        let physical = physicalService()
+        return NetworkEnvironment(physicalInterface: physical?.interface, physicalIPv6: physical?.ipv6 ?? false, vpnServices: vpn)
     }
 
     /// Все VPN-сервисы из текущего набора сетевых настроек.
@@ -49,14 +51,17 @@ public enum NetworkState {
                 name: name,
                 providerBundleID: providerBundleID(service: service, interface: iface),
                 interface: state?["InterfaceName"] as? String,
-                serverAddress: state?["ServerAddress"] as? String
+                serverAddress: state?["ServerAddress"] as? String,
+                ipv6: hasGlobalIPv6(store: store, serviceID: id)
             )
         }
         .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }
 
     /// Первый физический интерфейс с маршрутизатором по порядку сервисов (en0 и т. п.).
-    public static func physicalInterface() -> String? {
+    public static func physicalInterface() -> String? { physicalService()?.interface }
+
+    static func physicalService() -> (interface: String, ipv6: Bool)? {
         guard let store = SCDynamicStoreCreate(nil, "Splitroute" as CFString, nil, nil) else { return nil }
         let setup = SCDynamicStoreCopyValue(store, "Setup:/Network/Global/IPv4" as CFString) as? [String: Any]
         var order = (setup?["ServiceOrder"] as? [String]) ?? []
@@ -74,9 +79,23 @@ public enum NetworkState {
                   isPhysical(name),
                   state["Router"] != nil
             else { continue }
-            return name
+            return (name, hasGlobalIPv6(store: store, serviceID: id))
         }
         return nil
+    }
+
+    /// Есть ли у сервиса глобальный IPv6-адрес (2000::/3). Link-local и ULA (fc00::/7) не считаются.
+    static func hasGlobalIPv6(store: SCDynamicStore?, serviceID: String) -> Bool {
+        guard let store,
+              let state = SCDynamicStoreCopyValue(store, "State:/Network/Service/\(serviceID)/IPv6" as CFString) as? [String: Any],
+              let addresses = state["Addresses"] as? [String]
+        else { return false }
+        return addresses.contains(where: isGlobalIPv6)
+    }
+
+    static func isGlobalIPv6(_ address: String) -> Bool {
+        guard let first = address.split(separator: ":").first, let hextet = UInt16(first, radix: 16) else { return false }
+        return (0x2000...0x3FFF).contains(hextet)
     }
 
     static func isPhysical(_ name: String) -> Bool {

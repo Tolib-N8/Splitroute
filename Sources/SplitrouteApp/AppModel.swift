@@ -118,7 +118,7 @@ final class AppModel {
         guard HelperClient.isInstalled, state != .needsUpdate else { return }
         applyTask?.cancel()
         applyTask = Task {
-            if !immediately { try? await Task.sleep(for: .milliseconds(400)) }
+            if !immediately { try? await Task.sleep(for: .seconds(1)) }
             guard !Task.isCancelled else { return }
             await applyNow()
         }
@@ -165,12 +165,7 @@ final class AppModel {
         ensureVPNExits()
 
         // Сменился utun у VPN-приложения или Wi‑Fi — пересобираем конфиг.
-        let env = NetworkEnvironment(
-            physicalInterface: physicalInterface,
-            vpnServices: Dictionary(uniqueKeysWithValues: vpnServices.compactMap { s in
-                s.interface.map { (s.id, NetworkEnvironment.VPNService(interface: $0, serverAddress: s.serverAddress)) }
-            })
-        )
+        let env = NetworkState.environment()
         if state == .running, let applied = appliedEnvironment, applied != env {
             appliedEnvironment = env
             scheduleApply(immediately: true)

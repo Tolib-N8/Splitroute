@@ -36,9 +36,10 @@ struct ConfigBuilderTests {
         return r
     }
 
+    /// Основное правило приложения (без отдельного правила для IPv6).
     func rule(matching pattern: String, in config: JSONValue) -> JSONValue? {
         rules(config).first { r in
-            guard case .array(let p)? = r["process_path_regex"] else { return false }
+            guard case .array(let p)? = r["process_path_regex"], r["ip_version"] == nil else { return false }
             return p.contains(.string(pattern))
         }
     }
@@ -88,6 +89,40 @@ struct ConfigBuilderTests {
     @Test func blockAsDefaultAddsCatchAllReject() {
         let config = ConfigBuilder(profile: Self.sampleProfile(defaultExit: Exit.blockID), environment: Self.connected, options: Self.options).build()
         #expect(rules(config).last == ["inbound": ["tun-in"], "action": "reject"])
+    }
+
+    @Test func rejectsIPv6WhenExitHasNone() {
+        let config = ConfigBuilder(profile: Self.sampleProfile(), environment: Self.connected, options: Self.options).build()
+        let whatsapp = #"^/Applications/WhatsApp\.app/"#
+        let v6 = rules(config).first { r in
+            guard case .array(let p)? = r["process_path_regex"] else { return false }
+            return p.contains(.string(whatsapp)) && r["ip_version"] == 6
+        }
+        #expect(v6?["action"] == "reject")
+        // Своему прокси IPv6 не запрещаем.
+        #expect(!rules(config).contains { r in
+            guard case .array(let p)? = r["process_path_regex"] else { return false }
+            return p.contains(.string(#"^/Applications/Google Chrome\.app/"#)) && r["ip_version"] == 6
+        })
+        // По умолчанию (напрямую) без IPv6 — общее правило отказа и DNS только IPv4.
+        #expect(rules(config).contains(["inbound": ["tun-in"], "ip_version": 6, "action": "reject"]))
+        #expect(config["dns"]?["strategy"] == "ipv4_only")
+    }
+
+    @Test func keepsIPv6WhenNetworkHasIt() {
+        var env = Self.connected
+        env.physicalIPv6 = true
+        env.vpnServices[Self.zoogID]?.ipv6 = true
+        let config = ConfigBuilder(profile: Self.sampleProfile(), environment: env, options: Self.options).build()
+        #expect(!rules(config).contains { $0["ip_version"] != nil })
+        #expect(config["dns"]?["strategy"] == nil)
+    }
+
+    @Test func dnsGoesThroughConnectedVPN() {
+        let up = ConfigBuilder(profile: Self.sampleProfile(), environment: Self.connected, options: Self.options).build()
+        #expect(up["dns"]?["final"] == "dns-exit-zoog")
+        let down = ConfigBuilder(profile: Self.sampleProfile(), environment: Self.disconnected, options: Self.options).build()
+        #expect(down["dns"]?["final"] == "dns-direct")
     }
 
     @Test func processPatternEscapesRegex() {

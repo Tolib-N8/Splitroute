@@ -6,20 +6,26 @@ public struct NetworkEnvironment: Sendable, Equatable {
         public var interface: String
         /// Адрес VPN-сервера; исключаем его из TUN, иначе трафик самого VPN-приложения может уйти в петлю.
         public var serverAddress: String?
+        /// Есть ли у туннеля глобальный IPv6 (ULA вроде fd00::/8 не считается).
+        public var ipv6: Bool
 
-        public init(interface: String, serverAddress: String? = nil) {
+        public init(interface: String, serverAddress: String? = nil, ipv6: Bool = false) {
             self.interface = interface
             self.serverAddress = serverAddress
+            self.ipv6 = ipv6
         }
     }
 
     /// Wi‑Fi / Ethernet, через который идёт «Напрямую». `nil`, если сети нет.
     public var physicalInterface: String?
+    /// Есть ли у физической сети глобальный IPv6.
+    public var physicalIPv6: Bool
     /// Подключённые VPN-сервисы по ID сервиса.
     public var vpnServices: [String: VPNService]
 
-    public init(physicalInterface: String?, vpnServices: [String: VPNService] = [:]) {
+    public init(physicalInterface: String?, physicalIPv6: Bool = false, vpnServices: [String: VPNService] = [:]) {
         self.physicalInterface = physicalInterface
+        self.physicalIPv6 = physicalIPv6
         self.vpnServices = vpnServices
     }
 }
@@ -47,12 +53,6 @@ public struct ConfigBuilder: Sendable {
         "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "169.254.0.0/16",
         "100.64.0.0/10", "224.0.0.0/4", "255.255.255.255/32",
         "fe80::/10", "fd7a:115c:a1e0::/48", "ff00::/8",
-    ]
-
-    /// Домены, которым нельзя отдавать FakeIP.
-    public static let realIPDomains = [
-        "local", "lan", "localhost", "home.arpa", "in-addr.arpa", "ip6.arpa",
-        "captive.apple.com", "time.apple.com", "msftconnecttest.com", "ts.net",
     ]
 
     public enum Target: Equatable {
@@ -85,15 +85,32 @@ public struct ConfigBuilder: Sendable {
         }
     }
 
+    /// Работает ли IPv6 через выход. Если нет — IPv6-соединения отклоняются сразу,
+    /// и приложения мгновенно переходят на IPv4, а не ждут таймаута.
+    public func supportsIPv6(exitID id: String) -> Bool {
+        guard let exit = profile.exit(id: id) else { return environment.physicalIPv6 }
+        switch exit.kind {
+        case .direct: return environment.physicalIPv6
+        case .block: return true
+        case .proxy: return true
+        case .vpnApp(let serviceID): return environment.vpnServices[serviceID]?.ipv6 ?? false
+        }
+    }
+
+    /// DNS-сервер по умолчанию: через первый подключённый VPN-выход (чистые ответы), иначе напрямую.
+    private var finalDNSTag: String {
+        for exit in profile.exits {
+            if case .vpnApp(let id) = exit.kind, environment.vpnServices[id] != nil { return "dns-\(exit.tag)" }
+        }
+        return "dns-direct"
+    }
+
     // MARK: - Сборка
 
     public func build() -> JSONValue {
         var outbounds: [JSONValue] = [directOutbound()]
         var endpoints: [JSONValue] = []
-        var dnsServers: [JSONValue] = [
-            ["type": "fakeip", "tag": "fakeip", "inet4_range": "198.18.0.0/15", "inet6_range": "fc00::/18"],
-            directDNSServer(),
-        ]
+        var dnsServers: [JSONValue] = [directDNSServer()]
 
         for exit in profile.exits {
             switch exit.kind {
@@ -119,14 +136,11 @@ public struct ConfigBuilder: Sendable {
 
         var config: [String: JSONValue] = [
             "log": ["level": .string(options.logLevel), "timestamp": true],
-            "dns": [
-                "servers": .array(dnsServers),
-                "rules": [
-                    ["domain_suffix": .strings(Self.realIPDomains), "action": "route", "server": "dns-direct"],
-                    ["query_type": ["A", "AAAA"], "action": "route", "server": "fakeip"],
-                ],
-                "final": "dns-direct",
-            ],
+            "dns": .compact([
+                ("servers", .array(dnsServers)),
+                ("final", .string(finalDNSTag)),
+                ("strategy", environment.physicalIPv6 ? nil : "ipv4_only"),
+            ]),
             "inbounds": [tunInbound()],
             "outbounds": .array(outbounds),
             "route": route(),
@@ -186,8 +200,13 @@ public struct ConfigBuilder: Sendable {
         for exitID in order {
             let match: JSONValue = .strings(patterns[exitID] ?? [])
             switch target(forExitID: exitID) {
-            case .outbound(let tag): rules.append(["process_path_regex": match, "outbound": .string(tag)])
-            case .reject: rules.append(["process_path_regex": match, "action": "reject"])
+            case .outbound(let tag):
+                if !supportsIPv6(exitID: tag == "direct" ? Exit.directID : exitID) {
+                    rules.append(["process_path_regex": match, "ip_version": 6, "action": "reject"])
+                }
+                rules.append(["process_path_regex": match, "outbound": .string(tag)])
+            case .reject:
+                rules.append(["process_path_regex": match, "action": "reject"])
             }
         }
 
@@ -202,6 +221,9 @@ public struct ConfigBuilder: Sendable {
         }
         switch target(forExitID: profile.defaultExitID) {
         case .outbound(let tag):
+            if !supportsIPv6(exitID: tag == "direct" ? Exit.directID : profile.defaultExitID) {
+                rules.append(["inbound": ["tun-in"], "ip_version": 6, "action": "reject"])
+            }
             route["final"] = .string(tag)
         case .reject:
             rules.append(["inbound": ["tun-in"], "action": "reject"])
@@ -216,7 +238,7 @@ public struct ConfigBuilder: Sendable {
             "clash_api": ["external_controller": .string(options.apiListen), "secret": .string(options.apiSecret)],
         ]
         if let path = options.cacheFilePath {
-            e["cache_file"] = ["enabled": true, "path": .string(path), "store_fakeip": true]
+            e["cache_file"] = ["enabled": true, "path": .string(path)]
         }
         return .object(e)
     }
