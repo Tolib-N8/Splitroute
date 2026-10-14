@@ -1,5 +1,11 @@
 import Foundation
 
+/// Версия протокола между приложением и root-helper'ом. Повышается, только когда меняется то,
+/// что делает helper (сборка конфига, команды, версия sing-box) — тогда приложение попросит обновить компонент.
+public enum HelperProtocol {
+    public static let version = 1
+}
+
 /// Пути, общие для приложения и root-helper'а.
 public enum Paths {
     public static let daemonLabel = "com.splitroute.core"
@@ -47,6 +53,13 @@ public struct Connection: Decodable, Sendable, Identifiable, Equatable {
         public var destinationPort: String?
         public var host: String?
         public var processPath: String?
+
+        /// Путь без суффикса пользователя: Clash API отдаёт `"/path/to/bin (user)"`.
+        public var executablePath: String? {
+            guard var p = processPath, p.hasSuffix(")"), let open = p.range(of: " (", options: .backwards) else { return processPath }
+            p.removeSubrange(open.lowerBound...)
+            return p
+        }
     }
 
     public var id: String

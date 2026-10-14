@@ -97,7 +97,7 @@ struct AppRow: View {
     @State private var hover = false
 
     private var exit: Exit { model.exit(for: entry) }
-    private var routable: Bool { entry.bundleID != nil }
+    private var routable: Bool { entry.key != AppKey.system }
 
     var body: some View {
         HStack(spacing: 16) {
@@ -303,7 +303,18 @@ struct AddAppSheet: View {
             }
             SearchField(placeholder: "Найти приложение", text: $query)
             ScrollView {
-                LazyVStack(spacing: 0) {
+                LazyVStack(alignment: .leading, spacing: 0) {
+                    Text("Программы из терминала").font(Theme.font(11, .medium)).foregroundStyle(Theme.text2).padding(.top, 4)
+                    if let claude = AppCatalog.claudeCodeFolder, model.profile.routes.allSatisfy({ $0.path != claude }) {
+                        pickRow(key: claude, name: "Claude Code", detail: "~/.local/share/claude/versions/ — правило переживёт обновления") { kind in
+                            add(path: claude, kind)
+                        }
+                    }
+                    Button("Выбрать программу или папку…") { pickProgram() }
+                        .buttonStyle(.plain).font(Theme.font(12, .semibold)).foregroundStyle(Theme.lime)
+                        .padding(.vertical, 10)
+                    Divider().overlay(Theme.line)
+                    Text("Приложения").font(Theme.font(11, .medium)).foregroundStyle(Theme.text2).padding(.top, 12)
                     ForEach(apps) { app in
                         HStack(spacing: 12) {
                             AppIcon(key: app.path, size: 28)
@@ -333,13 +344,53 @@ struct AddAppSheet: View {
         .foregroundStyle(Theme.text)
     }
 
-    private func add(_ app: InstalledApp, _ kind: RouteKind) {
-        let id: String
+    private func exitID(_ kind: RouteKind) -> String {
         switch kind {
-        case .tunnel: id = model.preferredTunnel?.id ?? Exit.directID
-        case .direct: id = Exit.directID
-        case .block: id = Exit.blockID
+        case .tunnel: return model.preferredTunnel?.id ?? Exit.directID
+        case .direct: return Exit.directID
+        case .block: return Exit.blockID
         }
-        model.profile.setRoute(AppRoute(bundleID: app.bundleID, name: app.name, path: app.path, exitID: id))
+    }
+
+    private func add(_ app: InstalledApp, _ kind: RouteKind) {
+        model.profile.setRoute(AppRoute(bundleID: app.bundleID, name: app.name, path: app.path, exitID: exitID(kind)))
+    }
+
+    private func add(path: String, _ kind: RouteKind) {
+        model.setRoute(appPath: path, exitID: exitID(kind))
+    }
+
+    private func pickProgram() {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = true
+        panel.allowsMultipleSelection = false
+        panel.treatsFilePackagesAsDirectories = false
+        panel.message = "Программа, .app или папка. Для программы правило ставится на её папку."
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        var isDir: ObjCBool = false
+        FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir)
+        let path = isDir.boolValue && !url.path.hasSuffix(".app") ? url.path + "/" : url.path
+        add(path: path, .tunnel)
+    }
+
+    private func pickRow(key: String, name: String, detail: String, onPick: @escaping (RouteKind) -> Void) -> some View {
+        HStack(spacing: 12) {
+            AppIcon(key: key, size: 28)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(name).font(Theme.font(13, .medium))
+                Text(detail).font(Theme.font(11)).foregroundStyle(Theme.text3).lineLimit(1)
+            }
+            Spacer()
+            ForEach(RouteKind.allCases, id: \.self) { kind in
+                Button(kind.rawValue) { onPick(kind) }
+                    .buttonStyle(.plain)
+                    .font(Theme.font(12, .semibold))
+                    .padding(.horizontal, 10).frame(height: 26)
+                    .overlay(Capsule().stroke(Theme.line))
+                    .disabled(kind == .tunnel && model.tunnelExits.isEmpty)
+            }
+        }
+        .padding(.vertical, 8)
     }
 }

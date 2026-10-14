@@ -92,7 +92,7 @@ final class AppModel {
     private func bootstrap() async {
         if !HelperClient.isInstalled {
             state = .notInstalled
-        } else if HelperClient.needsUpdate {
+        } else if await HelperClient.needsUpdate() {
             state = .needsUpdate
         } else if enabled {
             await applyNow()
@@ -257,9 +257,22 @@ final class AppModel {
 
     // MARK: Приложения
 
+    /// `appPath` — бандл .app, папка или путь к программе (для неё правило ставится на папку).
     func setRoute(appPath: String, exitID: String) {
-        guard let app = AppCatalog.app(at: appPath) else { return }
-        profile.setRoute(AppRoute(bundleID: app.bundleID, name: app.name, path: app.path, exitID: exitID))
+        if let app = AppCatalog.app(at: appPath) {
+            profile.setRoute(AppRoute(bundleID: app.bundleID, name: app.name, path: app.path, exitID: exitID))
+            return
+        }
+        let target = AppCatalog.routeTarget(forProcessPath: appPath)
+        profile.setRoute(AppRoute(bundleID: "path:" + target.path, name: target.name, path: target.path, exitID: exitID))
+    }
+
+    /// Ключ статистики для процесса: папка из правила, если процесс в ней, иначе бандл или бинарник.
+    func appKey(forProcessPath path: String?) -> String {
+        if let path {
+            for r in profile.routes where r.path.hasSuffix("/") && path.hasPrefix(r.path) { return r.path }
+        }
+        return AppKey.from(processPath: path)
     }
 
     func removeRoute(_ route: AppRoute) {
@@ -269,7 +282,8 @@ final class AppModel {
     /// Настроенные приложения + замеченные в трафике за сутки.
     var appEntries: [AppEntry] {
         var result: [AppEntry] = profile.routes.map {
-            AppEntry(key: $0.path, bundleID: $0.bundleID, name: $0.name, detail: $0.bundleID, route: $0)
+            AppEntry(key: $0.path, bundleID: $0.bundleID, name: $0.name,
+                     detail: $0.bundleID.hasPrefix("path:") ? $0.path : $0.bundleID, route: $0)
         }
         let configured = Set(result.map(\.key))
         let seen = Set(stats.keys(prefix: "app:").map { String($0.dropFirst(4)) }).union(activeApps.keys)
@@ -288,7 +302,8 @@ final class AppModel {
         if let app = AppCatalog.app(at: key) {
             return AppEntry(key: key, bundleID: app.bundleID, name: app.name, detail: app.bundleID, route: profile.route(for: app.bundleID))
         }
-        return AppEntry(key: key, name: (key as NSString).lastPathComponent, detail: key, route: nil)
+        let target = AppCatalog.routeTarget(forProcessPath: key)
+        return AppEntry(key: key, bundleID: "path:" + target.path, name: target.name, detail: key, route: nil)
     }
 
     func exit(for entry: AppEntry) -> Exit {
@@ -300,6 +315,8 @@ final class AppModel {
         let image: NSImage
         if key == AppKey.system {
             image = NSImage(systemSymbolName: "cpu", accessibilityDescription: nil) ?? NSImage()
+        } else if key.contains("/.local/share/claude/"), FileManager.default.fileExists(atPath: "/Applications/Claude.app") {
+            image = NSWorkspace.shared.icon(forFile: "/Applications/Claude.app")
         } else {
             image = NSWorkspace.shared.icon(forFile: key)
         }
@@ -334,7 +351,7 @@ final class AppModel {
             let total = c.upload + c.download
             let delta = total - (lastSeenBytes[c.id] ?? 0)
             seen[c.id] = total
-            let key = AppKey.from(processPath: c.metadata.processPath)
+            let key = appKey(forProcessPath: c.metadata.executablePath)
             activeApps[key] = now
             let tag = c.outboundTag ?? "direct"
             let flow = "flow:\(key)|\(tag)"

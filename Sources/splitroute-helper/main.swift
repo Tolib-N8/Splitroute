@@ -188,7 +188,7 @@ func stop() throws {
 func status() {
     let installed = fm.isExecutableFile(atPath: Paths.singBox) && fm.fileExists(atPath: Paths.launchDaemonPlist)
     let pid = daemonPID()
-    let json: [String: Any] = ["installed": installed, "running": pid != nil, "pid": pid ?? 0]
+    let json: [String: Any] = ["installed": installed, "running": pid != nil, "pid": pid ?? 0, "protocol": HelperProtocol.version]
     let data = try! JSONSerialization.data(withJSONObject: json, options: [.sortedKeys])
     print(String(data: data, encoding: .utf8)!)
 }

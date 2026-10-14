@@ -12,6 +12,8 @@ enum HelperClient {
         var installed: Bool
         var running: Bool
         var pid: Int
+        /// Старые helper'ы поле не отдают — это протокол 1.
+        var `protocol`: Int?
     }
 
     static var isInstalled: Bool {
@@ -23,16 +25,11 @@ enum HelperClient {
     static var bundledHelper: String { Bundle.main.bundlePath + "/Contents/MacOS/splitroute-helper" }
     static var runningFromBundle: Bool { FileManager.default.isExecutableFile(atPath: bundledHelper) }
 
-    /// Установленный helper/sing-box отличаются от тех, что лежат в бандле (приложение обновили).
-    static var needsUpdate: Bool {
+    /// Установленный helper старше, чем нужно этой версии приложения.
+    static func needsUpdate() async -> Bool {
         guard runningFromBundle, isInstalled else { return false }
-        let pairs = [
-            (bundledHelper, Paths.helper),
-            (Bundle.main.bundlePath + "/Contents/Resources/sing-box", Paths.singBox),
-        ]
-        return pairs.contains { a, b in
-            FileManager.default.contents(atPath: a) != FileManager.default.contents(atPath: b)
-        }
+        guard let status = await status() else { return true }
+        return (status.protocol ?? 1) < HelperProtocol.version
     }
 
     /// Установка: один запрос пароля администратора.

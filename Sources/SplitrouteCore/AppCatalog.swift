@@ -41,6 +41,28 @@ public enum AppCatalog {
         return InstalledApp(bundleID: id, name: name, path: path)
     }
 
+    /// Папка Claude Code: бинарник лежит в `versions/<номер>` и меняется при каждом обновлении.
+    public static var claudeCodeFolder: String? {
+        let path = NSHomeDirectory() + "/.local/share/claude/versions/"
+        return FileManager.default.fileExists(atPath: path) ? path : nil
+    }
+
+    /// Что поставить в правило для процесса: бандл .app или папку (с «/» на конце),
+    /// чтобы правило пережило обновление программы.
+    public static func routeTarget(forProcessPath path: String) -> (path: String, name: String) {
+        if let bundle = bundlePath(forProcessPath: path) ?? (path.hasSuffix(".app") ? path : nil) {
+            return (bundle, app(at: bundle)?.name ?? ((bundle as NSString).lastPathComponent as NSString).deletingPathExtension)
+        }
+        if path.hasSuffix("/") {
+            return (path, (path as NSString).lastPathComponent)
+        }
+        if path.contains("/.local/share/claude/versions/") {
+            let folder = String(path[..<path.range(of: "/versions/")!.upperBound])
+            return (folder, "Claude Code")
+        }
+        return ((path as NSString).deletingLastPathComponent + "/", (path as NSString).lastPathComponent)
+    }
+
     /// Бандл, которому принадлежит путь процесса, например `/Applications/WhatsApp.app/Contents/MacOS/WhatsApp` → `/Applications/WhatsApp.app`.
     public static func bundlePath(forProcessPath path: String) -> String? {
         guard let r = path.range(of: ".app/") else { return nil }

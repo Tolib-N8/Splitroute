@@ -29,8 +29,8 @@ write_profile() { # $1 = serviceID для выхода VPN
 {"version":1,"defaultExitID":"direct","killSwitch":true,"tunnelDNS":"1.1.1.1",
  "exits":[{"id":"e2e-vpn","name":"$VPN_NAME","kind":{"vpnApp":{"serviceID":"$1"}}}],
  "routes":[
-  {"bundleID":"e2e.vpn","name":"curl-vpn","path":"/private/tmp/sr-vpn","exitID":"e2e-vpn"},
-  {"bundleID":"e2e.direct","name":"curl-direct","path":"/private/tmp/sr-direct","exitID":"direct"}]}
+  {"bundleID":"e2e.vpn","name":"curl-vpn","path":"/private/tmp/sr-vpn/","exitID":"e2e-vpn"},
+  {"bundleID":"e2e.direct","name":"curl-direct","path":"/private/tmp/sr-direct/","exitID":"direct"}]}
 JSON
 }
 

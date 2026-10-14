@@ -119,6 +119,16 @@ struct LinkParserTests {
         #expect(throws: ParseError.self) { try LinkParser.parseLink("vmess://abc") }
     }
 
+    @Test func routeTargetForPrograms() {
+        let claude = AppCatalog.routeTarget(forProcessPath: "/Users/u/.local/share/claude/versions/2.1.300")
+        #expect(claude.path == "/Users/u/.local/share/claude/versions/" && claude.name == "Claude Code")
+        let cli = AppCatalog.routeTarget(forProcessPath: "/opt/tools/bin/mytool")
+        #expect(cli.path == "/opt/tools/bin/" && cli.name == "mytool")
+        #expect(AppCatalog.routeTarget(forProcessPath: "/Applications/X.app/Contents/MacOS/X").path == "/Applications/X.app")
+        // Правило на папку — префикс, оно совпадает с любой версией внутри.
+        #expect(ConfigBuilder.processPattern(forBundlePath: claude.path) == #"^/Users/u/\.local/share/claude/versions/"#)
+    }
+
     @Test func bundlePathFromProcessPath() {
         #expect(AppCatalog.bundlePath(forProcessPath: "/Applications/WhatsApp.app/Contents/Frameworks/Helper.app/Contents/MacOS/Helper") == "/Applications/WhatsApp.app")
         #expect(AppCatalog.bundlePath(forProcessPath: "/usr/bin/curl") == nil)
