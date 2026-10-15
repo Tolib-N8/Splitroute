@@ -125,7 +125,7 @@ final class AppModel {
         started = true
         Theme.registerFonts()
         Notifier.shared.start()
-        Licensing.shared.start()
+        Support.shared.start()
         Task { await refreshNetwork() }
         Task.detached(priority: .utility) {
             let apps = AppCatalog.scan()
@@ -177,10 +177,6 @@ final class AppModel {
 
     private func applyNow() async {
         guard enabled else { return }
-        guard Licensing.shared.status.allowsRouting else {      // пробный период закончился
-            await stopCore()
-            return
-        }
         state = .applying
         do {
             try profile.save(to: Paths.userProfile)
@@ -210,7 +206,6 @@ final class AppModel {
     private func networkLoop() async {
         while !Task.isCancelled {
             try? await Task.sleep(for: .seconds(3))
-            if state == .running, !Licensing.shared.status.allowsRouting { await stopCore() }
             await refreshNetwork()
         }
     }

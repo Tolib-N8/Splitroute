@@ -62,14 +62,12 @@ To remove the system component: **Settings → Remove system component…** or
 
 ## Building
 
-The source is open for review and auditing (see [License](#license)).
-
 ```sh
 sh scripts/bundle.sh           # build/Splitroute.app (downloads and verifies sing-box)
 swift test                     # model, config generator (+ sing-box check), rules, fallback, scenarios
 sh scripts/strings.sh          # lists interface strings missing an English translation
 sh scripts/e2e.sh "AIRLINK VPN"   # live check after installing the component
-sh scripts/licensing.sh        # sales settings in the published feed (PUBLISH=1 to update from licensing.json)
+sh scripts/support.sh          # donation links from support.json → README, FUNDING.yml, app (PUBLISH=1)
 ```
 
 ## Limitations
@@ -79,10 +77,11 @@ sh scripts/licensing.sh        # sales settings in the published feed (PUBLISH=1
 - Connecting and changing servers is done in the VPN app itself.
 - Rejected and very short connections may not appear in the journal.
 
+<!-- support:start -->
+<!-- support:end -->
+
 ## License
 
-Splitroute is **source-available, not open source**. You may read, review and build the code to audit it.
-Using Splitroute requires a one-time license; versions up to 1.4.0, and any version while licenses are not on sale,
-may be used free of charge. See [LICENSE](LICENSE).
+Splitroute is free and open source under the [MIT License](LICENSE).
 
 Third-party components keep their own licenses — see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

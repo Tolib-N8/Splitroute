@@ -36,7 +36,7 @@ print(json.dumps({
     "version": version, "build": int(build), "url": url, "size": int(size), "sha256": sha, "signature": sig,
     "notes": open(notes, encoding="utf-8").read().split("\n## Установка")[0].strip(),
     "minimumSystemVersion": "15.0", "date": datetime.date.today().isoformat(),
-    "licensing": json.load(open("licensing.json")),
+    "support": json.load(open("support.json")),
 }, ensure_ascii=False, indent=2))
 PY
 echo "Собрано: $DMG ($(du -h "$DMG" | cut -f1)), sha256 $SHA"

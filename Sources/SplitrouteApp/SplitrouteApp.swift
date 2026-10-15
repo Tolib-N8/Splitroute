@@ -3,8 +3,6 @@ import SwiftUI
 
 @main
 struct SplitrouteApp: App {
-    /// Раньше AppModel: «пользовался до продаж» проверяется до того, как модель что-нибудь запишет.
-    @State private var licensing = Licensing.shared
     @State private var model = AppModel()
     @State private var updater = Updater()
     @AppStorage("showMenuBar") private var showMenuBar = true
@@ -13,7 +11,6 @@ struct SplitrouteApp: App {
         Window("Splitroute", id: "main") {
             RootView()
                 .environment(model)
-                .environment(licensing)
                 .environment(updater)
                 .frame(minWidth: 1180, minHeight: 760)
         }
@@ -76,6 +73,14 @@ struct MenuBarContent: View {
             }
         }
         Divider()
+        let support = Support.shared.links.all
+        if !support.isEmpty {
+            Menu(L("Поддержать Splitroute")) {
+                ForEach(support, id: \.url) { link in
+                    Button(link.title) { Support.shared.open(link.url) }
+                }
+            }
+        }
         Button(L("Открыть Splitroute")) {
             openWindow(id: "main")
             NSApp.activate()

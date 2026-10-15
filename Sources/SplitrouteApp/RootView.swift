@@ -71,7 +71,7 @@ struct RootView: View {
                     ErrorBanner(message: error).padding(.top, 16).padding(.trailing, 32)
                 }
                 UpdateBanner().padding(.trailing, 32)
-                LicenseBanner().padding(.trailing, 32)
+                SupportBanner().padding(.trailing, 32)
                 Group {
                     switch screen {
                     case .routes: RoutesView()
@@ -178,7 +178,7 @@ struct TopBar: View {
                 .font(Theme.font(12)).foregroundStyle(Theme.text2)
                 .padding(.trailing, 6)
             LimeToggle(isOn: $model.enabled)
-                .disabled(model.state == .notInstalled || !Licensing.shared.status.allowsRouting)
+                .disabled(model.state == .notInstalled)
         }
         .padding(.horizontal, 16)
         .frame(height: 48)
