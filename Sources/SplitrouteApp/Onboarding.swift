@@ -276,7 +276,7 @@ struct OnboardingView: View {
                 SettingRow("Китайские сервисы — всегда напрямую", "Банки, WeChat, Alipay, Baidu и другие — даже из браузера через VPN") {
                     LimeToggle(isOn: $cnDirect)
                 }
-                SettingRow("Kill switch", "Если VPN отключился — блокировать его приложения") {
+                SettingRow("Kill switch", "Если VPN отключился и другого нет — блокировать его приложения") {
                     LimeToggle(isOn: $model.profile.killSwitch)
                 }
             }

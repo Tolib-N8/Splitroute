@@ -65,7 +65,7 @@ struct SettingsView: View {
                                 }
                                 .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden).fixedSize()
                             }
-                            SettingRow("Kill switch", "Если VPN-приложение отключилось — блокировать его приложения, а не пускать напрямую") {
+                            SettingRow("Kill switch", "Если VPN-приложение отключилось и резервного VPN нет — блокировать его приложения, а не пускать напрямую. Резерв выбирается в «Серверах»") {
                                 LimeToggle(isOn: $model.profile.killSwitch)
                             }
                         }

@@ -87,7 +87,7 @@ struct FlowGraph {
         // Куда приложение может уйти по правилам доменов/IP/портов и наборам — помимо своего маршрута.
         let profile = model.profile
         let ruleTags = Set((profile.rules.filter(\.enabled).map(\.exitID) + profile.presets.filter(\.enabled).map(\.exitID))
-            .compactMap { profile.exit(id: $0)?.tag })
+            .compactMap { profile.exit(id: $0) }.map { model.resolution(for: $0).tag })
 
         var exitWeights: [String: Double] = [:]
         var exitApps: [String: Int] = [:]
@@ -95,10 +95,10 @@ struct FlowGraph {
             // Граф показывает текущую настройку: маршрут приложения и выходы правил. Статистика за 24 ч
             // только распределяет толщину лент — иначе после смены выхода приложение ещё сутки
             // «вело» бы в старый.
+            // Отключённый VPN: лента ведёт туда, куда трафик идёт на самом деле (резерв или блок).
             let exit = model.exit(for: entry)
-            let ownTag = exit.tag
-            var allowed = ruleTags.union([ownTag])
-            if exit.kind != .block, !model.isAvailable(exit) { allowed.insert("block") }   // kill switch
+            let ownTag = model.resolution(for: exit).tag
+            let allowed = ruleTags.union([ownTag])
             // keys(prefix:) — Set с произвольным порядком; сортируем, чтобы порядок не менялся между пересчётами.
             var appFlows: [(String, Double)] = stats.keys(prefix: "flow:\(entry.key)|").sorted()
                 .map { (String($0.split(separator: "|").last ?? ""), Double(stats.total($0))) }

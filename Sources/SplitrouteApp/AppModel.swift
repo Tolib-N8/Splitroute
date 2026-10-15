@@ -278,7 +278,7 @@ final class AppModel {
         case .vpnApp:
             guard let s = vpnService(for: exit) else { return "VPN-приложение · не найдено" }
             if let iface = s.interface { return "VPN-приложение · \(iface)" }
-            return profile.killSwitch ? "Отключён · трафик блокируется" : "Отключён · идёт напрямую"
+            return "Отключён · " + fallbackNote(for: exit)
         case .proxy(let p): return "\(p.protocolName) · \(p.server)"
         }
     }
@@ -302,6 +302,32 @@ final class AppModel {
         var p = profile
         p.removeExit(id: exit.id)
         profile = p
+    }
+
+    // MARK: Резерв
+
+    /// Куда сейчас фактически идёт трафик выхода (резерв, kill switch).
+    func resolution(for exit: Exit) -> ExitResolution {
+        profile.resolve(exitID: exit.id, in: environment)
+    }
+
+    /// Работает резерв вместо отключённого VPN — выход, через который идёт трафик.
+    func activeFallback(for exit: Exit) -> Exit? {
+        if case .exit(let e, let from?) = resolution(for: exit), from.id == exit.id, e.isTunnel { return e }
+        return nil
+    }
+
+    /// «идёт через AIRLINK VPN» / «трафик блокируется» / «идёт напрямую».
+    func fallbackNote(for exit: Exit) -> String {
+        switch resolution(for: exit) {
+        case .reject: return "трафик блокируется"
+        case .exit(let e, _): return e.kind == .direct ? "идёт напрямую" : "идёт через \(e.name)"
+        }
+    }
+
+    func setFallback(_ fallbackID: String?, for exit: Exit) {
+        guard let i = profile.exits.firstIndex(where: { $0.id == exit.id }) else { return }
+        profile.exits[i].fallbackID = fallbackID
     }
 
     func renameExit(_ exit: Exit, to name: String) {

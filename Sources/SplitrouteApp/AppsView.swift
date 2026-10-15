@@ -217,13 +217,17 @@ struct ExitCell: View {
                     Button {
                         onSelect(e)
                     } label: {
-                        Text(e.name + (model.isAvailable(e) ? "" : " — отключён"))
+                        Text(e.name + (model.isAvailable(e) ? "" : " — отключён, " + model.fallbackNote(for: e)))
                     }
                 }
             } label: {
+                let fallback = model.isAvailable(exit) ? nil : model.activeFallback(for: exit)
                 HStack(spacing: 8) {
-                    StatusDot(color: model.isAvailable(exit) ? model.color(for: exit) : Theme.coral)
+                    StatusDot(color: model.isAvailable(exit) ? model.color(for: exit) : fallback != nil ? Theme.amber : Theme.coral)
                     Text(exit.name).font(Theme.font(12, .medium)).foregroundStyle(Theme.text).lineLimit(1)
+                    if let fallback {
+                        Text("→ " + fallback.name).font(Theme.font(11)).foregroundStyle(Theme.amber).lineLimit(1)
+                    }
                     Image(systemName: "chevron.up.chevron.down").font(.system(size: 9)).foregroundStyle(Theme.text2)
                 }
                 .padding(.horizontal, 10)

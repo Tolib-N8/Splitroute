@@ -405,8 +405,10 @@ struct RouteTesterPanel: View {
             }
             Text(explanation(d)).font(Theme.font(12)).foregroundStyle(Theme.text2).fixedSize(horizontal: false, vertical: true)
             if !available {
-                Text(model.profile.killSwitch ? "Сейчас этот VPN отключён — запрос будет заблокирован (kill switch)." : "Сейчас этот VPN отключён — запрос пойдёт напрямую.")
-                    .font(Theme.font(11)).foregroundStyle(Theme.coral)
+                let fallback = model.activeFallback(for: exit)
+                Text("Сейчас этот VPN отключён — " + (fallback.map { "запрос пойдёт через резерв \($0.name)." }
+                    ?? (model.profile.killSwitch ? "запрос будет заблокирован (kill switch)." : "запрос пойдёт напрямую.")))
+                    .font(Theme.font(11)).foregroundStyle(fallback != nil ? Theme.amber : Theme.coral)
             }
         }
         .padding(16)

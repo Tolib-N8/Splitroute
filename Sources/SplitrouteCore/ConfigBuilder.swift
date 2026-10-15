@@ -87,17 +87,17 @@ public struct ConfigBuilder: Sendable {
 
     // MARK: - Разрешение выходов
 
-    /// Куда фактически отправится трафик выхода с учётом состояния сети и kill switch.
+    /// Куда фактически отправится трафик выхода с учётом состояния сети, резерва и kill switch.
     public func target(forExitID id: String) -> Target {
-        guard let exit = profile.exit(id: id) else { return target(forExitID: Exit.directID) }
-        switch exit.kind {
-        case .direct: return .outbound("direct")
-        case .block: return .reject
-        case .proxy: return .outbound(exit.tag)
-        case .vpnApp(let serviceID):
-            if environment.vpnServices[serviceID] != nil { return .outbound(exit.tag) }
-            return profile.killSwitch ? .reject : .outbound("direct")
+        switch profile.resolve(exitID: id, in: environment) {
+        case .reject: return .reject
+        case .exit(let e, _): return .outbound(e.tag)
         }
+    }
+
+    /// Выход, которому принадлежит тег (после резерва это может быть не исходный выход).
+    private func exitID(forTag tag: String) -> String {
+        profile.allExits.first { $0.tag == tag }?.id ?? Exit.directID
     }
 
     /// Работает ли IPv6 через выход. Если нет — IPv6-соединения отклоняются сразу,
@@ -251,7 +251,7 @@ public struct ConfigBuilder: Sendable {
         }
         switch target(forExitID: profile.defaultExitID) {
         case .outbound(let tag):
-            if !supportsIPv6(exitID: tag == "direct" ? Exit.directID : profile.defaultExitID) {
+            if !supportsIPv6(exitID: exitID(forTag: tag)) {
                 rules.append(["inbound": ["tun-in"], "ip_version": 6, "action": "reject"])
             }
             route["final"] = .string(tag)
@@ -288,7 +288,7 @@ public struct ConfigBuilder: Sendable {
     private func appendRule(_ rules: inout [JSONValue], matchers: [String: JSONValue], exitID: String) {
         switch target(forExitID: exitID) {
         case .outbound(let tag):
-            if !supportsIPv6(exitID: tag == "direct" ? Exit.directID : exitID) {
+            if !supportsIPv6(exitID: self.exitID(forTag: tag)) {
                 var v6 = matchers
                 v6["ip_version"] = 6
                 v6["action"] = "reject"

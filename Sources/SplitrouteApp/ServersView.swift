@@ -259,15 +259,18 @@ struct ExitDetailPanel: View {
                     }
                 }
 
-                Divider().overlay(Theme.line)
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Kill switch").font(Theme.font(13, .semibold))
-                        Text("Если VPN-приложение отключилось, блокировать его приложения, а не пускать напрямую")
-                            .font(Theme.font(11)).foregroundStyle(Theme.text2)
+                if case .vpnApp = exit.kind {
+                    Divider().overlay(Theme.line)
+                    fallbackSection
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Kill switch").font(Theme.font(13, .semibold))
+                            Text("Если резерва нет — блокировать приложения, а не пускать напрямую")
+                                .font(Theme.font(11)).foregroundStyle(Theme.text2)
+                        }
+                        Spacer()
+                        LimeToggle(isOn: $model.profile.killSwitch)
                     }
-                    Spacer()
-                    LimeToggle(isOn: $model.profile.killSwitch)
                 }
                 Spacer(minLength: 0)
                 if case .vpnApp = exit.kind {
@@ -281,6 +284,56 @@ struct ExitDetailPanel: View {
             }
             .padding(22)
             .frame(maxHeight: .infinity, alignment: .top)
+        }
+    }
+
+    private var fallbackTitle: String {
+        switch exit.fallbackID {
+        case nil: return "Любой доступный VPN"
+        case Exit.noFallbackID: return "Без резерва"
+        case let id?: return model.profile.exit(id: id)?.name ?? "Любой доступный VPN"
+        }
+    }
+
+    /// Куда идут приложения выхода, пока VPN отключён.
+    private var fallbackSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Резерв").font(Theme.font(13, .semibold))
+                    Text("Если \(exit.name) отключён, его приложения и правила пойдут сюда")
+                        .font(Theme.font(11)).foregroundStyle(Theme.text2)
+                }
+                Spacer()
+                Menu {
+                    Button("Любой доступный VPN") { model.setFallback(nil, for: exit) }
+                    let others = model.tunnelExits.filter { $0.id != exit.id }
+                    if !others.isEmpty {
+                        Divider()
+                        ForEach(others) { e in
+                            Button(e.name + (model.isAvailable(e) ? "" : " — отключён")) { model.setFallback(e.id, for: exit) }
+                        }
+                    }
+                    Divider()
+                    Button("Без резерва") { model.setFallback(Exit.noFallbackID, for: exit) }
+                } label: {
+                    HStack(spacing: 6) {
+                        Text(fallbackTitle).font(Theme.font(12, .medium)).lineLimit(1)
+                        Image(systemName: "chevron.up.chevron.down").font(.system(size: 9)).foregroundStyle(Theme.text2)
+                    }
+                    .padding(.horizontal, 10)
+                    .frame(height: 30)
+                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Theme.line))
+                }
+                .menuStyle(.button).buttonStyle(.plain)
+                .menuIndicator(.hidden)
+                .fixedSize()
+            }
+            if !model.isAvailable(exit) {
+                let fallback = model.activeFallback(for: exit)
+                Text("Сейчас: отключён, " + model.fallbackNote(for: exit))
+                    .font(Theme.font(11, .medium)).foregroundStyle(fallback != nil ? Theme.amber : Theme.coral)
+            }
         }
     }
 

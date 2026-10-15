@@ -15,15 +15,21 @@ public struct Exit: Codable, Sendable, Equatable, Identifiable, Hashable {
 
     public static let directID = "direct"
     public static let blockID = "block"
+    /// `fallbackID` «без резерва»: сразу kill switch (или напрямую, если он выключен).
+    public static let noFallbackID = "none"
 
     public var id: String
     public var name: String
     public var kind: Kind
+    /// Куда идти, если VPN-приложение отключено: nil — любой подключённый VPN, `noFallbackID` — никуда,
+    /// иначе ID выхода. Поле необязательное — старые профили читаются как «любой подключённый».
+    public var fallbackID: String?
 
-    public init(id: String = UUID().uuidString.lowercased(), name: String, kind: Kind) {
+    public init(id: String = UUID().uuidString.lowercased(), name: String, kind: Kind, fallbackID: String? = nil) {
         self.id = id
         self.name = name
         self.kind = kind
+        self.fallbackID = fallbackID
     }
 
     public static let direct = Exit(id: directID, name: "Напрямую", kind: .direct)
