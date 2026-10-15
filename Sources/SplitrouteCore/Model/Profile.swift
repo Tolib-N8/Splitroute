@@ -24,12 +24,16 @@ public struct Exit: Codable, Sendable, Equatable, Identifiable, Hashable {
     /// Куда идти, если VPN-приложение отключено: nil — любой подключённый VPN, `noFallbackID` — никуда,
     /// иначе ID выхода. Поле необязательное — старые профили читаются как «любой подключённый».
     public var fallbackID: String?
+    /// Для VPN-приложения: подключать его самому, если оно отключено, а через него идут приложения.
+    /// Только для интерфейса — ядро и helper это поле не читают.
+    public var autoConnect: Bool?
 
-    public init(id: String = UUID().uuidString.lowercased(), name: String, kind: Kind, fallbackID: String? = nil) {
+    public init(id: String = UUID().uuidString.lowercased(), name: String, kind: Kind, fallbackID: String? = nil, autoConnect: Bool? = nil) {
         self.id = id
         self.name = name
         self.kind = kind
         self.fallbackID = fallbackID
+        self.autoConnect = autoConnect
     }
 
     public static let direct = Exit(id: directID, name: "Напрямую", kind: .direct)

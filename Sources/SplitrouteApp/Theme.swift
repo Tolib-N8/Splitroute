@@ -68,11 +68,14 @@ enum Format {
     }
 
     static func apps(_ n: Int) -> String {
+        "\(n) \(plural(n, "приложение", "приложения", "приложений"))"
+    }
+
+    /// 1 соединение, 2 соединения, 5 соединений.
+    static func plural(_ n: Int, _ one: String, _ few: String, _ many: String) -> String {
         let mod10 = n % 10, mod100 = n % 100
-        let word: String
-        if mod10 == 1 && mod100 != 11 { word = "приложение" }
-        else if (2...4).contains(mod10) && !(12...14).contains(mod100) { word = "приложения" }
-        else { word = "приложений" }
-        return "\(n) \(word)"
+        if mod10 == 1 && mod100 != 11 { return one }
+        if (2...4).contains(mod10) && !(12...14).contains(mod100) { return few }
+        return many
     }
 }

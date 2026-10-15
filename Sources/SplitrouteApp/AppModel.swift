@@ -67,6 +67,14 @@ final class AppModel {
 
     func setRuleSetStatus(_ id: String, _ status: RuleSetStatus?) { ruleSetStatus[id] = status }
 
+    /// «Не открывается напрямую — пустить через VPN?» (см. AppModel+Suggestions).
+    var suggestions: [BlockAdvisor.Suggestion] = []
+    var dismissedSuggestions = Set(UserDefaults.standard.stringArray(forKey: "dismissedSuggestions") ?? []) {
+        didSet { UserDefaults.standard.set(Array(dismissedSuggestions).sorted(), forKey: "dismissedSuggestions") }
+    }
+    /// Автоподключение VPN-приложений: когда пробовали в последний раз и сколько раз подряд не вышло.
+    @ObservationIgnored var autoConnectAttempts: [String: (last: Date, failures: Int)] = [:]
+
     private var lastSeenBytes: [String: Int64] = [:]
     private var applyTask: Task<Void, Never>?
     private var appliedEnvironment: NetworkEnvironment?
@@ -201,6 +209,7 @@ final class AppModel {
         if environment != snap.environment { environment = snap.environment }
         ensureVPNExits()
         ensureSelfRoute()
+        autoConnectVPNs()
 
         // Сменился utun у VPN-приложения или Wi‑Fi — пересобираем конфиг.
         let env = snap.environment
@@ -429,6 +438,7 @@ final class AppModel {
             }
             if journalLive { journalSnapshot = journal.entries }
             tick += 1
+            if tick % 10 == 0 { refreshSuggestions() }
             if tick % 30 == 0 { stats.prune(); stats.save() }
         }
     }

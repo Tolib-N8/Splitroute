@@ -13,6 +13,8 @@ struct JournalEntry: Codable, Identifiable, Hashable {
     var reason: String
     var bytes: Int64
     var rejected: Bool = false
+    /// Получено байт; nil — записи старых версий. Ноль у завершённого соединения — признак блокировки.
+    var download: Int64?
 
     var duration: TimeInterval { (end ?? Date()).timeIntervalSince(start) }
 }
@@ -66,6 +68,7 @@ struct Journal {
             let bytes = c.upload + c.download
             if let i = live[c.id], i < entries.count, entries[i].id == c.id {
                 entries[i].bytes = bytes
+                entries[i].download = c.download
                 continue
             }
             let r = resolve(c)
@@ -73,7 +76,7 @@ struct Journal {
                 ?? [c.metadata.destinationIP, c.metadata.destinationPort].compactMap { $0 }.joined(separator: ":")
             entries.insert(JournalEntry(
                 id: c.id, start: now, appKey: r.appKey, host: host, network: c.metadata.network ?? "tcp",
-                exitTag: c.outboundTag ?? "direct", reason: r.reason, bytes: bytes
+                exitTag: c.outboundTag ?? "direct", reason: r.reason, bytes: bytes, download: c.download
             ), at: 0)
             todayCount += 1
             reindex()

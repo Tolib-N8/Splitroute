@@ -113,6 +113,17 @@ public enum NetworkState {
         return !virtual.contains { name.hasPrefix($0) }
     }
 
+    /// Попросить систему подключить VPN-сервис — как кнопка «Подключить» в Системных настройках.
+    /// Не ждёт результата. Пропускает, если сервис уже подключается или подключён.
+    @discardableResult
+    public static func startVPN(serviceID: String) -> Bool {
+        guard let conn = SCNetworkConnectionCreateWithServiceID(nil, serviceID as CFString, nil, nil) else { return false }
+        switch SCNetworkConnectionGetStatus(conn) {
+        case .connected, .connecting: return true
+        default: return SCNetworkConnectionStart(conn, nil, false)
+        }
+    }
+
     /// Расширенный статус подключённого VPN (как в `scutil --nc status`), иначе nil.
     private static func connectedStatus(serviceID: String) -> [String: Any]? {
         guard let conn = SCNetworkConnectionCreateWithServiceID(nil, serviceID as CFString, nil, nil),

@@ -261,6 +261,15 @@ struct ExitDetailPanel: View {
 
                 if case .vpnApp = exit.kind {
                     Divider().overlay(Theme.line)
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Подключать автоматически").font(Theme.font(13, .semibold))
+                            Text("Если \(exit.name) отключён, а через него идут приложения, Splitroute сам его включит. Не вышло — повторит позже, всё реже")
+                                .font(Theme.font(11)).foregroundStyle(Theme.text2)
+                        }
+                        Spacer()
+                        LimeToggle(isOn: Binding(get: { exit.autoConnect == true }, set: { model.setAutoConnect($0, for: exit) }))
+                    }
                     fallbackSection
                     HStack(alignment: .top) {
                         VStack(alignment: .leading, spacing: 4) {

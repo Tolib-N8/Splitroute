@@ -46,6 +46,10 @@ struct AppsView: View {
             }
             .padding(.top, 28)
 
+            if !model.suggestions.isEmpty, filter == nil, query.isEmpty {
+                SuggestionsCard().padding(.top, 18)
+            }
+
             AppsTableHeader().padding(.top, 22)
             ScrollView {
                 LazyVStack(spacing: 0) {
@@ -397,4 +401,66 @@ struct AddAppSheet: View {
         }
         .padding(.vertical, 8)
     }
+}
+
+/// «Не открывается напрямую» — найдено по журналу; одна кнопка пускает через VPN.
+struct SuggestionsCard: View {
+    @Environment(AppModel.self) private var model
+    @State private var expanded = false
+
+    var body: some View {
+        let items = expanded ? model.suggestions : Array(model.suggestions.prefix(3))
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Image(systemName: "wand.and.stars").foregroundStyle(Theme.amber)
+                Text("Не открывается напрямую").font(Theme.font(13, .semibold))
+                Text("соединения обрываются, не получив ни байта — похоже на блокировку")
+                    .font(Theme.font(12)).foregroundStyle(Theme.text2).lineLimit(1)
+                Spacer()
+                if model.suggestions.count > 3 {
+                    Button(expanded ? "Свернуть" : "Ещё \(model.suggestions.count - 3)") { expanded.toggle() }
+                        .buttonStyle(.plain).font(Theme.font(12)).foregroundStyle(Theme.text2)
+                }
+            }
+            ForEach(items) { s in row(s) }
+        }
+        .padding(14)
+        .background(Theme.amber.opacity(0.05), in: RoundedRectangle(cornerRadius: 12))
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Theme.amber.opacity(0.3)))
+    }
+
+    private func row(_ s: BlockAdvisor.Suggestion) -> some View {
+        HStack(spacing: 12) {
+            Group {
+                if case .app(let key) = s.target {
+                    Image(nsImage: model.icon(forKey: key)).resizable().frame(width: 24, height: 24)
+                } else {
+                    Image(systemName: "globe").font(.system(size: 15)).foregroundStyle(Theme.text2).frame(width: 24, height: 24)
+                }
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(model.title(for: s)).font(Theme.font(13, .medium)).lineLimit(1)
+                Text(model.detail(for: s)).font(Theme.font(11)).foregroundStyle(Theme.text2).lineLimit(1)
+            }
+            Spacer()
+            if let exit = model.suggestionExit {
+                Button {
+                    model.apply(s, via: exit)
+                } label: {
+                    Text(s.target.isApp ? "Пустить через \(exit.name)" : "Правило → \(exit.name)")
+                        .font(Theme.font(12, .semibold)).foregroundStyle(Theme.bg)
+                        .padding(.horizontal, 12).frame(height: 28)
+                        .background(Theme.lime, in: Capsule())
+                }
+                .buttonStyle(.plain)
+                .help(s.target.isApp ? "Маршрут приложения → \(exit.name)" : "Новое правило: домен \(model.title(for: s)) → \(exit.name)")
+            }
+            Button { model.dismiss(s) } label: { Image(systemName: "xmark").font(.system(size: 11)) }
+                .buttonStyle(.plain).foregroundStyle(Theme.text2).help("Больше не предлагать")
+        }
+    }
+}
+
+extension BlockAdvisor.Target {
+    var isApp: Bool { if case .app = self { return true } else { return false } }
 }
