@@ -67,6 +67,7 @@ sh scripts/bundle.sh           # build/Splitroute.app (скачивает и п�
 swift test                     # модель, генератор конфига (+ sing-box check), правила, резерв, сценарии
 sh scripts/strings.sh          # строки интерфейса без английского перевода
 sh scripts/e2e.sh "AIRLINK VPN"   # проверка на живой системе (после установки компонента)
+sh scripts/licensing.sh        # настройки продаж в опубликованном фиде (PUBLISH=1 — залить licensing.json)
 ```
 
 ## Ограничения

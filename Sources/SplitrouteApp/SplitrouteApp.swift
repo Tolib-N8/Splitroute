@@ -3,6 +3,8 @@ import SwiftUI
 
 @main
 struct SplitrouteApp: App {
+    /// Раньше AppModel: «пользовался до продаж» проверяется до того, как модель что-нибудь запишет.
+    @State private var licensing = Licensing.shared
     @State private var model = AppModel()
     @State private var updater = Updater()
     @AppStorage("showMenuBar") private var showMenuBar = true
@@ -11,6 +13,7 @@ struct SplitrouteApp: App {
         Window("Splitroute", id: "main") {
             RootView()
                 .environment(model)
+                .environment(licensing)
                 .environment(updater)
                 .frame(minWidth: 1180, minHeight: 760)
         }

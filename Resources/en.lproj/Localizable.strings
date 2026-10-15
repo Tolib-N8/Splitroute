@@ -383,6 +383,37 @@
 "Перезапустить" = "Relaunch";
 "Как в системе" = "System default";
 
+"Сейчас Splitroute бесплатный" = "Splitroute is free right now";
+"Вы пользовались Splitroute до начала продаж — бесплатно навсегда. Спасибо!" = "You used Splitroute before sales started — free forever. Thank you!";
+"Ключ %@" = "Key %@";
+"Пробный период: %lld %@" = "Trial: %lld %@ left";
+"Пробный период закончился" = "The trial has ended";
+"Бесплатно" = "Free";
+"Ранний пользователь" = "Early adopter";
+"Куплено" = "Purchased";
+"Пробный период" = "Trial";
+"Нужна лицензия" = "License required";
+"Лицензия" = "License";
+"Отвязать этот Mac" = "Unlink this Mac";
+"Освободить ключ, чтобы активировать его на другом Mac" = "Free up the key to activate it on another Mac";
+"Ввести ключ" = "Enter key";
+"Потом маршрутизация выключится, пока не будет ключа" = "After that, routing turns off until a key is entered";
+"Пробный период закончился — маршрутизация выключена" = "The trial has ended — routing is off";
+"Splitroute покупается один раз — для всех ваших Mac и будущих версий" = "Splitroute is a one-time purchase — for all your Macs and future versions";
+"Купить за %@" = "Buy for %@";
+"Купить" = "Buy";
+"Ключ лицензии" = "License key";
+"Ключ приходит на почту после покупки. Он работает на всех ваших Mac." = "The key arrives by email after purchase. It works on all your Macs.";
+"Отмена" = "Cancel";
+"Активировать" = "Activate";
+"Сервер лицензий ответил непонятно" = "The license server sent an unexpected response";
+"Этот ключ не от Splitroute" = "This key is not for Splitroute";
+"Ключ не активирован" = "The key was not activated";
+"Не удалось отвязать ключ" = "Couldn't unlink the key";
+"Ключ не найден — проверьте, что он скопирован целиком" = "Key not found — check that you copied all of it";
+"Ключ уже активирован на максимуме Mac — отвяжите его на одном из них" = "The key is active on the maximum number of Macs — unlink it on one of them";
+"Ключ отключён — возможно, покупка была возвращена" = "The key is disabled — the purchase may have been refunded";
+
 /* Plural forms passed to Format.plural at runtime */
 "приложение" = "app";
 "приложения" = "apps";
@@ -390,3 +421,6 @@
 "неудачное соединение" = "failed connection";
 "неудачных соединения" = "failed connections";
 "неудачных соединений" = "failed connections";
+"день" = "day";
+"дня" = "days";
+"дней" = "days";

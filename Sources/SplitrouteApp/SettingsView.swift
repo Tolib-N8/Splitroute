@@ -105,6 +105,7 @@ struct SettingsView: View {
                                     .buttonStyle(.plain).font(Theme.font(12, .semibold)).foregroundStyle(Theme.lime)
                             }
                             ScenariosSection().padding(.top, 28)
+                            LicenseSection().padding(.top, 28)
                         }
                         .frame(maxWidth: .infinity)
                     }
