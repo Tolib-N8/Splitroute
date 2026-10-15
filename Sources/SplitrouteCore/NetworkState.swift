@@ -23,7 +23,8 @@ public enum NetworkState {
     public static func environment() -> NetworkEnvironment { snapshot().environment }
 
     /// Одно чтение: список VPN-сервисов и окружение для конфига. Медленно (десятки мс) — не на главном потоке.
-    public static func snapshot() -> (services: [VPNServiceInfo], environment: NetworkEnvironment) {
+    /// `signature` — отпечаток текущей сети (роутер и его MAC), по нему включаются сценарии.
+    public static func snapshot() -> (services: [VPNServiceInfo], environment: NetworkEnvironment, signature: String?) {
         let services = vpnServices()
         var vpn: [String: NetworkEnvironment.VPNService] = [:]
         for s in services {
@@ -32,7 +33,14 @@ public enum NetworkState {
             }
         }
         let physical = physicalService()
-        return (services, NetworkEnvironment(physicalInterface: physical?.interface, physicalIPv6: physical?.ipv6 ?? false, vpnServices: vpn))
+        return (services, NetworkEnvironment(physicalInterface: physical?.interface, physicalIPv6: physical?.ipv6 ?? false, vpnServices: vpn),
+                physical?.signature)
+    }
+
+    /// `IPv4.Router=192.168.18.1;IPv4.RouterHardwareAddress=e4:f3:…` → «роутер 192.168.18.1».
+    public static func describe(signature: String) -> String {
+        let router = signature.split(separator: ";").first { $0.hasPrefix("IPv4.Router=") }.map { $0.dropFirst("IPv4.Router=".count) }
+        return router.map { "роутер \($0)" } ?? "сеть"
     }
 
     /// Все VPN-сервисы из текущего набора сетевых настроек.
@@ -71,7 +79,7 @@ public enum NetworkState {
     /// Первый физический интерфейс с маршрутизатором по порядку сервисов (en0 и т. п.).
     public static func physicalInterface() -> String? { physicalService()?.interface }
 
-    static func physicalService() -> (interface: String, ipv6: Bool)? {
+    static func physicalService() -> (interface: String, ipv6: Bool, signature: String?)? {
         guard let store = SCDynamicStoreCreate(nil, "Splitroute" as CFString, nil, nil) else { return nil }
         let setup = SCDynamicStoreCopyValue(store, "Setup:/Network/Global/IPv4" as CFString) as? [String: Any]
         var order = (setup?["ServiceOrder"] as? [String]) ?? []
@@ -89,7 +97,7 @@ public enum NetworkState {
                   isPhysical(name),
                   state["Router"] != nil
             else { continue }
-            return (name, hasGlobalIPv6(store: store, serviceID: id))
+            return (name, hasGlobalIPv6(store: store, serviceID: id), state["NetworkSignature"] as? String)
         }
         return nil
     }

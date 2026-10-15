@@ -170,6 +170,7 @@ struct TopBar: View {
             Text(statusTitle).font(Theme.font(13, .semibold))
             Text("· " + statusDetail).font(Theme.font(13)).foregroundStyle(Theme.text2).lineLimit(1)
             Spacer()
+            ScenarioMenu()
             Label(Format.speed(model.speed.down), systemImage: "arrow.down")
                 .font(Theme.font(12)).foregroundStyle(Theme.text2)
             Label(Format.speed(model.speed.up), systemImage: "arrow.up")
@@ -274,5 +275,35 @@ struct UpdateBanner: View {
         .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12))
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(Theme.lime.opacity(0.3)))
         .padding(.top, 14)
+    }
+}
+
+/// Переключатель сценариев в верхней панели (виден, когда сценарии есть).
+struct ScenarioMenu: View {
+    @Environment(AppModel.self) private var model
+    @AppStorage("screen") private var screen: Screen = .apps
+
+    var body: some View {
+        if let active = model.activeScenario {
+            Menu {
+                ForEach(model.scenarios) { s in
+                    Button { model.activateScenario(s.id) } label: {
+                        if s.id == active.id { Label(s.name, systemImage: "checkmark") } else { Text(s.name) }
+                    }
+                }
+                Divider()
+                Button("Настроить сценарии…") { screen = .settings }
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "square.stack.3d.up").font(.system(size: 11))
+                    Text(active.name).font(Theme.font(12, .semibold)).lineLimit(1)
+                    Image(systemName: "chevron.down").font(.system(size: 8, weight: .bold)).foregroundStyle(Theme.text2)
+                }
+                .padding(.horizontal, 10).frame(height: 28)
+                .background(Theme.surface2, in: Capsule())
+            }
+            .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden).fixedSize()
+            .padding(.trailing, 8)
+        }
     }
 }

@@ -27,6 +27,7 @@ extension AppModel {
             return true
         }
         if fresh != suggestions { suggestions = fresh }
+        notifyNewSuggestions(fresh)
     }
 
     /// Есть ли уже правило на этот домен (любой выход) — тогда он не наша забота.

@@ -56,6 +56,7 @@ struct SettingsView: View {
                                 Button("Показать") { onboardingDone = false }
                                     .buttonStyle(.plain).font(Theme.font(12, .semibold)).foregroundStyle(Theme.lime)
                             }
+                            NotificationsSection().padding(.top, 28)
                             SectionTitle("Туннель").padding(.top, 28)
                             SettingRow("Маршрут по умолчанию", "Для приложений и доменов без правил") {
                                 Menu {
@@ -102,6 +103,7 @@ struct SettingsView: View {
                                 Button("Обновить") { Task { await model.updateAllRuleSets() } }
                                     .buttonStyle(.plain).font(Theme.font(12, .semibold)).foregroundStyle(Theme.lime)
                             }
+                            ScenariosSection().padding(.top, 28)
                         }
                         .frame(maxWidth: .infinity)
                     }
@@ -322,5 +324,103 @@ struct SystemPanel: View {
         } catch {
             model.lastError = "Не удалось импортировать профиль: \(error.localizedDescription)"
         }
+    }
+}
+
+struct NotificationsSection: View {
+    @State private var on: [Notifier.Kind: Bool] = Dictionary(uniqueKeysWithValues: Notifier.Kind.allCases.map { ($0, Notifier.isEnabled($0)) })
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                SectionTitle("Уведомления")
+                Spacer()
+                Button("Пробное") {
+                    Notifier.shared.post(.vpn, key: "test", title: "Splitroute", body: "Уведомления работают", throttle: 0)
+                }
+                .buttonStyle(.plain).font(Theme.font(12, .semibold)).foregroundStyle(Theme.lime)
+                .help("Показать пробное уведомление. Если оно не появилось — разрешите уведомления Splitroute в Системных настройках")
+            }
+            row(.vpn, "VPN отключился или вернулся", "Куда пошли его приложения: в резерв, напрямую или блокируются")
+            row(.suggestions, "Не открывается напрямую", "Найдены программы и сайты, которые похоже заблокированы")
+            row(.scenarios, "Сценарий сменился сам", "При подключении к сети, привязанной к сценарию")
+        }
+    }
+
+    private func row(_ kind: Notifier.Kind, _ title: String, _ subtitle: String) -> some View {
+        SettingRow(title, subtitle) {
+            LimeToggle(isOn: Binding(get: { on[kind] ?? true }, set: { on[kind] = $0; Notifier.setEnabled(kind, $0) }))
+        }
+    }
+}
+
+/// Сценарии: список, переименование, привязка к текущей сети.
+struct ScenariosSection: View {
+    @Environment(AppModel.self) private var model
+    @State private var names: [String: String] = [:]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            SectionTitle("Сценарии")
+            if model.scenarios.isEmpty {
+                SettingRow("Наборы маршрутов для разных мест", "«Дом», «Офис», «Поездка» — переключаются в верхней панели и в строке меню, а в знакомой сети сами") {
+                    Button("Создать") { model.createScenario() }
+                        .buttonStyle(.plain).font(Theme.font(12, .semibold)).foregroundStyle(Theme.lime)
+                }
+            } else {
+                Text("Маршруты, правила и наборы у каждого сценария свои; выходы общие. Правки сохраняются в активном сценарии.")
+                    .font(Theme.font(11)).foregroundStyle(Theme.text2).padding(.vertical, 10)
+                ForEach(model.scenarios) { s in
+                    row(s)
+                    Divider().overlay(Theme.line)
+                }
+                HStack {
+                    Button { model.createScenario() } label: { Label("Новый сценарий", systemImage: "plus") }
+                        .buttonStyle(.plain).font(Theme.font(12, .semibold)).foregroundStyle(Theme.lime)
+                    Spacer()
+                    Text(model.networkSignature.map { "Сейчас: " + NetworkState.describe(signature: $0) } ?? "Сеть не определена")
+                        .font(Theme.font(11)).foregroundStyle(Theme.text3)
+                }
+                .padding(.vertical, 12)
+            }
+        }
+    }
+
+    private func row(_ s: Scenario) -> some View {
+        let active = s.id == model.activeScenario?.id
+        let here = model.networkSignature.map(s.networks.contains) ?? false
+        return HStack(spacing: 10) {
+            Button { model.activateScenario(s.id) } label: {
+                Image(systemName: active ? "largecircle.fill.circle" : "circle")
+                    .foregroundStyle(active ? Theme.lime : Theme.text2)
+            }
+            .buttonStyle(.plain).help(active ? "Активный" : "Включить")
+            TextField("", text: Binding(get: { names[s.id] ?? s.name }, set: { names[s.id] = $0 }))
+                .textFieldStyle(.plain).font(Theme.font(13, active ? .semibold : .regular))
+                .onSubmit { commit(s) }
+                .onChange(of: model.activeScenario?.id) { commit(s) }
+            Spacer()
+            if model.networkSignature != nil {
+                Button { model.toggleCurrentNetwork(for: s.id) } label: {
+                    Label(here ? "В этой сети" : "Включать в этой сети", systemImage: here ? "wifi" : "wifi.exclamationmark")
+                        .font(Theme.font(11, here ? .semibold : .regular))
+                        .foregroundStyle(here ? Theme.lime : Theme.text2)
+                }
+                .buttonStyle(.plain)
+                .help(here ? "Не включать автоматически в этой сети" : "Включать этот сценарий при подключении к текущей сети")
+            }
+            if s.networks.count > (here ? 1 : 0) {
+                Text("+\(s.networks.count - (here ? 1 : 0))").font(Theme.font(10)).foregroundStyle(Theme.text3)
+                    .help("Привязан ещё к другим сетям")
+            }
+            Button { model.deleteScenario(s.id) } label: { Image(systemName: "trash").font(.system(size: 11)) }
+                .buttonStyle(.plain).foregroundStyle(active ? Theme.text3 : Theme.text2)
+                .disabled(active).help(active ? "Сначала включите другой сценарий" : "Удалить")
+        }
+        .padding(.vertical, 10)
+    }
+
+    private func commit(_ s: Scenario) {
+        if let n = names[s.id] { model.renameScenario(s.id, to: n); names[s.id] = nil }
     }
 }

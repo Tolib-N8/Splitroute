@@ -45,6 +45,16 @@ struct MenuBarContent: View {
         Toggle("Маршрутизация", isOn: $model.enabled)
         Text(statusLine)
         Divider()
+        if let active = model.activeScenario {
+            Section("Сценарий") {
+                ForEach(model.scenarios) { s in
+                    Button { model.activateScenario(s.id) } label: {
+                        if s.id == active.id { Label(s.name, systemImage: "checkmark") } else { Text(s.name) }
+                    }
+                }
+            }
+            Divider()
+        }
         Section("Запущенные приложения") {
             ForEach(runningApps, id: \.processIdentifier) { app in
                 let path = app.bundleURL!.path

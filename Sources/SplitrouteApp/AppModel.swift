@@ -34,9 +34,18 @@ final class AppModel {
         didSet {
             guard profile != oldValue else { return }
             try? profile.save(to: Paths.userProfile)
+            captureIntoActiveScenario()
             scheduleApply()
         }
     }
+
+    /// Сценарии («Дом», «Офис»); правки маршрутов сразу запоминаются в активном.
+    var scenarioStore = ScenarioStore.load(from: AppModel.scenariosURL) {
+        didSet { if scenarioStore != oldValue { try? scenarioStore.save(to: AppModel.scenariosURL) } }
+    }
+    static var scenariosURL: URL { Paths.userProfile.deletingLastPathComponent().appendingPathComponent("scenarios.json") }
+    /// Отпечаток текущей сети (роутер + MAC) — для автопереключения сценариев.
+    private(set) var networkSignature: String?
 
     var enabled: Bool {
         didSet {
@@ -72,6 +81,8 @@ final class AppModel {
     var dismissedSuggestions = Set(UserDefaults.standard.stringArray(forKey: "dismissedSuggestions") ?? []) {
         didSet { UserDefaults.standard.set(Array(dismissedSuggestions).sorted(), forKey: "dismissedSuggestions") }
     }
+    /// Подсказки, о которых уже было уведомление (за этот запуск).
+    @ObservationIgnored var notifiedSuggestions = Set<String>()
     /// Автоподключение VPN-приложений: когда пробовали в последний раз и сколько раз подряд не вышло.
     @ObservationIgnored var autoConnectAttempts: [String: (last: Date, failures: Int)] = [:]
 
@@ -113,6 +124,7 @@ final class AppModel {
         guard !started else { return }
         started = true
         Theme.registerFonts()
+        Notifier.shared.start()
         Task { await refreshNetwork() }
         Task.detached(priority: .utility) {
             let apps = AppCatalog.scan()
@@ -204,9 +216,15 @@ final class AppModel {
     /// иначе раз в 3 секунды подвисает анимация.
     private func refreshNetwork() async {
         let snap = await Task.detached(priority: .utility) { NetworkState.snapshot() }.value
+        let previousServices = vpnServices
+        if networkSignature != snap.signature {
+            networkSignature = snap.signature
+            switchScenario(forNetwork: snap.signature)
+        }
         if vpnServices != snap.services { vpnServices = snap.services }
         if physicalInterface != snap.environment.physicalInterface { physicalInterface = snap.environment.physicalInterface }
         if environment != snap.environment { environment = snap.environment }
+        notifyVPNChanges(from: previousServices, to: snap.services)
         ensureVPNExits()
         ensureSelfRoute()
         autoConnectVPNs()
