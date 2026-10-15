@@ -52,8 +52,19 @@ struct RootView: View {
             }
             model.start()
             updater.start()
-            model.registerHotKeys { openWindow(id: "main"); NSApp.activate() }
+            model.registerHotKeys { MainWindow.open() }
+            MainWindow.opener = { openWindow(id: "main") }
+            MainWindow.didOpen()
+            let env = ProcessInfo.processInfo.environment
+            if env["SPLITROUTE_PANEL_PREVIEW"] == "1" { openWindow(id: "panel-preview") }
+            // SPLITROUTE_CLOSE_TEST=1 — закрыть главное окно через 5 с, как крестиком.
+            if env["SPLITROUTE_CLOSE_TEST"] == "1" {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                    NSApp.windows.first { $0.identifier?.rawValue.hasPrefix("main") == true }?.performClose(nil)
+                }
+            }
         }
+        .onDisappear { MainWindow.didClose() }
     }
 
     private var main: some View {
@@ -133,26 +144,6 @@ struct Sidebar: View {
 struct TopBar: View {
     @Environment(AppModel.self) private var model
 
-    private var statusColor: Color {
-        switch model.state {
-        case .running: return Theme.lime
-        case .applying: return Theme.amber
-        case .failed: return Theme.coral
-        default: return Theme.text3
-        }
-    }
-
-    private var statusTitle: String {
-        switch model.state {
-        case .running: return L("Маршрутизация включена")
-        case .applying: return L("Применяю…")
-        case .stopped: return L("Маршрутизация выключена")
-        case .notInstalled: return L("Компонент не установлен")
-        case .needsUpdate: return L("Нужно обновить компонент")
-        case .failed: return L("Ошибка ядра")
-        }
-    }
-
     private var statusDetail: String {
         let connected = model.vpnServices.filter { $0.isConnected && !$0.isMesh }.map(\.name)
         var parts = [connected.isEmpty ? L("VPN-приложения отключены") : connected.joined(separator: ", ")]
@@ -165,10 +156,10 @@ struct TopBar: View {
         @Bindable var model = model
         HStack(spacing: 10) {
             Circle()
-                .fill(statusColor.opacity(0.25))
+                .fill(model.statusColor.opacity(0.25))
                 .frame(width: 18, height: 18)
-                .overlay(StatusDot(color: statusColor, size: 8))
-            Text(statusTitle).font(Theme.font(13, .semibold))
+                .overlay(StatusDot(color: model.statusColor, size: 8))
+            Text(model.statusTitle).font(Theme.font(13, .semibold))
             Text("· " + statusDetail).font(Theme.font(13)).foregroundStyle(Theme.text2).lineLimit(1)
             Spacer()
             ScenarioMenu()

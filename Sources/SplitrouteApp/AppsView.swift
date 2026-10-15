@@ -178,6 +178,8 @@ struct RouteSegment: View {
     var selected: RouteKind
     var dimmed = false
     var tunnelAvailable = true
+    /// Меньше — для мини-окна в строке меню.
+    var compact = false
     var onSelect: (RouteKind) -> Void
 
     private func color(_ k: RouteKind) -> Color {
@@ -197,10 +199,11 @@ struct RouteSegment: View {
                         if on { StatusDot(color: color(k)) }
                         Text(k.title)
                     }
-                    .font(Theme.font(12, on ? .semibold : .regular))
+                    .font(Theme.font(compact ? 11 : 12, on ? .semibold : .regular))
                     .foregroundStyle(on ? Theme.text : Theme.text3)
+                    .lineLimit(1)
                     .frame(maxWidth: .infinity)
-                    .frame(height: 26)
+                    .frame(height: compact ? 22 : 26)
                     .background(on ? Theme.surface2.opacity(dimmed ? 0.5 : 1) : .clear, in: RoundedRectangle(cornerRadius: 6))
                     .contentShape(Rectangle())
                 }
@@ -209,7 +212,7 @@ struct RouteSegment: View {
                 .help(k == .tunnel && !tunnelAvailable ? L("Нет ни одного VPN-выхода — подключите VPN-приложение или добавьте конфиг на экране «Серверы»") : "")
             }
         }
-        .padding(3)
+        .padding(compact ? 2 : 3)
         .background(Theme.bg, in: RoundedRectangle(cornerRadius: 8))
         .overlay(RoundedRectangle(cornerRadius: 8).stroke(Theme.line))
     }

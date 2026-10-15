@@ -391,6 +391,13 @@
 "Не сейчас" = "Not now";
 "Поддержать" = "Support";
 
+"подключён" = "connected";
+"отключён → %@" = "disconnected → %@";
+"отключён" = "disconnected";
+"СЕЙЧАС В СЕТИ" = "ONLINE NOW";
+"Не открываются напрямую: %lld" = "Not reachable directly: %lld";
+"Выйти. Ядро продолжит работать, но без слежения за сетью" = "Quit. The core keeps running, but without network monitoring";
+
 /* Plural forms passed to Format.plural at runtime */
 "приложение" = "app";
 "приложения" = "apps";

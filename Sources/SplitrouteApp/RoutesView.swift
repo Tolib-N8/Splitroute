@@ -7,6 +7,7 @@ struct RoutesView: View {
     @Environment(AppModel.self) private var model
     @State private var paused = false
     @State private var showAdd = false
+    @State private var windowVisible = true
 
     var body: some View {
         let graph = FlowGraph(model: model)
@@ -28,7 +29,7 @@ struct RoutesView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 GeometryReader { geo in
-                    FlowDiagram(graph: graph, size: geo.size, paused: paused)
+                    FlowDiagram(graph: graph, size: geo.size, paused: paused || !windowVisible)
                 }
                 .padding(.top, 36)
             }
@@ -47,6 +48,7 @@ struct RoutesView: View {
             .padding(.vertical, 20)
         }
         .sheet(isPresented: $showAdd) { AddAppSheet() }
+        .onWindowVisibility { windowVisible = $0 }
     }
 }
 
@@ -150,6 +152,27 @@ struct FlowGraph {
 
 // MARK: - Раскладка
 
+/// Размеры схемы: полный экран «Маршруты» и компактная схема в мини-окне строки меню.
+struct FlowStyle {
+    var labelWidth: CGFloat
+    var exitLabelWidth: CGFloat
+    var minBand: CGFloat
+    var maxBand: CGFloat
+    var appGap: CGFloat
+    var exitGap: CGFloat
+    var maxParticles: Int
+    /// Множитель плотности частиц: на маленькой схеме их нужно меньше.
+    var density: Double
+    var iconSize: CGFloat
+    /// Только иконки приложений, короткие подписи выходов.
+    var compact: Bool
+
+    static let full = FlowStyle(labelWidth: 220, exitLabelWidth: 230, minBand: 40, maxBand: 170, appGap: 18, exitGap: 36,
+                                maxParticles: 360, density: 1, iconSize: 30, compact: false)
+    static let compact = FlowStyle(labelWidth: 26, exitLabelWidth: 88, minBand: 18, maxBand: 96, appGap: 8, exitGap: 10,
+                                   maxParticles: 150, density: 0.5, iconSize: 22, compact: true)
+}
+
 struct FlowLayout {
     struct Band { var y: CGFloat; var height: CGFloat }
 
@@ -158,9 +181,9 @@ struct FlowLayout {
     /// Полоса каждого потока на левом и правом краю.
     var flowEnds: [String: (left: Band, right: Band)] = [:]
 
-    init(graph: FlowGraph, height: CGFloat) {
-        appBands = Self.stack(graph.apps, height: height, gap: 18)
-        exitBands = Self.stack(graph.exits, height: height, gap: 36)
+    init(graph: FlowGraph, height: CGFloat, style: FlowStyle = .full) {
+        appBands = Self.stack(graph.apps, height: height, gap: style.appGap, minH: style.minBand, maxH: style.maxBand)
+        exitBands = Self.stack(graph.exits, height: height, gap: style.exitGap, minH: style.minBand, maxH: style.maxBand)
 
         var leftCursor: [String: CGFloat] = appBands.mapValues(\.y)
         var rightCursor: [String: CGFloat] = exitBands.mapValues(\.y)
@@ -190,9 +213,8 @@ struct FlowLayout {
     }
 
     /// Раскладывает узлы по вертикали: высота ~ корню из веса, но не меньше минимальной.
-    private static func stack(_ nodes: [FlowGraph.Node], height: CGFloat, gap: CGFloat) -> [String: Band] {
+    private static func stack(_ nodes: [FlowGraph.Node], height: CGFloat, gap: CGFloat, minH: CGFloat, maxH: CGFloat) -> [String: Band] {
         guard !nodes.isEmpty else { return [:] }
-        let minH: CGFloat = 40, maxH: CGFloat = 170
         let free = max(0, height - gap * CGFloat(nodes.count - 1) - minH * CGFloat(nodes.count))
         let weights = nodes.map { sqrt(max($0.weight, 0)) }
         let sum = max(weights.reduce(0, +), 1e-9)
@@ -237,19 +259,19 @@ struct FlowDiagram: View {
     var graph: FlowGraph
     var size: CGSize
     var paused: Bool
+    var style: FlowStyle = .full
     @State private var animator = FlowAnimator()
 
-    private let labelWidth: CGFloat = 220
-    private let exitLabelWidth: CGFloat = 230
-    /// Предел частиц на поток; видимая часть зависит от плотности, края гаснут плавно.
-    private static let maxParticles = 360
+    private var labelWidth: CGFloat { style.labelWidth }
+    private var exitLabelWidth: CGFloat { style.exitLabelWidth }
     private static let hueSteps = 8
     private static let alphaSteps = 5
 
     var body: some View {
-        let layout = FlowLayout(graph: graph, height: size.height)
-        let left = labelWidth + 16
-        let right = size.width - exitLabelWidth - 16
+        let layout = FlowLayout(graph: graph, height: size.height, style: style)
+        let inset: CGFloat = style.compact ? 10 : 16
+        let left = labelWidth + inset
+        let right = size.width - exitLabelWidth - inset
         ZStack(alignment: .topLeading) {
             TimelineView(.animation(paused: paused)) { context in
                 Canvas { ctx, _ in
@@ -259,13 +281,16 @@ struct FlowDiagram: View {
             ForEach(graph.apps) { node in
                 if let band = layout.appBands[node.id] {
                     HStack(spacing: 12) {
-                        VStack(alignment: .trailing, spacing: 3) {
-                            Text(node.title).font(Theme.font(13, .medium)).lineLimit(1)
-                            Text(node.subtitle).font(Theme.font(11)).foregroundStyle(Theme.text3)
+                        if !style.compact {
+                            VStack(alignment: .trailing, spacing: 3) {
+                                Text(node.title).font(Theme.font(13, .medium)).lineLimit(1)
+                                Text(node.subtitle).font(Theme.font(11)).foregroundStyle(Theme.text3)
+                            }
+                            .transaction { $0.animation = nil }
                         }
-                        .transaction { $0.animation = nil }
-                        AppIcon(key: node.id, size: 30)
+                        AppIcon(key: node.id, size: style.iconSize)
                     }
+                    .help(node.title)
                     .frame(width: labelWidth, alignment: .trailing)
                     .position(x: labelWidth / 2, y: band.y + band.height / 2)
                     .animation(.easeInOut(duration: 0.8), value: band.y + band.height / 2)
@@ -273,12 +298,12 @@ struct FlowDiagram: View {
             }
             ForEach(graph.exits) { node in
                 if let band = layout.exitBands[node.id] {
-                    VStack(alignment: .leading, spacing: 3) {
+                    VStack(alignment: .leading, spacing: style.compact ? 1 : 3) {
                         HStack(spacing: 6) {
-                            Text(node.title).font(Theme.font(13, .semibold)).lineLimit(1)
-                            Image(systemName: "chevron.right").font(.system(size: 9, weight: .semibold))
+                            Text(node.title).font(Theme.font(style.compact ? 11 : 13, .semibold)).lineLimit(1)
+                            if !style.compact { Image(systemName: "chevron.right").font(.system(size: 9, weight: .semibold)) }
                         }
-                        Text(node.subtitle).font(Theme.font(11)).foregroundStyle(Theme.text3)
+                        Text(node.subtitle).font(Theme.font(style.compact ? 10 : 11)).foregroundStyle(Theme.text3).lineLimit(1)
                     }
                     .transaction { $0.animation = nil }
                     .frame(width: exitLabelWidth, alignment: .leading)
@@ -299,7 +324,7 @@ struct FlowDiagram: View {
 
         // Вертикальные планки узлов.
         for (_, band) in layout.appBands {
-            ctx.fill(Path(roundedRect: CGRect(x: x0 - 8, y: band.y, width: 2, height: band.height), cornerRadius: 1), with: .color(Theme.line))
+            ctx.fill(Path(roundedRect: CGRect(x: x0 - (style.compact ? 5 : 8), y: band.y, width: 2, height: band.height), cornerRadius: 1), with: .color(Theme.line))
         }
         for node in graph.exits {
             guard let band = layout.exitBands[node.id] else { continue }
@@ -332,8 +357,8 @@ struct FlowDiagram: View {
             // Зерно — от id потока, а не от его номера: порядок потоков меняется вместе с трафиком,
             // и с номером все частицы потока перескакивали бы в новые места.
             let seed = Self.seed(flow.id)
-            let density = 18 + (f.h0 + f.h1) * 0.9 + 160 * f.activity
-            let count = min(Self.maxParticles, Int(density) + 8)
+            let density = (18 + (f.h0 + f.h1) * 0.9 + 160 * f.activity) * style.density
+            let count = min(style.maxParticles, Int(density) + 8)
             // Частицы собираются в пути по (оттенок × прозрачность) — десятки вызовов fill вместо сотен.
             var buckets = [Path](repeating: Path(), count: Self.hueSteps * Self.alphaSteps)
             for i in 0..<count {
