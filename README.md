@@ -1,70 +1,87 @@
 <p align="center"><img src="docs/icon.png" width="128" alt="Splitroute"></p>
 
 <h1 align="center">Splitroute</h1>
-<p align="center">Раздельный туннель по приложениям для macOS — каждое приложение своим путём.</p>
-<p align="center"><a href="https://github.com/Tolib-N8/Splitroute/releases/latest"><b>Скачать последнюю версию</b></a></p>
+<p align="center">Per-app split tunneling for macOS — every app takes its own path.</p>
+<p align="center"><a href="https://github.com/Tolib-N8/Splitroute/releases/latest"><b>Download the latest version</b></a> · <a href="README.ru.md">Русский</a></p>
 
-![Куда идёт трафик](docs/routes.png)
+![Where traffic goes](docs/routes.png)
 
-Одни приложения работают только через VPN, другие — только без него. Splitroute убирает постоянное переключение:
-WhatsApp, Chrome и Claude идут через VPN, WeChat и банки — напрямую, **одновременно**.
+Some apps only work through a VPN, others only without one. Splitroute ends the constant switching:
+WhatsApp, Chrome and Claude go through the VPN while WeChat and banking apps go direct — **at the same time**.
 
-## Возможности
+## Features
 
-- **Выход для каждого приложения:** через уже подключённое VPN-приложение (ZoogVPN, AIRLINK…), через свой конфиг
-  (VLESS/Reality, Shadowsocks, Trojan, Hysteria2, WireGuard `.conf`, OpenVPN `.ovpn`, подписки), напрямую или в блок.
-- **Программы из терминала** (например, Claude Code) — правило ставится на папку и переживает обновления.
-- **Правила по доменам, IP и портам** и готовые наборы: «Китайские сервисы → напрямую», «Заблокированное в Китае → VPN», блок рекламы.
-  Порядок: свои правила → наборы → маршрут приложения → по умолчанию.
-- **DNS без подмены провайдером:** пока ядро работает, оно становится системным DNS; имена резолвятся через VPN, китайские и локальные — напрямую.
-- **Kill switch:** если VPN-приложение отключилось, его приложения блокируются, а не уходят в интернет напрямую.
-- **Журнал** соединений с причиной маршрута, потоки трафика, значок в строке меню, горячие клавиши ⌥⌘V / ⌥⌘J / ⌥⌘R.
-- **Автообновления** из GitHub Releases с проверкой подписи Ed25519.
+- **An exit for every app:** an already connected VPN app (ZoogVPN, AIRLINK…), your own config
+  (VLESS/Reality, Shadowsocks, Trojan, Hysteria2, WireGuard `.conf`, OpenVPN `.ovpn`, subscriptions), direct, or blocked.
+- **Fallback VPN:** if the VPN an app is assigned to disconnects, its traffic moves to another connected VPN
+  instead of being blocked. Pick a specific fallback per exit, or let Splitroute use any available VPN.
+- **Auto-connect:** Splitroute can turn a VPN app on by itself when apps need it, retrying less and less often if it fails.
+- **“Not reachable directly” suggestions:** Splitroute notices programs and sites whose direct connections die
+  without a single byte — a typical sign of blocking — and offers to route them through a VPN in one click.
+- **Scenarios:** separate route sets for home, office or travel. Switch them from the top bar or the menu bar,
+  or bind one to a network so it turns on by itself.
+- **Notifications** when a VPN drops or comes back (and where its apps went), when something looks blocked,
+  and when a scenario switches.
+- **Command-line programs** (Claude Code, Codex CLI…): the rule is set on the folder, so it survives updates.
+- **Domain, IP and port rules** plus ready-made sets: “Chinese services → direct”, “Blocked in China → VPN”, ad blocking.
+  Order: your rules → sets → app route → default.
+- **DNS without ISP tampering:** while the core runs it becomes the system DNS; names resolve through the VPN,
+  Chinese and local domains go direct.
+- **Kill switch:** if a VPN disconnects and there is no fallback, its apps are blocked instead of leaking directly.
+- **Journal** of connections with the reason for each route, live traffic flows, menu bar icon, hotkeys ⌥⌘V / ⌥⌘J / ⌥⌘R.
+- **English and Russian interface.**
+- **Automatic updates** from GitHub Releases, verified with an Ed25519 signature.
 
-| Приложения | Правила | Журнал |
+| Apps | Rules | Journal |
 |---|---|---|
 | ![](docs/apps.png) | ![](docs/rules.png) | ![](docs/journal.png) |
 
-## Установка
+## Installation
 
-1. Скачайте `Splitroute-x.y.z.dmg` из [релизов](https://github.com/Tolib-N8/Splitroute/releases/latest) и перетащите Splitroute в «Программы».
-2. Приложение подписано без Apple Developer ID, поэтому при первом запуске macOS его заблокирует:
-   **Системные настройки → Конфиденциальность и безопасность → «Всё равно открыть»**. Или в Терминале:
+1. Download `Splitroute-x.y.z.dmg` from [Releases](https://github.com/Tolib-N8/Splitroute/releases/latest) and drag Splitroute to Applications.
+2. The app is not signed with an Apple Developer ID, so macOS blocks it on first launch:
+   **System Settings → Privacy & Security → “Open Anyway”**. Or in Terminal:
    ```sh
    xattr -dr com.apple.quarantine /Applications/Splitroute.app
    ```
-3. Пройдите приветствие: установите системный компонент (один раз нужен пароль администратора) и выберите приложения.
+3. Follow the welcome screens: install the system component (the administrator password is needed once) and pick your apps.
 
-Требования: macOS 15+, Apple Silicon.
+Requirements: macOS 15+, Apple Silicon.
 
-Удаление системного компонента: «Настройки → Удалить системный компонент…» или
+To remove the system component: **Settings → Remove system component…** or
 `sudo /Library/PrivilegedHelperTools/com.splitroute/splitroute-helper uninstall`.
 
-## Как это устроено
+## How it works
 
-- Ядро — [sing-box](https://sing-box.sagernet.org) 1.14 в режиме TUN, запускается launchd-демоном от root.
-- Правила `process_path_regex` по пути бандла (вместе с его helper-процессами).
-- Выход «VPN-приложение» — `direct` с `bind_interface` на utun этого VPN; «Напрямую» — на Wi‑Fi/Ethernet.
-- Root-helper принимает только профиль пользователя и сам собирает из него конфиг sing-box — произвольный конфиг передать нельзя.
-- DNS ядра публикуется временным ключом SCDynamicStore: если ядро остановится или упадёт, macOS сама вернёт прежний DNS.
-- Tailscale и локальные сети не трогаются.
+- The core is [sing-box](https://sing-box.sagernet.org) 1.14 in TUN mode, run as root by a launchd daemon.
+- Apps are matched with `process_path_regex` on the bundle path, including their helper processes.
+- A “VPN app” exit is a `direct` outbound with `bind_interface` set to that VPN's utun; “Direct” binds to Wi‑Fi/Ethernet.
+- The root helper accepts only the user's profile and builds the sing-box config itself — an arbitrary config cannot be passed in.
+- The core's DNS is published as a temporary SCDynamicStore key: if the core stops or crashes, macOS restores the previous DNS by itself.
+- Tailscale and local networks are left alone.
 
-## Сборка
+## Building
+
+The source is open for review and auditing (see [License](#license)).
 
 ```sh
-sh scripts/bundle.sh           # build/Splitroute.app (скачивает и проверяет sing-box)
-swift test                     # модель, генератор конфига (+ sing-box check), правила, обновления
-sh scripts/e2e.sh ZoogVPN      # проверка на живой системе (после установки компонента)
-sh scripts/release.sh          # dist/: оформленный DMG + подписанный appcast.json
-PUBLISH=1 sh scripts/release.sh   # и опубликовать релиз v$(cat VERSION)
+sh scripts/bundle.sh           # build/Splitroute.app (downloads and verifies sing-box)
+swift test                     # model, config generator (+ sing-box check), rules, fallback, scenarios
+sh scripts/strings.sh          # lists interface strings missing an English translation
+sh scripts/e2e.sh "AIRLINK VPN"   # live check after installing the component
 ```
 
-Ключ подписи обновлений хранится в связке ключей macOS (`swift scripts/update-key.swift generate`), в репозиторий не попадает.
+## Limitations
 
-## Ограничения
+- Safari and other WebKit apps go online through a shared system process, so they cannot be split across exits.
+  Use domain rules for them instead.
+- Connecting and changing servers is done in the VPN app itself.
+- Rejected and very short connections may not appear in the journal.
 
-- Safari и приложения на WebKit ходят в сеть через общий системный процесс — их нельзя развести по разным выходам.
-- Подключение и смену сервера в VPN-приложении делает само VPN-приложение.
-- Отклонённые и очень короткие соединения могут не попасть в журнал.
+## License
 
-Сторонние компоненты и их лицензии — в [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Splitroute is **source-available, not open source**. You may read, review and build the code to audit it.
+Using Splitroute requires a one-time license; versions up to 1.4.0, and any version while licenses are not on sale,
+may be used free of charge. See [LICENSE](LICENSE).
+
+Third-party components keep their own licenses — see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
