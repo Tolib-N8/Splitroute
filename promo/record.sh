@@ -1,7 +1,8 @@
 #!/bin/sh
 # Клипы для ролика: Splitroute в демо-режиме (SPLITROUTE_DEMO=1), запись окна через ScreenCaptureKit.
 #   sh promo/record.sh   (нужен скомпилированный рекордер: swiftc -O -o promo/.bin/record promo/record.swift)
-# Потом монтаж: cd promo && npm install --registry=https://registry.npmmirror.com && npm run render
+# Потом звуки и монтаж: swift promo/sfx.swift promo/public/sfx
+#   cd promo && npm install --registry=https://registry.npmmirror.com && npm run render
 set -eu
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 REC="$ROOT/promo/.bin/record"

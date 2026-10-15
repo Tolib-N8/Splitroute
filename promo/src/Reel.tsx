@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  AbsoluteFill, Easing, Img, OffthreadVideo, Sequence, interpolate, spring, staticFile,
+  AbsoluteFill, Audio, Easing, Img, OffthreadVideo, Sequence, interpolate, spring, staticFile,
   useCurrentFrame, useVideoConfig,
 } from "remotion";
 
@@ -380,6 +380,32 @@ const Outro: React.FC = () => {
   );
 };
 
+// MARK: — Звук (promo/sfx.swift)
+
+/** Кадр → эффект, громкость. Подогнано под анимации сцен выше. */
+const CUES: [number, string, number][] = [
+  [1, "click", 0.55], [4, "whoosh", 0.3], [12, "buzz", 0.55],             // VPN on → WeChat breaks
+  [32, "glitch", 0.5], [34, "click-low", 0.55], [46, "buzz", 0.55],        // VPN off → WhatsApp breaks
+  [58, "glitch", 0.55], [60, "impact", 0.85],                             // Stop switching.
+  [74, "whoosh-long", 0.45], [79, "pop", 0.45], [101, "shimmer", 0.55],   // приветствие: логотип, частицы
+  [144, "whoosh", 0.5], [150, "whoosh-long", 0.3],                        // окно с потоками
+  [188, "pop", 0.4], [200, "pop", 0.4], [212, "pop", 0.4],                // плашки
+  [298, "whoosh", 0.5], [340, "whoosh", 0.5], [354, "chime", 0.35],       // три кадра
+  [382, "whoosh", 0.5], [398, "pop", 0.45],
+  [424, "whoosh", 0.4], [436, "click", 0.5], [440, "whoosh", 0.3], [449, "thud", 0.6], // строка меню
+  [484, "riser", 0.5], [516, "impact", 0.45], [518, "pop", 0.4], [522, "shimmer", 0.4], [546, "chime", 0.55], // финал
+];
+
+const SoundTrack: React.FC = () => (
+  <>
+    {CUES.map(([at, name, volume], i) => (
+      <Sequence key={i} from={at}>
+        <Audio src={staticFile(`sfx/${name}.wav`)} volume={volume} />
+      </Sequence>
+    ))}
+  </>
+);
+
 // MARK: — Монтаж
 
 export const Reel: React.FC = () => (
@@ -394,5 +420,6 @@ export const Reel: React.FC = () => (
     <Sequence from={516} durationInFrames={84}><SceneFade len={84} outF={1}><Outro /></SceneFade></Sequence>
     <Sweep at={148} />
     <Sweep at={516} />
+    <SoundTrack />
   </AbsoluteFill>
 );
