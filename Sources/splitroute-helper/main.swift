@@ -129,6 +129,11 @@ func daemonPID() -> Int? {
 
 func install(user: String, appBundle: String) throws {
     requireRoot()
+    // Через sudoers (без пароля) разрешены только apply/start/stop: иначе любой процесс пользователя
+    // мог бы подсунуть свой бандл и получить root. Установка — только с паролем администратора.
+    if ProcessInfo.processInfo.environment["SUDO_UID"] != nil {
+        throw HelperError("установка и обновление компонента — только из Splitroute с паролем администратора")
+    }
     guard let pw = getpwnam(user) else { throw HelperError("нет пользователя \(user)") }
     guard user.allSatisfy({ $0.isLetter || $0.isNumber || "._-".contains($0) }) else { throw HelperError("недопустимое имя пользователя") }
     let resources = appBundle + "/Contents/Resources"

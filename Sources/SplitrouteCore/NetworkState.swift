@@ -49,15 +49,21 @@ public enum NetworkState {
                   let id = SCNetworkServiceGetServiceID(service) as String?
             else { return nil }
             let name = (SCNetworkServiceGetName(service) as String?) ?? id
-            let state = ipv4State(store: store, serviceID: id)
-            return VPNServiceInfo(
-                id: id,
-                name: name,
-                providerBundleID: providerBundleID(service: service, interface: iface),
-                interface: state?["InterfaceName"] as? String,
-                serverAddress: state?["ServerAddress"] as? String,
-                ipv6: hasGlobalIPv6(store: store, serviceID: id)
-            )
+            var info = VPNServiceInfo(id: id, name: name, providerBundleID: providerBundleID(service: service, interface: iface))
+            if let state = ipv4State(store: store, serviceID: id) {
+                info.interface = state["InterfaceName"] as? String
+                info.serverAddress = state["ServerAddress"] as? String
+                info.ipv6 = hasGlobalIPv6(store: store, serviceID: id)
+            } else if let status = connectedStatus(serviceID: id) {
+                // Некоторые Network Extension (AIRLINK) публикуют состояние под ID сессии, а не
+                // под ID сервиса из настроек — тогда берём его из статуса соединения.
+                let v4 = status["IPv4"] as? [String: Any]
+                let v6 = status["IPv6"] as? [String: Any]
+                info.interface = v4?["InterfaceName"] as? String
+                info.serverAddress = v4?["ServerAddress"] as? String
+                info.ipv6 = (v6?["Addresses"] as? [String])?.contains(where: isGlobalIPv6) ?? false
+            }
+            return info
         }
         .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }
@@ -105,6 +111,14 @@ public enum NetworkState {
     static func isPhysical(_ name: String) -> Bool {
         let virtual = ["utun", "ipsec", "ppp", "gif", "stf", "awdl", "llw", "lo", "bridge", "anpi", "ap", "nan", "vmenet"]
         return !virtual.contains { name.hasPrefix($0) }
+    }
+
+    /// Расширенный статус подключённого VPN (как в `scutil --nc status`), иначе nil.
+    private static func connectedStatus(serviceID: String) -> [String: Any]? {
+        guard let conn = SCNetworkConnectionCreateWithServiceID(nil, serviceID as CFString, nil, nil),
+              SCNetworkConnectionGetStatus(conn) == .connected
+        else { return nil }
+        return SCNetworkConnectionCopyExtendedStatus(conn) as? [String: Any]
     }
 
     private static func ipv4State(store: SCDynamicStore?, serviceID: String) -> [String: Any]? {
