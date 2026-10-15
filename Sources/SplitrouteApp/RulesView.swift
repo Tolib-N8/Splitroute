@@ -8,32 +8,32 @@ struct RulesView: View {
 
     private var todayMatches: Int {
         let presetTitles = Set(PresetInfo.catalog.map(\.title))
-        return model.journal.entries.reduce(0) { n, e in e.reason.hasPrefix("Правило") || presetTitles.contains(e.reason) ? n + 1 : n }
+        return model.journal.entries.reduce(0) { n, e in e.reason.hasPrefix(L("Правило")) || presetTitles.contains(e.reason) ? n + 1 : n }
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             ScreenHeader(
-                title: "Правила",
-                summary: "\(model.profile.presets.filter(\.enabled).count) наборов · \(model.profile.rules.count) своих правил",
-                footnote: "Совпадений сегодня: \(todayMatches)"
+                title: L("Правила"),
+                summary: L("\(model.profile.presets.filter(\.enabled).count) наборов · \(model.profile.rules.count) своих правил"),
+                footnote: L("Совпадений сегодня: \(todayMatches)")
             ) {
-                Text("Проверяются сверху вниз · первое совпадение побеждает")
+                Text(L("Проверяются сверху вниз · первое совпадение побеждает"))
                     .font(Theme.font(13)).foregroundStyle(Theme.text2)
             }
             HStack(alignment: .top, spacing: 20) {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
-                        Text("Готовые наборы").font(Theme.font(13, .medium)).foregroundStyle(Theme.text2)
+                        Text(L("Готовые наборы")).font(Theme.font(13, .medium)).foregroundStyle(Theme.text2)
                         LazyVGrid(columns: [GridItem(.adaptive(minimum: 200), spacing: 10)], spacing: 10) {
                             ForEach(PresetInfo.catalog) { PresetCard(info: $0) }
                         }
                         .padding(.top, 12)
 
                         HStack {
-                            Text("Свои правила").font(Theme.font(13, .medium)).foregroundStyle(Theme.text2)
+                            Text(L("Свои правила")).font(Theme.font(13, .medium)).foregroundStyle(Theme.text2)
                             Spacer()
-                            PrimaryButton(title: "Новое правило") { creating = true }
+                            PrimaryButton(title: L("Новое правило")) { creating = true }
                         }
                         .padding(.top, 28)
                         RulesTable(onEdit: { editing = $0 })
@@ -61,8 +61,8 @@ struct PresetCard: View {
     private var status: String {
         if info.ruleSets.isEmpty { return info.subtitle }
         switch model.ruleSetStatus[info.id] {
-        case .downloading: return "Загружаю базу…"
-        case .failed(let e): return "Не удалось скачать: \(e)"
+        case .downloading: return L("Загружаю базу…")
+        case .failed(let e): return L("Не удалось скачать: \(e)")
         case .ready(let d): return info.subtitle + " · " + d.formatted(.relative(presentation: .named))
         case nil: return info.subtitle
         }
@@ -124,11 +124,11 @@ struct RulesTable: View {
         VStack(spacing: 0) {
             HStack(spacing: 12) {
                 Text("#").frame(width: 24, alignment: .leading)
-                Text("Тип").frame(width: 92, alignment: .leading)
-                Text("Условие").frame(maxWidth: .infinity, alignment: .leading)
-                Text("Для").frame(width: 130, alignment: .leading)
-                Text("Маршрут").frame(width: 130, alignment: .leading)
-                Text("Сегодня").frame(width: 60, alignment: .leading)
+                Text(L("Тип")).frame(width: 92, alignment: .leading)
+                Text(L("Условие")).frame(maxWidth: .infinity, alignment: .leading)
+                Text(L("Для")).frame(width: 130, alignment: .leading)
+                Text(L("Маршрут")).frame(width: 130, alignment: .leading)
+                Text(L("Сегодня")).frame(width: 60, alignment: .leading)
                 Color.clear.frame(width: 76, height: 1)
             }
             .font(Theme.font(11, .medium)).foregroundStyle(Theme.text2)
@@ -136,8 +136,8 @@ struct RulesTable: View {
             Divider().overlay(Theme.line)
             if model.profile.rules.isEmpty {
                 VStack(spacing: 6) {
-                    Text("Своих правил пока нет").font(Theme.font(13, .semibold))
-                    Text("Например: youtube.com через VPN в любом браузере, или *.qq.com напрямую.")
+                    Text(L("Своих правил пока нет")).font(Theme.font(13, .semibold))
+                    Text(L("Например: youtube.com через VPN в любом браузере, или *.qq.com напрямую."))
                         .font(Theme.font(12)).foregroundStyle(Theme.text2)
                 }
                 .frame(maxWidth: .infinity).padding(.vertical, 28)
@@ -159,7 +159,7 @@ struct RuleRow: View {
     var onEdit: (Rule) -> Void
 
     private var scope: String {
-        if rule.appPaths.isEmpty { return "Все приложения" }
+        if rule.appPaths.isEmpty { return L("Все приложения") }
         let names = rule.appPaths.map { p in model.profile.routes.first { $0.path == p }?.name ?? (p as NSString).lastPathComponent }
         return names.joined(separator: ", ")
     }
@@ -182,16 +182,16 @@ struct RuleRow: View {
                 Text(exit.name).font(Theme.font(12, .medium)).lineLimit(1)
             }
             .frame(width: 130, alignment: .leading)
-            Text("\(model.matchCount(reason: "Правило №\(index + 1)"))").font(Theme.font(12)).foregroundStyle(Theme.text2)
+            Text(verbatim: "\(model.matchCount(reason: RouteExplainer.Reason.rule(index: index + 1).title))").font(Theme.font(12)).foregroundStyle(Theme.text2)
                 .frame(width: 60, alignment: .leading)
             HStack(spacing: 10) {
                 LimeToggle(isOn: Binding(get: { rule.enabled }, set: { var r = rule; r.enabled = $0; model.updateRule(r) }))
                 Menu {
-                    Button("Изменить…") { onEdit(rule) }
-                    Button("Выше") { model.moveRule(rule, by: -1) }.disabled(index == 0)
-                    Button("Ниже") { model.moveRule(rule, by: 1) }.disabled(index == model.profile.rules.count - 1)
+                    Button(L("Изменить…")) { onEdit(rule) }
+                    Button(L("Выше")) { model.moveRule(rule, by: -1) }.disabled(index == 0)
+                    Button(L("Ниже")) { model.moveRule(rule, by: 1) }.disabled(index == model.profile.rules.count - 1)
                     Divider()
-                    Button("Удалить", role: .destructive) { model.deleteRule(rule) }
+                    Button(L("Удалить"), role: .destructive) { model.deleteRule(rule) }
                 } label: { Image(systemName: "ellipsis").foregroundStyle(Theme.text2).frame(width: 20, height: 20) }
                     .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden).fixedSize()
             }
@@ -226,7 +226,7 @@ struct RuleEditor: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             HStack {
-                Text(rule == nil ? "Новое правило" : "Правило").font(Theme.font(20, .semibold))
+                Text(rule == nil ? L("Новое правило") : L("Правило")).font(Theme.font(20, .semibold))
                 Spacer()
                 Button { dismiss() } label: { Image(systemName: "xmark") }.buttonStyle(.plain).foregroundStyle(Theme.text2)
             }
@@ -236,21 +236,21 @@ struct RuleEditor: View {
             .pickerStyle(.segmented).labelsHidden()
 
             VStack(alignment: .leading, spacing: 6) {
-                Text("Условие").font(Theme.font(12, .medium)).foregroundStyle(Theme.text2)
+                Text(L("Условие")).font(Theme.font(12, .medium)).foregroundStyle(Theme.text2)
                 TextField("", text: $text, prompt: Text(placeholder).foregroundStyle(Theme.text3), axis: .vertical)
                     .textFieldStyle(.plain).font(.system(size: 13, design: .monospaced))
                     .lineLimit(3...6)
                     .padding(10)
                     .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10))
                     .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.line))
-                Text(kind == .domain ? "Домен совпадает и со всеми поддоменами. Через запятую или с новой строки."
-                     : "Через запятую или с новой строки.")
+                Text(kind == .domain ? L("Домен совпадает и со всеми поддоменами. Через запятую или с новой строки.")
+                     : L("Через запятую или с новой строки."))
                     .font(Theme.font(11)).foregroundStyle(Theme.text3)
             }
 
             VStack(alignment: .leading, spacing: 8) {
-                Text("Для каких приложений").font(Theme.font(12, .medium)).foregroundStyle(Theme.text2)
-                Toggle("Все приложения", isOn: Binding(get: { appPaths.isEmpty }, set: { if $0 { appPaths = [] } }))
+                Text(L("Для каких приложений")).font(Theme.font(12, .medium)).foregroundStyle(Theme.text2)
+                Toggle(L("Все приложения"), isOn: Binding(get: { appPaths.isEmpty }, set: { if $0 { appPaths = [] } }))
                     .toggleStyle(.checkbox).font(Theme.font(12))
                 ScrollView {
                     VStack(alignment: .leading, spacing: 6) {
@@ -266,13 +266,13 @@ struct RuleEditor: View {
                 }
                 .frame(maxHeight: 120)
                 if model.profile.routes.isEmpty {
-                    Text("Чтобы ограничить правило приложениями, сначала добавьте их на экране «Приложения».")
+                    Text(L("Чтобы ограничить правило приложениями, сначала добавьте их на экране «Приложения»."))
                         .font(Theme.font(11)).foregroundStyle(Theme.text3)
                 }
             }
 
             HStack {
-                Text("Куда").font(Theme.font(12, .medium)).foregroundStyle(Theme.text2)
+                Text(L("Куда")).font(Theme.font(12, .medium)).foregroundStyle(Theme.text2)
                 Picker("", selection: $exitID) {
                     ForEach(model.profile.allExits) { Text($0.name).tag($0.id) }
                 }
@@ -281,7 +281,7 @@ struct RuleEditor: View {
             Spacer()
             HStack {
                 Spacer()
-                PrimaryButton(title: "Сохранить", systemImage: "checkmark") { save() }
+                PrimaryButton(title: L("Сохранить"), systemImage: "checkmark") { save() }
                     .disabled(Rule.splitValues(text).isEmpty)
                     .opacity(Rule.splitValues(text).isEmpty ? 0.4 : 1)
             }
@@ -326,21 +326,21 @@ struct RouteTesterPanel: View {
     @State private var checking = false
 
     private let steps: [(String, String)] = [
-        ("Свои правила", "Домены, IP, порты"),
-        ("Готовые наборы", "Если включены"),
-        ("Маршрут приложения", "Из раздела «Приложения»"),
-        ("По умолчанию", ""),
+        (L("Свои правила"), L("Домены, IP, порты")),
+        (L("Готовые наборы"), L("Если включены")),
+        (L("Маршрут приложения"), L("Из раздела «Приложения»")),
+        (L("По умолчанию"), ""),
     ]
 
     var body: some View {
         Card {
             VStack(alignment: .leading, spacing: 14) {
-                Text("ПРОВЕРКА МАРШРУТА").font(Theme.font(10, .bold)).foregroundStyle(Theme.lime).tracking(1)
-                Text("Узнайте, куда пойдёт запрос, ещё до того как он случится")
+                Text(L("ПРОВЕРКА МАРШРУТА")).font(Theme.font(10, .bold)).foregroundStyle(Theme.lime).tracking(1)
+                Text(L("Узнайте, куда пойдёт запрос, ещё до того как он случится"))
                     .font(Theme.font(13)).foregroundStyle(Theme.text2)
                 HStack(spacing: 8) {
                     Image(systemName: "globe").foregroundStyle(Theme.text3)
-                    TextField("", text: $host, prompt: Text("домен или IP").foregroundStyle(Theme.text3))
+                    TextField("", text: $host, prompt: Text(L("домен или IP")).foregroundStyle(Theme.text3))
                         .textFieldStyle(.plain).font(.system(size: 13, design: .monospaced))
                         .onSubmit { check() }
                 }
@@ -348,12 +348,12 @@ struct RouteTesterPanel: View {
                 .background(Theme.bg, in: RoundedRectangle(cornerRadius: 10))
                 .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.line))
                 Menu {
-                    Button("Любое приложение") { appPath = nil; check() }
+                    Button(L("Любое приложение")) { appPath = nil; check() }
                     ForEach(model.profile.routes) { r in Button(r.name) { appPath = r.path; check() } }
                 } label: {
                     HStack {
                         Image(systemName: "macwindow").foregroundStyle(Theme.text3)
-                        Text(model.profile.routes.first { $0.path == appPath }?.name ?? "Любое приложение").font(Theme.font(13))
+                        Text(model.profile.routes.first { $0.path == appPath }?.name ?? L("Любое приложение")).font(Theme.font(13))
                         Spacer()
                         Image(systemName: "chevron.up.chevron.down").font(.system(size: 9)).foregroundStyle(Theme.text3)
                     }
@@ -370,7 +370,7 @@ struct RouteTesterPanel: View {
                     ProgressView().controlSize(.small)
                 }
 
-                Text("Порядок проверки").font(Theme.font(12, .medium)).foregroundStyle(Theme.text2).padding(.top, 6)
+                Text(L("Порядок проверки")).font(Theme.font(12, .medium)).foregroundStyle(Theme.text2).padding(.top, 6)
                 ForEach(Array(steps.enumerated()), id: \.offset) { i, s in
                     let hit = decision?.reason.step == i + 1
                     HStack(spacing: 12) {
@@ -382,7 +382,7 @@ struct RouteTesterPanel: View {
                                 .font(Theme.font(11)).foregroundStyle(Theme.text3)
                         }
                         Spacer()
-                        if hit { Text("совпало").font(Theme.font(11, .semibold)).foregroundStyle(Theme.lime) }
+                        if hit { Text(L("совпало")).font(Theme.font(11, .semibold)).foregroundStyle(Theme.lime) }
                     }
                 }
                 Spacer(minLength: 0)
@@ -401,13 +401,13 @@ struct RouteTesterPanel: View {
         return VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
                 Image(systemName: exit.kind == .block ? "xmark.shield" : "checkmark.shield").foregroundStyle(color)
-                Text(exit.kind == .block ? "Заблокировано" : exit.name).font(Theme.font(18, .semibold)).foregroundStyle(color)
+                Text(exit.kind == .block ? L("Заблокировано") : exit.name).font(Theme.font(18, .semibold)).foregroundStyle(color)
             }
             Text(explanation(d)).font(Theme.font(12)).foregroundStyle(Theme.text2).fixedSize(horizontal: false, vertical: true)
             if !available {
                 let fallback = model.activeFallback(for: exit)
-                Text("Сейчас этот VPN отключён — " + (fallback.map { "запрос пойдёт через резерв \($0.name)." }
-                    ?? (model.profile.killSwitch ? "запрос будет заблокирован (kill switch)." : "запрос пойдёт напрямую.")))
+                Text(L("Сейчас этот VPN отключён — ") + (fallback.map { L("запрос пойдёт через резерв \($0.name).") }
+                    ?? (model.profile.killSwitch ? L("запрос будет заблокирован (kill switch).") : L("запрос пойдёт напрямую."))))
                     .font(Theme.font(11)).foregroundStyle(fallback != nil ? Theme.amber : Theme.coral)
             }
         }
@@ -421,10 +421,10 @@ struct RouteTesterPanel: View {
         switch d.reason {
         case .rule(let i):
             let values = model.profile.rules[i - 1].values.prefix(3).joined(separator: ", ")
-            return "Сработало правило №\(i) — \(values). Маршрут приложения не учитывался."
-        case .preset(let id): return "Сработал набор «\(PresetInfo.info(id)?.title ?? id)»."
-        case .app(let name): return "Своих правил и наборов для этого адреса нет — работает маршрут приложения \(name)."
-        case .defaultRoute: return "Ни одно правило не подошло — маршрут по умолчанию."
+            return L("Сработало правило №\(i) — \(values). Маршрут приложения не учитывался.")
+        case .preset(let id): return L("Сработал набор «\(PresetInfo.info(id)?.title ?? id)».")
+        case .app(let name): return L("Своих правил и наборов для этого адреса нет — работает маршрут приложения \(name).")
+        case .defaultRoute: return L("Ни одно правило не подошло — маршрут по умолчанию.")
         }
     }
 

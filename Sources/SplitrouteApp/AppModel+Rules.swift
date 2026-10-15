@@ -223,15 +223,15 @@ extension AppModel {
 
     func registerHotKeys(openWindow: @escaping @MainActor () -> Void) {
         HotKeys.shared.register([
-            .init(keyCode: kVK_ANSI_V, title: "Вкл / выкл маршрутизацию", keys: ["⌥", "⌘", "V"]) { [weak self] in
+            .init(keyCode: kVK_ANSI_V, title: L("Вкл / выкл маршрутизацию"), keys: ["⌥", "⌘", "V"]) { [weak self] in
                 guard let self, self.state != .notInstalled else { return }
                 self.enabled.toggle()
             },
-            .init(keyCode: kVK_ANSI_J, title: "Открыть журнал", keys: ["⌥", "⌘", "J"]) {
+            .init(keyCode: kVK_ANSI_J, title: L("Открыть журнал"), keys: ["⌥", "⌘", "J"]) {
                 UserDefaults.standard.set(Screen.journal.rawValue, forKey: "screen")
                 openWindow()
             },
-            .init(keyCode: kVK_ANSI_R, title: "Открыть правила", keys: ["⌥", "⌘", "R"]) {
+            .init(keyCode: kVK_ANSI_R, title: L("Открыть правила"), keys: ["⌥", "⌘", "R"]) {
                 UserDefaults.standard.set(Screen.rules.rawValue, forKey: "screen")
                 openWindow()
             },

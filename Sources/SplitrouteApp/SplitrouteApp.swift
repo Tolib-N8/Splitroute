@@ -42,11 +42,11 @@ struct MenuBarContent: View {
 
     var body: some View {
         @Bindable var model = model
-        Toggle("Маршрутизация", isOn: $model.enabled)
+        Toggle(L("Маршрутизация"), isOn: $model.enabled)
         Text(statusLine)
         Divider()
         if let active = model.activeScenario {
-            Section("Сценарий") {
+            Section(L("Сценарий")) {
                 ForEach(model.scenarios) { s in
                     Button { model.activateScenario(s.id) } label: {
                         if s.id == active.id { Label(s.name, systemImage: "checkmark") } else { Text(s.name) }
@@ -55,7 +55,7 @@ struct MenuBarContent: View {
             }
             Divider()
         }
-        Section("Запущенные приложения") {
+        Section(L("Запущенные приложения")) {
             ForEach(runningApps, id: \.processIdentifier) { app in
                 let path = app.bundleURL!.path
                 let current = app.bundleIdentifier.flatMap { model.profile.route(for: $0) }?.exitID ?? model.profile.defaultExitID
@@ -73,24 +73,24 @@ struct MenuBarContent: View {
             }
         }
         Divider()
-        Button("Открыть Splitroute") {
+        Button(L("Открыть Splitroute")) {
             openWindow(id: "main")
             NSApp.activate()
         }
         .keyboardShortcut("o")
-        Button("Выйти") { NSApp.terminate(nil) }.keyboardShortcut("q")
+        Button(L("Выйти")) { NSApp.terminate(nil) }.keyboardShortcut("q")
     }
 
     private var statusLine: String {
         switch model.state {
         case .running:
             let vpn = model.vpnServices.filter { $0.isConnected && !$0.isMesh }.map(\.name)
-            return vpn.isEmpty ? "Работает · VPN-приложения отключены" : "Работает · " + vpn.joined(separator: ", ")
-        case .applying: return "Применяю…"
-        case .stopped: return "Выключено"
-        case .notInstalled: return "Компонент не установлен"
-        case .needsUpdate: return "Нужно обновить компонент"
-        case .failed(let e): return "Ошибка: " + e
+            return vpn.isEmpty ? L("Работает · VPN-приложения отключены") : L("Работает · ") + vpn.joined(separator: ", ")
+        case .applying: return L("Применяю…")
+        case .stopped: return L("Выключено")
+        case .notInstalled: return L("Компонент не установлен")
+        case .needsUpdate: return L("Нужно обновить компонент")
+        case .failed(let e): return L("Ошибка: ") + e
         }
     }
 }

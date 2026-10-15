@@ -62,7 +62,7 @@ struct OnboardingView: View {
     private func footer(primary: String, enabled: Bool = true, skip: String? = nil, onSkip: (() -> Void)? = nil, action: @escaping () -> Void) -> some View {
         HStack {
             if step != .welcome {
-                Button("Назад") { back() }.buttonStyle(.plain).font(Theme.font(13)).foregroundStyle(Theme.text2)
+                Button(L("Назад")) { back() }.buttonStyle(.plain).font(Theme.font(13)).foregroundStyle(Theme.text2)
             }
             Spacer()
             if let skip {
@@ -90,18 +90,18 @@ struct OnboardingView: View {
             Spacer()
             Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 112, height: 112)
             Text("Splitroute").font(Theme.font(34, .semibold)).padding(.top, 18)
-            Text("Каждое приложение — своим путём").font(Theme.font(15)).foregroundStyle(Theme.text2).padding(.top, 6)
+            Text(L("Каждое приложение — своим путём")).font(Theme.font(15)).foregroundStyle(Theme.text2).padding(.top, 6)
             VStack(alignment: .leading, spacing: 16) {
-                feature("arrow.triangle.branch", "VPN — только тем, кому он нужен",
-                        "WhatsApp, Chrome, Claude идут через VPN, остальное — напрямую. Одновременно, без переключений.")
-                feature("checkmark.shield", "Ваш VPN остаётся вашим",
-                        "Работает поверх VPN-приложений (ZoogVPN, AIRLINK…) и своих конфигов: VLESS, WireGuard, OpenVPN.")
-                feature("lock", "Без утечек",
-                        "Если VPN отключился, его приложения блокируются, а не уходят в интернет напрямую.")
+                feature("arrow.triangle.branch", L("VPN — только тем, кому он нужен"),
+                        L("WhatsApp, Chrome, Claude идут через VPN, остальное — напрямую. Одновременно, без переключений."))
+                feature("checkmark.shield", L("Ваш VPN остаётся вашим"),
+                        L("Работает поверх VPN-приложений (ZoogVPN, AIRLINK…) и своих конфигов: VLESS, WireGuard, OpenVPN."))
+                feature("lock", L("Без утечек"),
+                        L("Если VPN отключился, его приложения блокируются, а не уходят в интернет напрямую."))
             }
             .padding(.top, 36)
             Spacer()
-            footer(primary: "Начать") { next() }
+            footer(primary: L("Начать")) { next() }
         }
     }
 
@@ -118,51 +118,51 @@ struct OnboardingView: View {
 
     private var move: some View {
         VStack(spacing: 0) {
-            header("Переместите в «Программы»",
-                   "Оттуда Splitroute сможет сам обновляться и запускаться вместе с macOS. Сейчас приложение открыто из \((Bundle.main.bundlePath as NSString).deletingLastPathComponent.replacingOccurrences(of: NSHomeDirectory(), with: "~")).")
+            header(L("Переместите в «Программы»"),
+                   L("Оттуда Splitroute сможет сам обновляться и запускаться вместе с macOS. Сейчас приложение открыто из \((Bundle.main.bundlePath as NSString).deletingLastPathComponent.replacingOccurrences(of: NSHomeDirectory(), with: "~"))."))
             Spacer()
             Image(systemName: "folder.badge.plus").font(.system(size: 54)).foregroundStyle(Theme.lime)
             if let moveError { Text(moveError).font(Theme.font(12)).foregroundStyle(Theme.coral).padding(.top, 16) }
             Spacer()
-            footer(primary: "Переместить и перезапустить", skip: "Пропустить") { moveToApplications() }
+            footer(primary: L("Переместить и перезапустить"), skip: L("Пропустить")) { moveToApplications() }
         }
     }
 
     private var component: some View {
         VStack(spacing: 0) {
-            header("Системный компонент",
-                   "Ядро sing-box перехватывает трафик и раскладывает его по выходам. Оно работает от администратора, поэтому macOS один раз спросит пароль.")
+            header(L("Системный компонент"),
+                   L("Ядро sing-box перехватывает трафик и раскладывает его по выходам. Оно работает от администратора, поэтому macOS один раз спросит пароль."))
             Spacer()
             VStack(spacing: 14) {
                 switch model.state {
                 case .notInstalled, .needsUpdate:
                     Image(systemName: "lock.shield").font(.system(size: 54)).foregroundStyle(Theme.lime)
-                    PrimaryButton(title: model.state == .needsUpdate ? "Обновить компонент" : "Установить компонент", systemImage: "arrow.down.circle") {
+                    PrimaryButton(title: model.state == .needsUpdate ? L("Обновить компонент") : L("Установить компонент"), systemImage: "arrow.down.circle") {
                         Task { await model.installCore() }
                     }
                 case .applying:
                     ProgressView().controlSize(.large)
-                    Text("Устанавливаю…").font(Theme.font(13)).foregroundStyle(Theme.text2)
+                    Text(L("Устанавливаю…")).font(Theme.font(13)).foregroundStyle(Theme.text2)
                 case .failed(let e):
                     Image(systemName: "exclamationmark.triangle").font(.system(size: 44)).foregroundStyle(Theme.coral)
                     Text(e).font(Theme.font(12)).foregroundStyle(Theme.text2).multilineTextAlignment(.center)
-                    PrimaryButton(title: "Ещё раз", systemImage: "arrow.clockwise") { Task { await model.installCore() } }
+                    PrimaryButton(title: L("Ещё раз"), systemImage: "arrow.clockwise") { Task { await model.installCore() } }
                 case .running, .stopped:
                     Image(systemName: "checkmark.shield.fill").font(.system(size: 54)).foregroundStyle(Theme.lime)
-                    Text("Компонент установлен").font(Theme.font(15, .semibold))
+                    Text(L("Компонент установлен")).font(Theme.font(15, .semibold))
                 }
             }
             Spacer()
-            footer(primary: "Дальше", enabled: model.state == .running || model.state == .stopped,
-                   skip: HelperClient.runningFromBundle ? nil : "Пропустить") { next() }
+            footer(primary: L("Дальше"), enabled: model.state == .running || model.state == .stopped,
+                   skip: HelperClient.runningFromBundle ? nil : L("Пропустить")) { next() }
         }
     }
 
     private var exits: some View {
         let vpns = model.vpnServices.filter { !$0.isMesh }
         return VStack(spacing: 0) {
-            header("Куда направлять трафик",
-                   "Splitroute не заменяет ваш VPN, а отправляет в него нужные приложения. Найдены VPN-приложения из Системных настроек; можно добавить и свой конфиг.")
+            header(L("Куда направлять трафик"),
+                   L("Splitroute не заменяет ваш VPN, а отправляет в него нужные приложения. Найдены VPN-приложения из Системных настроек; можно добавить и свой конфиг."))
             ScrollView {
                 VStack(spacing: 8) {
                     ForEach(vpns) { s in
@@ -170,7 +170,7 @@ struct OnboardingView: View {
                             Image(systemName: "network.badge.shield.half.filled").foregroundStyle(s.isConnected ? Theme.lime : Theme.text3)
                             Text(s.name).font(Theme.font(14, .medium))
                             Spacer()
-                            Text(s.isConnected ? "Подключён" : "Отключён").font(Theme.font(12)).foregroundStyle(s.isConnected ? Theme.lime : Theme.text3)
+                            Text(s.isConnected ? L("Подключён") : L("Отключён")).font(Theme.font(12)).foregroundStyle(s.isConnected ? Theme.lime : Theme.text3)
                         }
                         .padding(14).background(Theme.surface, in: RoundedRectangle(cornerRadius: 12))
                     }
@@ -184,16 +184,16 @@ struct OnboardingView: View {
                         .padding(14).background(Theme.surface, in: RoundedRectangle(cornerRadius: 12))
                     }
                     if vpns.isEmpty && model.tunnelExits.isEmpty {
-                        Text("VPN-приложений не найдено. Подключите VPN-приложение или импортируйте свой конфиг.")
+                        Text(L("VPN-приложений не найдено. Подключите VPN-приложение или импортируйте свой конфиг."))
                             .font(Theme.font(13)).foregroundStyle(Theme.text2).padding(.vertical, 20)
                     }
-                    OutlineButton(title: "Импортировать ссылку, подписку, .conf или .ovpn", systemImage: "square.and.arrow.down") { showImport = true }
+                    OutlineButton(title: L("Импортировать ссылку, подписку, .conf или .ovpn"), systemImage: "square.and.arrow.down") { showImport = true }
                         .padding(.top, 8)
                 }
                 .padding(.top, 24)
             }
             .scrollIndicators(.never)
-            footer(primary: "Дальше", skip: model.tunnelExits.isEmpty ? "Позже" : nil) { preparePicks(); next() }
+            footer(primary: L("Дальше"), skip: model.tunnelExits.isEmpty ? L("Позже") : nil) { preparePicks(); next() }
         }
     }
 
@@ -231,8 +231,8 @@ struct OnboardingView: View {
 
     private var apps: some View {
         VStack(spacing: 0) {
-            header("Приложения",
-                   "Мы подобрали маршруты для установленных приложений. Поменять можно в любой момент на экране «Приложения».")
+            header(L("Приложения"),
+                   L("Мы подобрали маршруты для установленных приложений. Поменять можно в любой момент на экране «Приложения»."))
             ScrollView {
                 VStack(spacing: 0) {
                     ForEach(candidates, id: \.path) { c in
@@ -242,8 +242,8 @@ struct OnboardingView: View {
                             Spacer()
                             Picker("", selection: Binding(get: { picks[c.path] ?? nil }, set: { picks[c.path] = $0 })) {
                                 Text("VPN").tag(RouteKind?.some(.tunnel))
-                                Text("Напрямую").tag(RouteKind?.some(.direct))
-                                Text("Не трогать").tag(RouteKind?.none)
+                                Text(L("Напрямую")).tag(RouteKind?.some(.direct))
+                                Text(L("Не трогать")).tag(RouteKind?.none)
                             }
                             .pickerStyle(.segmented).labelsHidden().frame(width: 260)
                         }
@@ -251,38 +251,38 @@ struct OnboardingView: View {
                         Divider().overlay(Theme.line)
                     }
                     if candidates.isEmpty {
-                        Text("Популярных приложений не нашлось — добавьте свои на экране «Приложения».")
+                        Text(L("Популярных приложений не нашлось — добавьте свои на экране «Приложения»."))
                             .font(Theme.font(13)).foregroundStyle(Theme.text2).padding(.vertical, 20)
                     }
                 }
                 .padding(.top, 20)
             }
             .scrollIndicators(.never)
-            footer(primary: "Дальше") { applyPicks(); next() }
+            footer(primary: L("Дальше")) { applyPicks(); next() }
         }
     }
 
     private var finish: some View {
         @Bindable var model = model
         return VStack(spacing: 0) {
-            header("Почти готово", "Последние настройки. Всё можно поменять позже в «Настройках».")
+            header(L("Почти готово"), L("Последние настройки. Всё можно поменять позже в «Настройках»."))
             VStack(spacing: 0) {
-                SettingRow("Остальные приложения", "Куда идут приложения без правила") {
+                SettingRow(L("Остальные приложения"), L("Куда идут приложения без правила")) {
                     Picker("", selection: $model.profile.defaultExitID) {
                         ForEach(model.profile.allExits.filter { $0.kind != .block }) { Text($0.name).tag($0.id) }
                     }
                     .labelsHidden().frame(width: 180)
                 }
-                SettingRow("Китайские сервисы — всегда напрямую", "Банки, WeChat, Alipay, Baidu и другие — даже из браузера через VPN") {
+                SettingRow(L("Китайские сервисы — всегда напрямую"), L("Банки, WeChat, Alipay, Baidu и другие — даже из браузера через VPN")) {
                     LimeToggle(isOn: $cnDirect)
                 }
-                SettingRow("Kill switch", "Если VPN отключился и другого нет — блокировать его приложения") {
+                SettingRow("Kill switch", L("Если VPN отключился и другого нет — блокировать его приложения")) {
                     LimeToggle(isOn: $model.profile.killSwitch)
                 }
             }
             .padding(.top, 24)
             Spacer()
-            footer(primary: "Готово") {
+            footer(primary: L("Готово")) {
                 Task {
                     if cnDirect, let info = PresetInfo.info("cn") { await model.setPreset(info, enabled: true) }
                     model.enabled = true
@@ -327,7 +327,7 @@ struct OnboardingView: View {
             try open.run()
             NSApp.terminate(nil)
         } catch {
-            moveError = "Не удалось переместить: \(error.localizedDescription). Перетащите Splitroute в «Программы» вручную."
+            moveError = L("Не удалось переместить: \(error.localizedDescription). Перетащите Splitroute в «Программы» вручную.")
         }
     }
 }

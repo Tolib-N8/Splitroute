@@ -17,9 +17,9 @@ public enum ParseError: Error, Equatable, LocalizedError {
 
     public var errorDescription: String? {
         switch self {
-        case .unsupportedScheme(let s): return "Неподдерживаемый формат: \(s)"
-        case .missing(let f): return "Не хватает поля: \(f)"
-        case .invalid(let f): return "Некорректное значение: \(f)"
+        case .unsupportedScheme(let s): return String(localized: "Неподдерживаемый формат: \(s)")
+        case .missing(let f): return String(localized: "Не хватает поля: \(f)")
+        case .invalid(let f): return String(localized: "Некорректное значение: \(f)")
         }
     }
 }

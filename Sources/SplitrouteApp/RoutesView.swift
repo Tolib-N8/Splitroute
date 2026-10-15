@@ -12,18 +12,18 @@ struct RoutesView: View {
         let graph = FlowGraph(model: model)
         VStack(alignment: .leading, spacing: 0) {
             ScreenHeader(
-                title: "Куда идёт трафик",
-                summary: "\(Format.bytes(graph.totalBytes)) за сутки · \(Format.apps(graph.apps.count))",
+                title: L("Куда идёт трафик"),
+                summary: L("\(Format.bytes(graph.totalBytes)) за сутки · \(Format.apps(graph.apps.count))"),
                 footnote: model.updatedText
             ) {
-                Text("Раздельный туннель · \(model.state.isRunning ? "Вкл" : "Выкл")")
+                Text(L("Раздельный туннель · \(model.state.isRunning ? L("Вкл") : L("Выкл"))"))
                     .font(Theme.font(13)).foregroundStyle(Theme.text2)
             }
             if graph.apps.isEmpty {
                 VStack(spacing: 12) {
                     Image(systemName: "point.3.connected.trianglepath.dotted").font(.system(size: 30)).foregroundStyle(Theme.text3)
-                    Text("Пока нечего показать").font(Theme.font(15, .semibold))
-                    Text("Настройте приложения или подождите, пока они выйдут в сеть").font(Theme.font(12)).foregroundStyle(Theme.text2)
+                    Text(L("Пока нечего показать")).font(Theme.font(15, .semibold))
+                    Text(L("Настройте приложения или подождите, пока они выйдут в сеть")).font(Theme.font(12)).foregroundStyle(Theme.text2)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
@@ -34,7 +34,7 @@ struct RoutesView: View {
             }
             HStack(spacing: 10) {
                 Spacer()
-                OutlineButton(title: "Добавить приложение", systemImage: "plus") { showAdd = true }
+                OutlineButton(title: L("Добавить приложение"), systemImage: "plus") { showAdd = true }
                 Button { paused.toggle() } label: {
                     Image(systemName: paused ? "play.fill" : "pause.fill")
                         .frame(width: 38, height: 38)
@@ -126,7 +126,7 @@ struct FlowGraph {
             let n = exitApps[exit.tag] ?? 0
             exits.append(Node(
                 id: exit.tag,
-                title: exit.kind == .block ? "Заблокировано" : exit.name,
+                title: exit.kind == .block ? L("Заблокировано") : exit.name,
                 subtitle: "\(Format.apps(n)) · \(Format.bytes(bytes))",
                 weight: exitWeights[exit.tag] ?? 0,
                 color: model.color(for: exit)

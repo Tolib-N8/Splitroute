@@ -40,7 +40,7 @@ public enum NetworkState {
     /// `IPv4.Router=192.168.18.1;IPv4.RouterHardwareAddress=e4:f3:…` → «роутер 192.168.18.1».
     public static func describe(signature: String) -> String {
         let router = signature.split(separator: ";").first { $0.hasPrefix("IPv4.Router=") }.map { $0.dropFirst("IPv4.Router=".count) }
-        return router.map { "роутер \($0)" } ?? "сеть"
+        return router.map { String(localized: "роутер \($0)") } ?? String(localized: "сеть")
     }
 
     /// Все VPN-сервисы из текущего набора сетевых настроек.

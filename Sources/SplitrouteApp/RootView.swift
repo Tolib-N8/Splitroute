@@ -9,12 +9,12 @@ enum Screen: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .routes: return "Маршруты"
-        case .apps: return "Приложения"
-        case .servers: return "Серверы"
-        case .rules: return "Правила"
-        case .journal: return "Журнал"
-        case .settings: return "Настройки"
+        case .routes: return L("Маршруты")
+        case .apps: return L("Приложения")
+        case .servers: return L("Серверы")
+        case .rules: return L("Правила")
+        case .journal: return L("Журнал")
+        case .settings: return L("Настройки")
         }
     }
 
@@ -143,19 +143,19 @@ struct TopBar: View {
 
     private var statusTitle: String {
         switch model.state {
-        case .running: return "Маршрутизация включена"
-        case .applying: return "Применяю…"
-        case .stopped: return "Маршрутизация выключена"
-        case .notInstalled: return "Компонент не установлен"
-        case .needsUpdate: return "Нужно обновить компонент"
-        case .failed: return "Ошибка ядра"
+        case .running: return L("Маршрутизация включена")
+        case .applying: return L("Применяю…")
+        case .stopped: return L("Маршрутизация выключена")
+        case .notInstalled: return L("Компонент не установлен")
+        case .needsUpdate: return L("Нужно обновить компонент")
+        case .failed: return L("Ошибка ядра")
         }
     }
 
     private var statusDetail: String {
         let connected = model.vpnServices.filter { $0.isConnected && !$0.isMesh }.map(\.name)
-        var parts = [connected.isEmpty ? "VPN-приложения отключены" : connected.joined(separator: ", ")]
-        if let iface = model.physicalInterface { parts.append("сеть \(iface)") }
+        var parts = [connected.isEmpty ? L("VPN-приложения отключены") : connected.joined(separator: ", ")]
+        if let iface = model.physicalInterface { parts.append(L("сеть \(iface)")) }
         parts.append(Format.apps(model.profile.routes.count))
         return parts.joined(separator: " · ")
     }
@@ -200,7 +200,7 @@ struct InstallBanner: View {
                     .font(Theme.font(12)).foregroundStyle(Theme.text2)
             }
             Spacer()
-            PrimaryButton(title: update ? "Обновить" : "Установить", systemImage: "arrow.down.circle") {
+            PrimaryButton(title: update ? L("Обновить") : L("Установить"), systemImage: "arrow.down.circle") {
                 Task { await model.installCore() }
             }
         }
@@ -238,23 +238,23 @@ struct UpdateBanner: View {
     var body: some View {
         switch updater.state {
         case .available(let a):
-            banner(icon: "arrow.down.circle.fill", title: "Доступна версия \(a.version)", detail: "У вас \(Updater.currentVersion)") {
+            banner(icon: "arrow.down.circle.fill", title: L("Доступна версия \(a.version)"), detail: L("У вас \(Updater.currentVersion)")) {
                 if !a.notes.isEmpty {
                     Button("Что нового") { showNotes = true }.buttonStyle(.plain).font(Theme.font(12)).foregroundStyle(Theme.text2)
                         .popover(isPresented: $showNotes) {
                             ScrollView { Text(a.notes).font(Theme.font(12)).padding(16).frame(width: 360, alignment: .leading) }.frame(maxHeight: 300)
                         }
                 }
-                PrimaryButton(title: "Установить", systemImage: "arrow.down") { Task { await updater.install(a) } }
+                PrimaryButton(title: L("Установить"), systemImage: "arrow.down") { Task { await updater.install(a) } }
             }
         case .downloading(let a, let p):
-            banner(icon: "arrow.down.circle", title: "Загружаю \(a.version)…", detail: "\(Int(p * 100))%") {
+            banner(icon: "arrow.down.circle", title: L("Загружаю \(a.version)…"), detail: "\(Int(p * 100))%") {
                 ProgressView(value: p).frame(width: 160)
             }
         case .installing:
-            banner(icon: "gearshape.2", title: "Устанавливаю обновление…", detail: "Splitroute перезапустится") { ProgressView().controlSize(.small) }
+            banner(icon: "gearshape.2", title: L("Устанавливаю обновление…"), detail: L("Splitroute перезапустится")) { ProgressView().controlSize(.small) }
         case .failed(let e):
-            banner(icon: "exclamationmark.triangle", title: "Обновление", detail: e) {
+            banner(icon: "exclamationmark.triangle", title: L("Обновление"), detail: e) {
                 Button("Повторить") { Task { await updater.check(userInitiated: true) } }
                     .buttonStyle(.plain).font(Theme.font(12, .semibold)).foregroundStyle(Theme.lime)
             }

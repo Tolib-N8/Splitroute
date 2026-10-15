@@ -18,71 +18,72 @@ struct SettingsView: View {
         @Bindable var model = model
         VStack(alignment: .leading, spacing: 0) {
             ScreenHeader(
-                title: "Настройки",
-                summary: "Изменения применяются сразу",
-                footnote: model.ruleSetsUpdated.map { "Базы доменов: " + $0.formatted(date: .abbreviated, time: .shortened) } ?? "Базы доменов не загружены"
+                title: L("Настройки"),
+                summary: L("Изменения применяются сразу"),
+                footnote: model.ruleSetsUpdated.map { L("Базы доменов: ") + $0.formatted(date: .abbreviated, time: .shortened) } ?? L("Базы доменов не загружены")
             ) {
-                Text("Splitroute \(Updater.currentVersion) · ядро sing-box \(model.singBoxVersion)").font(Theme.font(13)).foregroundStyle(Theme.text2)
+                Text(L("Splitroute \(Updater.currentVersion) · ядро sing-box \(model.singBoxVersion)")).font(Theme.font(13)).foregroundStyle(Theme.text2)
             }
             HStack(alignment: .top, spacing: 20) {
                 ScrollView {
                     HStack(alignment: .top, spacing: 32) {
                         VStack(alignment: .leading, spacing: 0) {
-                            SectionTitle("Запуск")
-                            SettingRow("Открывать при входе в систему", "Splitroute стартует вместе с macOS") {
+                            SectionTitle(L("Запуск"))
+                            LanguageRow()
+                            SettingRow(L("Открывать при входе в систему"), L("Splitroute стартует вместе с macOS")) {
                                 LimeToggle(isOn: Binding(get: { loginItem }, set: setLoginItem))
                             }
-                            SettingRow("Включать маршрутизацию при запуске", "Иначе — как было при выходе") {
+                            SettingRow(L("Включать маршрутизацию при запуске"), L("Иначе — как было при выходе")) {
                                 LimeToggle(isOn: $enableOnLaunch)
                             }
-                            SettingRow("Значок в строке меню", "Переключать маршруты, не открывая окно") {
+                            SettingRow(L("Значок в строке меню"), L("Переключать маршруты, не открывая окно")) {
                                 LimeToggle(isOn: $showMenuBar)
                             }
-                            SectionTitle("Обновления").padding(.top, 28)
-                            SettingRow("Проверять автоматически", updateStatus) {
+                            SectionTitle(L("Обновления")).padding(.top, 28)
+                            SettingRow(L("Проверять автоматически"), updateStatus) {
                                 LimeToggle(isOn: Binding(get: { updater.autoCheck }, set: { updater.autoCheck = $0 }))
                             }
-                            SettingRow("Версия \(Updater.currentVersion) (\(Updater.currentBuild))", "Обновления подписаны ключом разработчика и проверяются перед установкой") {
+                            SettingRow(L("Версия \(Updater.currentVersion) (\(Updater.currentBuild))"), L("Обновления подписаны ключом разработчика и проверяются перед установкой")) {
                                 if let a = updater.availableUpdate {
-                                    Button("Установить \(a.version)") { Task { await updater.install(a) } }
+                                    Button(L("Установить \(a.version)")) { Task { await updater.install(a) } }
                                         .buttonStyle(.plain).font(Theme.font(12, .semibold)).foregroundStyle(Theme.lime)
                                 } else {
-                                    Button(updater.state == .checking ? "Проверяю…" : "Проверить") { Task { await updater.check(userInitiated: true) } }
+                                    Button(updater.state == .checking ? L("Проверяю…") : L("Проверить")) { Task { await updater.check(userInitiated: true) } }
                                         .buttonStyle(.plain).font(Theme.font(12, .semibold)).foregroundStyle(Theme.lime)
                                         .disabled(updater.state == .checking)
                                 }
                             }
-                            SettingRow("Приветствие", "Пройти первую настройку ещё раз") {
-                                Button("Показать") { onboardingDone = false }
+                            SettingRow(L("Приветствие"), L("Пройти первую настройку ещё раз")) {
+                                Button(L("Показать")) { onboardingDone = false }
                                     .buttonStyle(.plain).font(Theme.font(12, .semibold)).foregroundStyle(Theme.lime)
                             }
                             NotificationsSection().padding(.top, 28)
-                            SectionTitle("Туннель").padding(.top, 28)
-                            SettingRow("Маршрут по умолчанию", "Для приложений и доменов без правил") {
+                            SectionTitle(L("Туннель")).padding(.top, 28)
+                            SettingRow(L("Маршрут по умолчанию"), L("Для приложений и доменов без правил")) {
                                 Menu {
                                     ForEach(model.profile.allExits) { e in Button(e.name) { model.profile.defaultExitID = e.id } }
                                 } label: {
-                                    menuLabel(model.profile.exit(id: model.profile.defaultExitID)?.name ?? "Напрямую")
+                                    menuLabel(model.profile.exit(id: model.profile.defaultExitID)?.name ?? L("Напрямую"))
                                 }
                                 .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden).fixedSize()
                             }
-                            SettingRow("Kill switch", "Если VPN-приложение отключилось и резервного VPN нет — блокировать его приложения, а не пускать напрямую. Резерв выбирается в «Серверах»") {
+                            SettingRow("Kill switch", L("Если VPN-приложение отключилось и резервного VPN нет — блокировать его приложения, а не пускать напрямую. Резерв выбирается в «Серверах»")) {
                                 LimeToggle(isOn: $model.profile.killSwitch)
                             }
                         }
                         .frame(maxWidth: .infinity)
                         VStack(alignment: .leading, spacing: 0) {
-                            SectionTitle("DNS и IPv6")
+                            SectionTitle(L("DNS и IPv6"))
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("DNS-сервер для VPN-выходов").font(Theme.font(13, .semibold))
-                                Text("Запросы, которые проходят через ядро, резолвятся через подключённый VPN")
+                                Text(L("DNS-сервер для VPN-выходов")).font(Theme.font(13, .semibold))
+                                Text(L("Запросы, которые проходят через ядро, резолвятся через подключённый VPN"))
                                     .font(Theme.font(11)).foregroundStyle(Theme.text2)
                                 HStack {
                                     TextField("", text: $dns, prompt: Text("1.1.1.1").foregroundStyle(Theme.text3))
                                         .textFieldStyle(.plain).font(.system(size: 12, design: .monospaced))
                                         .onSubmit { saveDNS() }
                                     if dns != model.profile.tunnelDNS {
-                                        Button("Сохранить") { saveDNS() }.buttonStyle(.plain)
+                                        Button(L("Сохранить")) { saveDNS() }.buttonStyle(.plain)
                                             .font(Theme.font(12, .semibold)).foregroundStyle(Theme.lime)
                                     }
                                 }
@@ -92,15 +93,15 @@ struct SettingsView: View {
                             }
                             .padding(.vertical, 14)
                             Divider().overlay(Theme.line)
-                            SettingRow("Перехватывать системный DNS", "Ответы для VPN-приложений — через VPN, без подмены провайдером. Китайские и локальные домены — напрямую") {
+                            SettingRow(L("Перехватывать системный DNS"), L("Ответы для VPN-приложений — через VPN, без подмены провайдером. Китайские и локальные домены — напрямую")) {
                                 LimeToggle(isOn: $model.profile.hijackSystemDNS)
                             }
-                            SettingRow("Отключить IPv6", "Даже если сеть его поддерживает. Сейчас IPv6 \(model.networkHasIPv6 ? "есть" : "нет") — без него он и так отключён") {
+                            SettingRow(L("Отключить IPv6"), L("Даже если сеть его поддерживает. Сейчас IPv6 \(model.networkHasIPv6 ? L("есть") : L("нет")) — без него он и так отключён")) {
                                 LimeToggle(isOn: $model.profile.disableIPv6)
                             }
-                            SectionTitle("Базы доменов").padding(.top, 28)
-                            SettingRow("Обновить готовые наборы", model.ruleSetsUpdated.map { "Последнее обновление: " + $0.formatted(.relative(presentation: .named)) } ?? "Наборы ещё не скачивались") {
-                                Button("Обновить") { Task { await model.updateAllRuleSets() } }
+                            SectionTitle(L("Базы доменов")).padding(.top, 28)
+                            SettingRow(L("Обновить готовые наборы"), model.ruleSetsUpdated.map { L("Последнее обновление: ") + $0.formatted(.relative(presentation: .named)) } ?? L("Наборы ещё не скачивались")) {
+                                Button(L("Обновить")) { Task { await model.updateAllRuleSets() } }
                                     .buttonStyle(.plain).font(Theme.font(12, .semibold)).foregroundStyle(Theme.lime)
                             }
                             ScenariosSection().padding(.top, 28)
@@ -115,15 +116,15 @@ struct SettingsView: View {
             .padding(.top, 28)
         }
         .onAppear { dns = model.profile.tunnelDNS }
-        .confirmationDialog("Сбросить все настройки?", isPresented: $confirmReset) {
-            Button("Сбросить", role: .destructive) { model.resetProfile() }
+        .confirmationDialog(L("Сбросить все настройки?"), isPresented: $confirmReset) {
+            Button(L("Сбросить"), role: .destructive) { model.resetProfile() }
         } message: {
-            Text("Правила, маршруты приложений и свои конфигурации вернутся к исходным. Журнал сохранится.")
+            Text(L("Правила, маршруты приложений и свои конфигурации вернутся к исходным. Журнал сохранится."))
         }
-        .confirmationDialog("Удалить системный компонент?", isPresented: $confirmUninstall) {
-            Button("Удалить", role: .destructive) { Task { await model.uninstallCore() } }
+        .confirmationDialog(L("Удалить системный компонент?"), isPresented: $confirmUninstall) {
+            Button(L("Удалить"), role: .destructive) { Task { await model.uninstallCore() } }
         } message: {
-            Text("Ядро остановится, маршрутизация выключится. Понадобится пароль администратора.")
+            Text(L("Ядро остановится, маршрутизация выключится. Понадобится пароль администратора."))
         }
     }
 
@@ -131,12 +132,12 @@ struct SettingsView: View {
         HStack(spacing: 14) {
             Image(systemName: "arrow.counterclockwise").foregroundStyle(Theme.coral)
             VStack(alignment: .leading, spacing: 4) {
-                Text("Сбросить все настройки").font(Theme.font(13, .semibold))
-                Text("Правила, маршруты приложений и свои конфигурации вернутся к исходным. Журнал сохранится.")
+                Text(L("Сбросить все настройки")).font(Theme.font(13, .semibold))
+                Text(L("Правила, маршруты приложений и свои конфигурации вернутся к исходным. Журнал сохранится."))
                     .font(Theme.font(11)).foregroundStyle(Theme.text2)
             }
             Spacer()
-            Button("Сбросить…") { confirmReset = true }
+            Button(L("Сбросить…")) { confirmReset = true }
                 .buttonStyle(.plain).font(Theme.font(12, .semibold)).foregroundStyle(Theme.coral)
                 .padding(.horizontal, 14).frame(height: 32)
                 .overlay(Capsule().stroke(Theme.coral.opacity(0.6)))
@@ -148,11 +149,11 @@ struct SettingsView: View {
 
     private var updateStatus: String {
         switch updater.state {
-        case .upToDate: return "Установлена последняя версия"
-        case .available(let a): return "Доступна версия \(a.version)"
-        case .checking: return "Проверяю…"
+        case .upToDate: return L("Установлена последняя версия")
+        case .available(let a): return L("Доступна версия \(a.version)")
+        case .checking: return L("Проверяю…")
         case .failed(let e): return e
-        default: return updater.lastCheck.map { "Последняя проверка: " + $0.formatted(.relative(presentation: .named)) } ?? "Раз в 6 часов, через GitHub"
+        default: return updater.lastCheck.map { L("Последняя проверка: ") + $0.formatted(.relative(presentation: .named)) } ?? L("Раз в 6 часов, через GitHub")
         }
     }
 
@@ -176,7 +177,7 @@ struct SettingsView: View {
         do {
             if on { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() }
         } catch {
-            model.lastError = "Автозапуск: \(error.localizedDescription)"
+            model.lastError = L("Автозапуск: \(error.localizedDescription)")
         }
         loginItem = SMAppService.mainApp.status == .enabled
     }
@@ -224,41 +225,41 @@ struct SystemPanel: View {
 
     private var statusTitle: String {
         switch model.state {
-        case .running: return "Работает"
-        case .applying: return "Применяю…"
-        case .stopped: return "Остановлено"
-        case .notInstalled: return "Не установлено"
-        case .needsUpdate: return "Нужно обновить"
-        case .failed: return "Ошибка"
+        case .running: return L("Работает")
+        case .applying: return L("Применяю…")
+        case .stopped: return L("Остановлено")
+        case .notInstalled: return L("Не установлено")
+        case .needsUpdate: return L("Нужно обновить")
+        case .failed: return L("Ошибка")
         }
     }
 
     var body: some View {
         Card {
             VStack(alignment: .leading, spacing: 16) {
-                Text("СИСТЕМНЫЙ КОМПОНЕНТ").font(Theme.font(10, .bold)).foregroundStyle(Theme.lime).tracking(1)
+                Text(L("СИСТЕМНЫЙ КОМПОНЕНТ")).font(Theme.font(10, .bold)).foregroundStyle(Theme.lime).tracking(1)
                 HStack(spacing: 10) {
                     Image(systemName: model.state == .running ? "checkmark.shield" : "shield.slash")
                         .font(.system(size: 20)).foregroundStyle(model.state == .running ? Theme.lime : Theme.text2)
                     Text(statusTitle).font(Theme.font(26, .semibold))
                 }
-                Text("Ядро sing-box работает от root через launchd и перехватывает трафик всех приложений через TUN.")
+                Text(L("Ядро sing-box работает от root через launchd и перехватывает трафик всех приложений через TUN."))
                     .font(Theme.font(12)).foregroundStyle(Theme.text2)
                 Grid(horizontalSpacing: 1, verticalSpacing: 1) {
                     GridRow {
-                        stat("Ядро", "sing-box \(model.singBoxVersion)")
-                        stat("Базы доменов", model.ruleSetsUpdated?.formatted(date: .numeric, time: .omitted) ?? "—")
+                        stat(L("Ядро"), "sing-box \(model.singBoxVersion)")
+                        stat(L("Базы доменов"), model.ruleSetsUpdated?.formatted(date: .numeric, time: .omitted) ?? "—")
                     }
                     GridRow {
-                        stat("Своих правил", "\(model.profile.rules.count)")
-                        stat("Выходов", "\(model.profile.exits.count)")
+                        stat(L("Своих правил"), "\(model.profile.rules.count)")
+                        stat(L("Выходов"), "\(model.profile.exits.count)")
                     }
                 }
                 .background(Theme.line)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 .overlay(RoundedRectangle(cornerRadius: 12).stroke(Theme.line))
 
-                Text("Горячие клавиши").font(Theme.font(12, .medium)).foregroundStyle(Theme.text2).padding(.top, 4)
+                Text(L("Горячие клавиши")).font(Theme.font(12, .medium)).foregroundStyle(Theme.text2).padding(.top, 4)
                 ForEach(HotKeys.shared.bindings.indices, id: \.self) { i in
                     let b = HotKeys.shared.bindings[i]
                     HStack {
@@ -275,10 +276,10 @@ struct SystemPanel: View {
                 }
                 Spacer(minLength: 0)
                 HStack(spacing: 10) {
-                    OutlineButton(title: "Экспорт", systemImage: "square.and.arrow.up") { exportProfile() }
-                    OutlineButton(title: "Импорт", systemImage: "square.and.arrow.down") { importProfile() }
+                    OutlineButton(title: L("Экспорт"), systemImage: "square.and.arrow.up") { exportProfile() }
+                    OutlineButton(title: L("Импорт"), systemImage: "square.and.arrow.down") { importProfile() }
                 }
-                OutlineButton(title: copied ? "Скопировано" : "Скопировать диагностику", systemImage: "stethoscope") {
+                OutlineButton(title: copied ? L("Скопировано") : L("Скопировать диагностику"), systemImage: "stethoscope") {
                     Task {
                         NSPasteboard.general.clearContents()
                         NSPasteboard.general.setString(await model.diagnostics(), forType: .string)
@@ -287,7 +288,7 @@ struct SystemPanel: View {
                 }
                 .frame(maxWidth: .infinity)
                 if model.state != .notInstalled {
-                    Button("Удалить системный компонент…") { confirmUninstall = true }
+                    Button(L("Удалить системный компонент…")) { confirmUninstall = true }
                         .buttonStyle(.plain).font(Theme.font(11)).foregroundStyle(Theme.text3)
                         .frame(maxWidth: .infinity)
                 }
@@ -322,7 +323,7 @@ struct SystemPanel: View {
         do {
             model.profile = try Profile.load(from: url)
         } catch {
-            model.lastError = "Не удалось импортировать профиль: \(error.localizedDescription)"
+            model.lastError = L("Не удалось импортировать профиль: \(error.localizedDescription)")
         }
     }
 }
@@ -333,17 +334,17 @@ struct NotificationsSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                SectionTitle("Уведомления")
+                SectionTitle(L("Уведомления"))
                 Spacer()
-                Button("Пробное") {
-                    Notifier.shared.post(.vpn, key: "test", title: "Splitroute", body: "Уведомления работают", throttle: 0)
+                Button(L("Пробное")) {
+                    Notifier.shared.post(.vpn, key: "test", title: "Splitroute", body: L("Уведомления работают"), throttle: 0)
                 }
                 .buttonStyle(.plain).font(Theme.font(12, .semibold)).foregroundStyle(Theme.lime)
-                .help("Показать пробное уведомление. Если оно не появилось — разрешите уведомления Splitroute в Системных настройках")
+                .help(L("Показать пробное уведомление. Если оно не появилось — разрешите уведомления Splitroute в Системных настройках"))
             }
-            row(.vpn, "VPN отключился или вернулся", "Куда пошли его приложения: в резерв, напрямую или блокируются")
-            row(.suggestions, "Не открывается напрямую", "Найдены программы и сайты, которые похоже заблокированы")
-            row(.scenarios, "Сценарий сменился сам", "При подключении к сети, привязанной к сценарию")
+            row(.vpn, L("VPN отключился или вернулся"), L("Куда пошли его приложения: в резерв, напрямую или блокируются"))
+            row(.suggestions, L("Не открывается напрямую"), L("Найдены программы и сайты, которые похоже заблокированы"))
+            row(.scenarios, L("Сценарий сменился сам"), L("При подключении к сети, привязанной к сценарию"))
         }
     }
 
@@ -361,24 +362,24 @@ struct ScenariosSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            SectionTitle("Сценарии")
+            SectionTitle(L("Сценарии"))
             if model.scenarios.isEmpty {
-                SettingRow("Наборы маршрутов для разных мест", "«Дом», «Офис», «Поездка» — переключаются в верхней панели и в строке меню, а в знакомой сети сами") {
-                    Button("Создать") { model.createScenario() }
+                SettingRow(L("Наборы маршрутов для разных мест"), L("«Дом», «Офис», «Поездка» — переключаются в верхней панели и в строке меню, а в знакомой сети сами")) {
+                    Button(L("Создать")) { model.createScenario() }
                         .buttonStyle(.plain).font(Theme.font(12, .semibold)).foregroundStyle(Theme.lime)
                 }
             } else {
-                Text("Маршруты, правила и наборы у каждого сценария свои; выходы общие. Правки сохраняются в активном сценарии.")
+                Text(L("Маршруты, правила и наборы у каждого сценария свои; выходы общие. Правки сохраняются в активном сценарии."))
                     .font(Theme.font(11)).foregroundStyle(Theme.text2).padding(.vertical, 10)
                 ForEach(model.scenarios) { s in
                     row(s)
                     Divider().overlay(Theme.line)
                 }
                 HStack {
-                    Button { model.createScenario() } label: { Label("Новый сценарий", systemImage: "plus") }
+                    Button { model.createScenario() } label: { Label(L("Новый сценарий"), systemImage: "plus") }
                         .buttonStyle(.plain).font(Theme.font(12, .semibold)).foregroundStyle(Theme.lime)
                     Spacer()
-                    Text(model.networkSignature.map { "Сейчас: " + NetworkState.describe(signature: $0) } ?? "Сеть не определена")
+                    Text(model.networkSignature.map { L("Сейчас: ") + NetworkState.describe(signature: $0) } ?? L("Сеть не определена"))
                         .font(Theme.font(11)).foregroundStyle(Theme.text3)
                 }
                 .padding(.vertical, 12)
@@ -394,7 +395,7 @@ struct ScenariosSection: View {
                 Image(systemName: active ? "largecircle.fill.circle" : "circle")
                     .foregroundStyle(active ? Theme.lime : Theme.text2)
             }
-            .buttonStyle(.plain).help(active ? "Активный" : "Включить")
+            .buttonStyle(.plain).help(active ? L("Активный") : L("Включить"))
             TextField("", text: Binding(get: { names[s.id] ?? s.name }, set: { names[s.id] = $0 }))
                 .textFieldStyle(.plain).font(Theme.font(13, active ? .semibold : .regular))
                 .onSubmit { commit(s) }
@@ -402,25 +403,81 @@ struct ScenariosSection: View {
             Spacer()
             if model.networkSignature != nil {
                 Button { model.toggleCurrentNetwork(for: s.id) } label: {
-                    Label(here ? "В этой сети" : "Включать в этой сети", systemImage: here ? "wifi" : "wifi.exclamationmark")
+                    Label(here ? L("В этой сети") : L("Включать в этой сети"), systemImage: here ? "wifi" : "wifi.exclamationmark")
                         .font(Theme.font(11, here ? .semibold : .regular))
                         .foregroundStyle(here ? Theme.lime : Theme.text2)
                 }
                 .buttonStyle(.plain)
-                .help(here ? "Не включать автоматически в этой сети" : "Включать этот сценарий при подключении к текущей сети")
+                .help(here ? L("Не включать автоматически в этой сети") : L("Включать этот сценарий при подключении к текущей сети"))
             }
             if s.networks.count > (here ? 1 : 0) {
                 Text("+\(s.networks.count - (here ? 1 : 0))").font(Theme.font(10)).foregroundStyle(Theme.text3)
-                    .help("Привязан ещё к другим сетям")
+                    .help(L("Привязан ещё к другим сетям"))
             }
             Button { model.deleteScenario(s.id) } label: { Image(systemName: "trash").font(.system(size: 11)) }
                 .buttonStyle(.plain).foregroundStyle(active ? Theme.text3 : Theme.text2)
-                .disabled(active).help(active ? "Сначала включите другой сценарий" : "Удалить")
+                .disabled(active).help(active ? L("Сначала включите другой сценарий") : L("Удалить"))
         }
         .padding(.vertical, 10)
     }
 
     private func commit(_ s: Scenario) {
         if let n = names[s.id] { model.renameScenario(s.id, to: n); names[s.id] = nil }
+    }
+}
+
+/// Язык интерфейса: как в системе, русский или английский. Меняется после перезапуска.
+struct LanguageRow: View {
+    @State private var choice = LanguageRow.current
+    private let initial = LanguageRow.current
+
+    /// nil — как в системе.
+    static var current: String? {
+        (UserDefaults.standard.persistentDomain(forName: Bundle.main.bundleIdentifier ?? "")?["AppleLanguages"] as? [String])?.first
+    }
+
+    var body: some View {
+        SettingRow(L("Язык интерфейса"), choice == initial ? (Lang.isRussian ? "Language" : "Язык") : L("Применится после перезапуска")) {
+            HStack(spacing: 12) {
+                if choice != initial {
+                    Button(L("Перезапустить")) { relaunch() }
+                        .buttonStyle(.plain).font(Theme.font(12, .semibold)).foregroundStyle(Theme.lime)
+                }
+                Menu {
+                    Button(L("Как в системе")) { set(nil) }
+                    Button { set("ru") } label: { Text(verbatim: "Русский") }
+                    Button("English") { set("en") }
+                } label: {
+                    HStack(spacing: 6) {
+                        Text(title(choice)).font(Theme.font(12, .medium))
+                        Image(systemName: "chevron.up.chevron.down").font(.system(size: 9)).foregroundStyle(Theme.text2)
+                    }
+                    .padding(.horizontal, 10).frame(height: 30)
+                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Theme.line))
+                }
+                .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden).fixedSize()
+            }
+        }
+    }
+
+    private func title(_ code: String?) -> String {
+        switch code {
+        case "ru": return "Русский"
+        case "en": return "English"
+        default: return L("Как в системе")
+        }
+    }
+
+    private func set(_ code: String?) {
+        choice = code
+        if let code { UserDefaults.standard.set([code], forKey: "AppleLanguages") } else { UserDefaults.standard.removeObject(forKey: "AppleLanguages") }
+    }
+
+    private func relaunch() {
+        let p = Process()
+        p.executableURL = URL(fileURLWithPath: "/bin/sh")
+        p.arguments = ["-c", "while kill -0 \(ProcessInfo.processInfo.processIdentifier) 2>/dev/null; do sleep 0.2; done; open \"$0\"", Bundle.main.bundlePath]
+        try? p.run()
+        NSApp.terminate(nil)
     }
 }

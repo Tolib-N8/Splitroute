@@ -4,6 +4,14 @@ import SwiftUI
 enum RouteKind: String, CaseIterable {
     case tunnel = "VPN", direct = "Напрямую", block = "Блок"
 
+    var title: String {
+        switch self {
+        case .tunnel: return "VPN"
+        case .direct: return L("Напрямую")
+        case .block: return L("Блок")
+        }
+    }
+
     init(_ exit: Exit) {
         switch exit.kind {
         case .direct: self = .direct
@@ -29,20 +37,20 @@ struct AppsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             ScreenHeader(
-                title: "Приложения",
-                summary: "\(model.profile.routes.count) настроено · \(model.detectedCount) обнаружено",
+                title: L("Приложения"),
+                summary: L("\(model.profile.routes.count) настроено · \(model.detectedCount) обнаружено"),
                 footnote: model.updatedText
             ) {
                 DefaultExitMenu()
             }
             HStack(spacing: 10) {
-                SearchField(placeholder: "Найти приложение", text: $query).frame(maxWidth: 320)
-                FilterPill(title: "Все", selected: filter == nil) { filter = nil }
+                SearchField(placeholder: L("Найти приложение"), text: $query).frame(maxWidth: 320)
+                FilterPill(title: L("Все"), selected: filter == nil) { filter = nil }
                 ForEach(RouteKind.allCases, id: \.self) { k in
-                    FilterPill(title: k.rawValue, selected: filter == k) { filter = k }
+                    FilterPill(title: k.title, selected: filter == k) { filter = k }
                 }
                 Spacer()
-                PrimaryButton(title: "Добавить приложение") { showAdd = true }
+                PrimaryButton(title: L("Добавить приложение")) { showAdd = true }
             }
             .padding(.top, 28)
 
@@ -80,10 +88,10 @@ struct AppsTableHeader: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 16) {
-                Text("Приложение").frame(maxWidth: .infinity, alignment: .leading)
-                Text("Маршрут").frame(width: Column.route, alignment: .leading)
-                Text("Выход").frame(width: Column.server, alignment: .leading)
-                Text("Трафик · 24 ч").frame(width: Column.traffic, alignment: .leading)
+                Text(L("Приложение")).frame(maxWidth: .infinity, alignment: .leading)
+                Text(L("Маршрут")).frame(width: Column.route, alignment: .leading)
+                Text(L("Выход")).frame(width: Column.server, alignment: .leading)
+                Text(L("Трафик · 24 ч")).frame(width: Column.traffic, alignment: .leading)
                 Color.clear.frame(width: Column.menu, height: 1)
             }
             .font(Theme.font(11, .medium))
@@ -109,7 +117,7 @@ struct AppRow: View {
                 AppIcon(key: entry.key)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(entry.name).font(Theme.font(14, .medium))
-                    Text(entry.route == nil ? "\(entry.detail) · без правила" : entry.detail)
+                    Text(entry.route == nil ? L("\(entry.detail) · без правила") : entry.detail)
                         .font(Theme.font(11)).foregroundStyle(Theme.text3).lineLimit(1)
                 }
             }
@@ -135,10 +143,10 @@ struct AppRow: View {
 
             Menu {
                 if let route = entry.route {
-                    Button("Убрать правило") { model.removeRoute(route) }
+                    Button(L("Убрать правило")) { model.removeRoute(route) }
                 }
                 if entry.key != AppKey.system {
-                    Button("Показать в Finder") { NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: entry.key)]) }
+                    Button(L("Показать в Finder")) { NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: entry.key)]) }
                 }
             } label: {
                 Image(systemName: "ellipsis").foregroundStyle(Theme.text2)
@@ -187,7 +195,7 @@ struct RouteSegment: View {
                 Button { onSelect(k) } label: {
                     HStack(spacing: 6) {
                         if on { StatusDot(color: color(k)) }
-                        Text(k.rawValue)
+                        Text(k.title)
                     }
                     .font(Theme.font(12, on ? .semibold : .regular))
                     .foregroundStyle(on ? Theme.text : Theme.text3)
@@ -198,7 +206,7 @@ struct RouteSegment: View {
                 }
                 .buttonStyle(.plain)
                 .disabled(k == .tunnel && !tunnelAvailable)
-                .help(k == .tunnel && !tunnelAvailable ? "Нет ни одного VPN-выхода — подключите VPN-приложение или добавьте конфиг на экране «Серверы»" : "")
+                .help(k == .tunnel && !tunnelAvailable ? L("Нет ни одного VPN-выхода — подключите VPN-приложение или добавьте конфиг на экране «Серверы»") : "")
             }
         }
         .padding(3)
@@ -221,7 +229,7 @@ struct ExitCell: View {
                     Button {
                         onSelect(e)
                     } label: {
-                        Text(e.name + (model.isAvailable(e) ? "" : " — отключён, " + model.fallbackNote(for: e)))
+                        Text(e.name + (model.isAvailable(e) ? "" : L(" — отключён, ") + model.fallbackNote(for: e)))
                     }
                 }
             } label: {
@@ -258,7 +266,7 @@ struct DefaultExitMenu: View {
             }
         } label: {
             HStack(spacing: 6) {
-                Text("Приложения без правила → \(model.profile.exit(id: model.profile.defaultExitID)?.name ?? "Напрямую")")
+                Text(L("Приложения без правила → \(model.profile.exit(id: model.profile.defaultExitID)?.name ?? "Напрямую")"))
                 Image(systemName: "chevron.right").font(.system(size: 10))
             }
             .font(Theme.font(13))
@@ -277,13 +285,13 @@ struct EmptyAppsHint: View {
     var body: some View {
         VStack(spacing: 12) {
             Image(systemName: "square.grid.2x2").font(.system(size: 28)).foregroundStyle(Theme.text3)
-            Text(hasQuery ? "Ничего не найдено" : "Пока нет правил")
+            Text(hasQuery ? L("Ничего не найдено") : L("Пока нет правил"))
                 .font(Theme.font(15, .semibold))
             if !hasQuery {
-                Text("Добавьте, например, WhatsApp через VPN и WeChat напрямую.\nПриложения, которые выходят в сеть, появятся здесь сами.")
+                Text(L("Добавьте, например, WhatsApp через VPN и WeChat напрямую.\nПриложения, которые выходят в сеть, появятся здесь сами."))
                     .multilineTextAlignment(.center)
                     .font(Theme.font(12)).foregroundStyle(Theme.text2)
-                PrimaryButton(title: "Добавить приложение", action: add).padding(.top, 6)
+                PrimaryButton(title: L("Добавить приложение"), action: add).padding(.top, 6)
             }
         }
         .frame(maxWidth: .infinity)
@@ -305,24 +313,24 @@ struct AddAppSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text("Добавить приложение").font(Theme.font(20, .semibold))
+                Text(L("Добавить приложение")).font(Theme.font(20, .semibold))
                 Spacer()
                 Button { dismiss() } label: { Image(systemName: "xmark") }.buttonStyle(.plain).foregroundStyle(Theme.text2)
             }
-            SearchField(placeholder: "Найти приложение", text: $query)
+            SearchField(placeholder: L("Найти приложение"), text: $query)
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 0) {
-                    Text("Программы из терминала").font(Theme.font(11, .medium)).foregroundStyle(Theme.text2).padding(.top, 4)
+                    Text(L("Программы из терминала")).font(Theme.font(11, .medium)).foregroundStyle(Theme.text2).padding(.top, 4)
                     ForEach(AppCatalog.installedVersionedFolders.filter { f in model.profile.routes.allSatisfy { $0.path != f.path } }, id: \.path) { f in
-                        pickRow(key: f.path, name: f.name, detail: f.path.replacingOccurrences(of: NSHomeDirectory(), with: "~") + " — правило переживёт обновления") { kind in
+                        pickRow(key: f.path, name: f.name, detail: f.path.replacingOccurrences(of: NSHomeDirectory(), with: "~") + L(" — правило переживёт обновления")) { kind in
                             add(path: f.path, kind)
                         }
                     }
-                    Button("Выбрать программу или папку…") { pickProgram() }
+                    Button(L("Выбрать программу или папку…")) { pickProgram() }
                         .buttonStyle(.plain).font(Theme.font(12, .semibold)).foregroundStyle(Theme.lime)
                         .padding(.vertical, 10)
                     Divider().overlay(Theme.line)
-                    Text("Приложения").font(Theme.font(11, .medium)).foregroundStyle(Theme.text2).padding(.top, 12)
+                    Text(L("Приложения")).font(Theme.font(11, .medium)).foregroundStyle(Theme.text2).padding(.top, 12)
                     ForEach(apps) { app in
                         HStack(spacing: 12) {
                             AppIcon(key: app.path, size: 28)
@@ -332,7 +340,7 @@ struct AddAppSheet: View {
                             }
                             Spacer()
                             ForEach(RouteKind.allCases, id: \.self) { kind in
-                                Button(kind.rawValue) { add(app, kind) }
+                                Button(kind.title) { add(app, kind) }
                                     .buttonStyle(.plain)
                                     .font(Theme.font(12, .semibold))
                                     .padding(.horizontal, 10).frame(height: 26)
@@ -374,7 +382,7 @@ struct AddAppSheet: View {
         panel.canChooseDirectories = true
         panel.allowsMultipleSelection = false
         panel.treatsFilePackagesAsDirectories = false
-        panel.message = "Программа, .app или папка. Для программы правило ставится на её папку."
+        panel.message = L("Программа, .app или папка. Для программы правило ставится на её папку.")
         guard panel.runModal() == .OK, let url = panel.url else { return }
         var isDir: ObjCBool = false
         FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir)
@@ -391,7 +399,7 @@ struct AddAppSheet: View {
             }
             Spacer()
             ForEach(RouteKind.allCases, id: \.self) { kind in
-                Button(kind.rawValue) { onPick(kind) }
+                Button(kind.title) { onPick(kind) }
                     .buttonStyle(.plain)
                     .font(Theme.font(12, .semibold))
                     .padding(.horizontal, 10).frame(height: 26)
@@ -413,12 +421,12 @@ struct SuggestionsCard: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
                 Image(systemName: "wand.and.stars").foregroundStyle(Theme.amber)
-                Text("Не открывается напрямую").font(Theme.font(13, .semibold))
-                Text("соединения обрываются, не получив ни байта — похоже на блокировку")
+                Text(L("Не открывается напрямую")).font(Theme.font(13, .semibold))
+                Text(L("соединения обрываются, не получив ни байта — похоже на блокировку"))
                     .font(Theme.font(12)).foregroundStyle(Theme.text2).lineLimit(1)
                 Spacer()
                 if model.suggestions.count > 3 {
-                    Button(expanded ? "Свернуть" : "Ещё \(model.suggestions.count - 3)") { expanded.toggle() }
+                    Button(expanded ? L("Свернуть") : L("Ещё \(model.suggestions.count - 3)")) { expanded.toggle() }
                         .buttonStyle(.plain).font(Theme.font(12)).foregroundStyle(Theme.text2)
                 }
             }
@@ -447,16 +455,16 @@ struct SuggestionsCard: View {
                 Button {
                     model.apply(s, via: exit)
                 } label: {
-                    Text(s.target.isApp ? "Пустить через \(exit.name)" : "Правило → \(exit.name)")
+                    Text(s.target.isApp ? L("Пустить через \(exit.name)") : L("Правило → \(exit.name)"))
                         .font(Theme.font(12, .semibold)).foregroundStyle(Theme.bg)
                         .padding(.horizontal, 12).frame(height: 28)
                         .background(Theme.lime, in: Capsule())
                 }
                 .buttonStyle(.plain)
-                .help(s.target.isApp ? "Маршрут приложения → \(exit.name)" : "Новое правило: домен \(model.title(for: s)) → \(exit.name)")
+                .help(s.target.isApp ? L("Маршрут приложения → \(exit.name)") : L("Новое правило: домен \(model.title(for: s)) → \(exit.name)"))
             }
             Button { model.dismiss(s) } label: { Image(systemName: "xmark").font(.system(size: 11)) }
-                .buttonStyle(.plain).foregroundStyle(Theme.text2).help("Больше не предлагать")
+                .buttonStyle(.plain).foregroundStyle(Theme.text2).help(L("Больше не предлагать"))
         }
     }
 }

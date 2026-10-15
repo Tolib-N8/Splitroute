@@ -45,7 +45,7 @@ public enum AppCatalog {
     /// `inHome` — папка в домашнем каталоге (её можно найти и предложить при добавлении).
     static let versionedFolders: [(marker: String, name: String, inHome: Bool)] = [
         ("/.local/share/claude/versions/", "Claude Code", true),
-        ("/Library/Application Support/Claude/claude-code/", "Claude Code в приложении Claude", true),
+        ("/Library/Application Support/Claude/claude-code/", String(localized: "Claude Code в приложении Claude"), true),
         ("/.codex/packages/standalone/releases/", "Codex CLI", true),
         ("/Caskroom/codex/", "Codex CLI", false),
         ("/node_modules/@openai/codex/", "Codex CLI", false),

@@ -11,10 +11,10 @@ public struct RouteExplainer: Sendable {
 
         public var title: String {
             switch self {
-            case .rule(let i): return "Правило №\(i)"
+            case .rule(let i): return String(localized: "Правило №\(i)")
             case .preset(let id): return PresetInfo.info(id)?.title ?? id
-            case .app: return "Приложение"
-            case .defaultRoute: return "По умолчанию"
+            case .app: return String(localized: "Приложение")
+            case .defaultRoute: return String(localized: "По умолчанию")
             }
         }
 

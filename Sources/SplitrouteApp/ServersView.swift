@@ -28,20 +28,20 @@ struct ServersView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             ScreenHeader(
-                title: "Серверы",
-                summary: "\(model.vpnServices.filter { !$0.isMesh }.count) VPN-приложения · \(configs.count) своих конфигураций",
-                footnote: model.pings.isEmpty ? "Пинг ещё не измерялся" : "Пинг обновляется раз в минуту"
+                title: L("Серверы"),
+                summary: L("\(model.vpnServices.filter { !$0.isMesh }.count) VPN-приложения · \(configs.count) своих конфигураций"),
+                footnote: model.pings.isEmpty ? L("Пинг ещё не измерялся") : L("Пинг обновляется раз в минуту")
             ) {
-                Text("Выходы, через которые можно пустить приложения")
+                Text(L("Выходы, через которые можно пустить приложения"))
                     .font(Theme.font(13)).foregroundStyle(Theme.text2)
             }
             HStack(alignment: .top, spacing: 20) {
                 VStack(alignment: .leading, spacing: 0) {
                     HStack(spacing: 10) {
-                        SearchField(placeholder: "Название выхода", text: $query).frame(maxWidth: 280)
-                        FilterPill(title: "Все", selected: onlyConfigs == nil) { onlyConfigs = nil }
-                        FilterPill(title: "VPN-приложения", selected: onlyConfigs == false) { onlyConfigs = false }
-                        FilterPill(title: "Свои конфигурации", selected: onlyConfigs == true) { onlyConfigs = true }
+                        SearchField(placeholder: L("Название выхода"), text: $query).frame(maxWidth: 280)
+                        FilterPill(title: L("Все"), selected: onlyConfigs == nil) { onlyConfigs = nil }
+                        FilterPill(title: L("VPN-приложения"), selected: onlyConfigs == false) { onlyConfigs = false }
+                        FilterPill(title: L("Свои конфигурации"), selected: onlyConfigs == true) { onlyConfigs = true }
                         Spacer()
                     }
                     ServersTableHeader().padding(.top, 22)
@@ -53,7 +53,7 @@ struct ServersView: View {
                                 Divider().overlay(Theme.line)
                             }
                             if model.tunnelExits.isEmpty {
-                                Text("VPN-приложения из Системных настроек появятся здесь сами. Можно также импортировать свой конфиг.")
+                                Text(L("VPN-приложения из Системных настроек появятся здесь сами. Можно также импортировать свой конфиг."))
                                     .font(Theme.font(12)).foregroundStyle(Theme.text2).padding(.vertical, 20)
                             }
                             ConfigCards(configs: configs, selectedID: $selectedID) { showImport = true }
@@ -76,10 +76,10 @@ struct ServersTableHeader: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 16) {
-                Text("Выход").frame(maxWidth: .infinity, alignment: .leading)
-                Text("Приложения").frame(width: 120, alignment: .leading)
-                Text("Трафик · 24 ч").frame(width: 110, alignment: .leading)
-                Text("Пинг").frame(width: 80, alignment: .leading)
+                Text(L("Выход")).frame(maxWidth: .infinity, alignment: .leading)
+                Text(L("Приложения")).frame(width: 120, alignment: .leading)
+                Text(L("Трафик · 24 ч")).frame(width: 110, alignment: .leading)
+                Text(L("Пинг")).frame(width: 80, alignment: .leading)
             }
             .font(Theme.font(11, .medium))
             .foregroundStyle(Theme.text2)
@@ -133,7 +133,7 @@ struct ServerRow: View {
                     HStack(spacing: 8) {
                         Text(exit.name).font(Theme.font(14, .medium))
                         if case .vpnApp = exit.kind {
-                            Text(available ? "ПОДКЛЮЧЁН" : "ОТКЛЮЧЁН")
+                            Text(available ? L("ПОДКЛЮЧЁН") : L("ОТКЛЮЧЁН"))
                                 .font(Theme.font(9, .bold))
                                 .foregroundStyle(available ? Theme.bg : Theme.text2)
                                 .padding(.horizontal, 6).padding(.vertical, 2)
@@ -149,7 +149,7 @@ struct ServerRow: View {
             Text(Format.bytes(model.stats.total("exit:" + exit.tag))).font(Theme.font(12)).foregroundStyle(Theme.text2).frame(width: 110, alignment: .leading)
             HStack(spacing: 6) {
                 StatusDot(color: pingColor)
-                Text(model.pings[exit.id].map { "\($0) мс" } ?? "—").font(Theme.font(12))
+                Text(model.pings[exit.id].map { L("\($0) мс") } ?? "—").font(Theme.font(12))
             }
             .frame(width: 80, alignment: .leading)
         }
@@ -168,7 +168,7 @@ struct ConfigCards: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Свои конфигурации").font(Theme.font(13, .medium)).foregroundStyle(Theme.text2)
+            Text(L("Свои конфигурации")).font(Theme.font(13, .medium)).foregroundStyle(Theme.text2)
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 240), spacing: 10)], spacing: 10) {
                 ForEach(configs) { e in
                     HStack(spacing: 12) {
@@ -180,7 +180,7 @@ struct ConfigCards: View {
                         }
                         Spacer()
                         Menu {
-                            Button("Удалить", role: .destructive) { model.removeExit(e) }
+                            Button(L("Удалить"), role: .destructive) { model.removeExit(e) }
                         } label: { Image(systemName: "ellipsis").foregroundStyle(Theme.text2) }
                             .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden).fixedSize()
                     }
@@ -190,7 +190,7 @@ struct ConfigCards: View {
                     .onTapGesture { selectedID = e.id }
                 }
                 Button(action: onImport) {
-                    Label("Импорт ссылки, подписки, .conf / .ovpn", systemImage: "square.and.arrow.down")
+                    Label(L("Импорт ссылки, подписки, .conf / .ovpn"), systemImage: "square.and.arrow.down")
                         .font(Theme.font(13, .semibold))
                         .frame(maxWidth: .infinity, minHeight: 62)
                         .overlay(RoundedRectangle(cornerRadius: 12).stroke(Theme.text.opacity(0.6)))
@@ -221,18 +221,18 @@ struct ExitDetailPanel: View {
         Card {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("ВЫХОД").font(Theme.font(10, .bold)).foregroundStyle(model.color(for: exit)).tracking(1)
+                    Text(L("ВЫХОД")).font(Theme.font(10, .bold)).foregroundStyle(model.color(for: exit)).tracking(1)
                     Text(exit.name).font(Theme.font(26, .semibold)).lineLimit(1)
                     Text(model.subtitle(for: exit)).font(Theme.font(12)).foregroundStyle(Theme.text2)
                 }
                 Grid(horizontalSpacing: 1, verticalSpacing: 1) {
                     GridRow {
-                        stat("Пинг", model.pings[exit.id].map { "\($0) мс" } ?? "—")
-                        stat("Статус", model.isAvailable(exit) ? "Доступен" : "Недоступен")
+                        stat(L("Пинг"), model.pings[exit.id].map { L("\($0) мс") } ?? "—")
+                        stat(L("Статус"), model.isAvailable(exit) ? L("Доступен") : L("Недоступен"))
                     }
                     GridRow {
-                        stat(exit.kind == .direct ? "Интерфейс" : "Сервер", serverAddress)
-                        stat("За 24 ч", Format.bytes(model.stats.total("exit:" + exit.tag)))
+                        stat(exit.kind == .direct ? L("Интерфейс") : L("Сервер"), serverAddress)
+                        stat(L("За 24 ч"), Format.bytes(model.stats.total("exit:" + exit.tag)))
                     }
                 }
                 .background(Theme.line)
@@ -242,18 +242,18 @@ struct ExitDetailPanel: View {
                 if let history = model.pingHistory[exit.id], !history.isEmpty {
                     VStack(alignment: .leading, spacing: 10) {
                         HStack {
-                            Text("Задержка").font(Theme.font(12, .medium))
+                            Text(L("Задержка")).font(Theme.font(12, .medium))
                             Spacer()
-                            Text("\(history.min()!)–\(history.max()!) мс").font(Theme.font(11)).foregroundStyle(Theme.text2)
+                            Text(L("\(history.min()!)–\(history.max()!) мс")).font(Theme.font(11)).foregroundStyle(Theme.text2)
                         }
                         SparkBars(values: history.map(Int64.init), color: model.color(for: exit))
                     }
                 }
 
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("Через этот выход").font(Theme.font(12, .medium))
+                    Text(L("Через этот выход")).font(Theme.font(12, .medium))
                     if apps.isEmpty {
-                        Text("Пока ни одного приложения").font(Theme.font(12)).foregroundStyle(Theme.text3)
+                        Text(L("Пока ни одного приложения")).font(Theme.font(12)).foregroundStyle(Theme.text3)
                     } else {
                         FlowChips(items: apps.map { ($0.path, $0.name) })
                     }
@@ -263,8 +263,8 @@ struct ExitDetailPanel: View {
                     Divider().overlay(Theme.line)
                     HStack(alignment: .top) {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Подключать автоматически").font(Theme.font(13, .semibold))
-                            Text("Если \(exit.name) отключён, а через него идут приложения, Splitroute сам его включит. Не вышло — повторит позже, всё реже")
+                            Text(L("Подключать автоматически")).font(Theme.font(13, .semibold))
+                            Text(L("Если \(exit.name) отключён, а через него идут приложения, Splitroute сам его включит. Не вышло — повторит позже, всё реже"))
                                 .font(Theme.font(11)).foregroundStyle(Theme.text2)
                         }
                         Spacer()
@@ -274,7 +274,7 @@ struct ExitDetailPanel: View {
                     HStack(alignment: .top) {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Kill switch").font(Theme.font(13, .semibold))
-                            Text("Если резерва нет — блокировать приложения, а не пускать напрямую")
+                            Text(L("Если резерва нет — блокировать приложения, а не пускать напрямую"))
                                 .font(Theme.font(11)).foregroundStyle(Theme.text2)
                         }
                         Spacer()
@@ -283,11 +283,11 @@ struct ExitDetailPanel: View {
                 }
                 Spacer(minLength: 0)
                 if case .vpnApp = exit.kind {
-                    Text("Подключение и смена сервера — в самом приложении \(exit.name). Splitroute только направляет в него нужные приложения.")
+                    Text(L("Подключение и смена сервера — в самом приложении \(exit.name). Splitroute только направляет в него нужные приложения."))
                         .font(Theme.font(11)).foregroundStyle(Theme.text3)
                 }
                 if case .proxy = exit.kind {
-                    OutlineButton(title: "Удалить конфигурацию", systemImage: "trash") { model.removeExit(exit) }
+                    OutlineButton(title: L("Удалить конфигурацию"), systemImage: "trash") { model.removeExit(exit) }
                         .frame(maxWidth: .infinity)
                 }
             }
@@ -298,9 +298,9 @@ struct ExitDetailPanel: View {
 
     private var fallbackTitle: String {
         switch exit.fallbackID {
-        case nil: return "Любой доступный VPN"
-        case Exit.noFallbackID: return "Без резерва"
-        case let id?: return model.profile.exit(id: id)?.name ?? "Любой доступный VPN"
+        case nil: return L("Любой доступный VPN")
+        case Exit.noFallbackID: return L("Без резерва")
+        case let id?: return model.profile.exit(id: id)?.name ?? L("Любой доступный VPN")
         }
     }
 
@@ -309,22 +309,22 @@ struct ExitDetailPanel: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Резерв").font(Theme.font(13, .semibold))
-                    Text("Если \(exit.name) отключён, его приложения и правила пойдут сюда")
+                    Text(L("Резерв")).font(Theme.font(13, .semibold))
+                    Text(L("Если \(exit.name) отключён, его приложения и правила пойдут сюда"))
                         .font(Theme.font(11)).foregroundStyle(Theme.text2)
                 }
                 Spacer()
                 Menu {
-                    Button("Любой доступный VPN") { model.setFallback(nil, for: exit) }
+                    Button(L("Любой доступный VPN")) { model.setFallback(nil, for: exit) }
                     let others = model.tunnelExits.filter { $0.id != exit.id }
                     if !others.isEmpty {
                         Divider()
                         ForEach(others) { e in
-                            Button(e.name + (model.isAvailable(e) ? "" : " — отключён")) { model.setFallback(e.id, for: exit) }
+                            Button(e.name + (model.isAvailable(e) ? "" : L(" — отключён"))) { model.setFallback(e.id, for: exit) }
                         }
                     }
                     Divider()
-                    Button("Без резерва") { model.setFallback(Exit.noFallbackID, for: exit) }
+                    Button(L("Без резерва")) { model.setFallback(Exit.noFallbackID, for: exit) }
                 } label: {
                     HStack(spacing: 6) {
                         Text(fallbackTitle).font(Theme.font(12, .medium)).lineLimit(1)
@@ -340,7 +340,7 @@ struct ExitDetailPanel: View {
             }
             if !model.isAvailable(exit) {
                 let fallback = model.activeFallback(for: exit)
-                Text("Сейчас: отключён, " + model.fallbackNote(for: exit))
+                Text(L("Сейчас: отключён, ") + model.fallbackNote(for: exit))
                     .font(Theme.font(11, .medium)).foregroundStyle(fallback != nil ? Theme.amber : Theme.coral)
             }
         }
@@ -393,11 +393,11 @@ struct ImportSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Text("Импорт конфигурации").font(Theme.font(20, .semibold))
+                Text(L("Импорт конфигурации")).font(Theme.font(20, .semibold))
                 Spacer()
                 Button { dismiss() } label: { Image(systemName: "xmark") }.buttonStyle(.plain).foregroundStyle(Theme.text2)
             }
-            Text("Вставьте ссылку vless://, ss://, trojan://, hysteria2://, ссылку-подписку https://… или содержимое WireGuard .conf / OpenVPN .ovpn.")
+            Text(L("Вставьте ссылку vless://, ss://, trojan://, hysteria2://, ссылку-подписку https://… или содержимое WireGuard .conf / OpenVPN .ovpn."))
                 .font(Theme.font(12)).foregroundStyle(Theme.text2)
             TextEditor(text: $text)
                 .font(.system(size: 12, design: .monospaced))
@@ -408,30 +408,30 @@ struct ImportSheet: View {
                 .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.line))
                 .onChange(of: text) { parse() }
             HStack {
-                OutlineButton(title: "Выбрать файл…", systemImage: "doc") { showFile = true }
+                OutlineButton(title: L("Выбрать файл…"), systemImage: "doc") { showFile = true }
                 if loading { ProgressView().controlSize(.small) }
                 Spacer()
                 if let error { Text(error).font(Theme.font(12)).foregroundStyle(Theme.coral).lineLimit(2) }
             }
             if !parsed.isEmpty {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Найдено: \(parsed.count)").font(Theme.font(12, .semibold))
+                    Text(L("Найдено: \(parsed.count)")).font(Theme.font(12, .semibold))
                     ForEach(Array(parsed.prefix(6).enumerated()), id: \.offset) { _, p in
                         Text("• \(p.name) — \(p.config.protocolName) · \(p.config.server)").font(Theme.font(12)).foregroundStyle(Theme.text2)
                     }
-                    if parsed.count > 6 { Text("…и ещё \(parsed.count - 6)").font(Theme.font(12)).foregroundStyle(Theme.text3) }
+                    if parsed.count > 6 { Text(L("…и ещё \(parsed.count - 6)")).font(Theme.font(12)).foregroundStyle(Theme.text3) }
                 }
             }
             if needsCredentials {
                 HStack {
-                    TextField("Логин OpenVPN", text: $username).textFieldStyle(.roundedBorder)
-                    SecureField("Пароль", text: $password).textFieldStyle(.roundedBorder)
+                    TextField(L("Логин OpenVPN"), text: $username).textFieldStyle(.roundedBorder)
+                    SecureField(L("Пароль"), text: $password).textFieldStyle(.roundedBorder)
                 }
             }
             Spacer()
             HStack {
                 Spacer()
-                PrimaryButton(title: "Добавить", systemImage: "checkmark") { add() }
+                PrimaryButton(title: L("Добавить"), systemImage: "checkmark") { add() }
                     .disabled(parsed.isEmpty && !isURL)
                     .opacity(parsed.isEmpty && !isURL ? 0.4 : 1)
             }
@@ -473,9 +473,9 @@ struct ImportSheet: View {
                 defer { loading = false }
                 do {
                     parsed = try await Subscription.fetch(url)
-                    if parsed.isEmpty { error = "В подписке нет поддерживаемых ссылок" }
+                    if parsed.isEmpty { error = L("В подписке нет поддерживаемых ссылок") }
                 } catch {
-                    self.error = "Не удалось загрузить подписку: \(error.localizedDescription)"
+                    self.error = L("Не удалось загрузить подписку: \(error.localizedDescription)")
                 }
             }
             return

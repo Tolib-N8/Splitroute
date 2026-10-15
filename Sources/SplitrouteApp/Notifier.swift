@@ -21,7 +21,7 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
         center.requestAuthorization(options: [.alert, .sound]) { _, _ in }
         // Проверка без ожидания события: SPLITROUTE_NOTIFY_TEST=1 — пробное уведомление при запуске.
         if ProcessInfo.processInfo.environment["SPLITROUTE_NOTIFY_TEST"] == "1" {
-            post(.vpn, key: "test", title: "Splitroute", body: "Уведомления работают", screen: .settings, throttle: 0)
+            post(.vpn, key: "test", title: "Splitroute", body: L("Уведомления работают"), screen: .settings, throttle: 0)
         }
     }
 

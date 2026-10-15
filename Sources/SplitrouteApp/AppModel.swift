@@ -300,12 +300,12 @@ final class AppModel {
 
     func subtitle(for exit: Exit) -> String {
         switch exit.kind {
-        case .direct: return "Обычная сеть · \(physicalInterface ?? "нет сети")"
-        case .block: return "Трафик отклонён"
+        case .direct: return L("Обычная сеть · \(physicalInterface ?? L("нет сети"))")
+        case .block: return L("Трафик отклонён")
         case .vpnApp:
-            guard let s = vpnService(for: exit) else { return "VPN-приложение · не найдено" }
-            if let iface = s.interface { return "VPN-приложение · \(iface)" }
-            return "Отключён · " + fallbackNote(for: exit)
+            guard let s = vpnService(for: exit) else { return L("VPN-приложение · не найдено") }
+            if let iface = s.interface { return L("VPN-приложение · \(iface)") }
+            return L("Отключён · ") + fallbackNote(for: exit)
         case .proxy(let p): return "\(p.protocolName) · \(p.server)"
         }
     }
@@ -347,8 +347,8 @@ final class AppModel {
     /// «идёт через AIRLINK VPN» / «трафик блокируется» / «идёт напрямую».
     func fallbackNote(for exit: Exit) -> String {
         switch resolution(for: exit) {
-        case .reject: return "трафик блокируется"
-        case .exit(let e, _): return e.kind == .direct ? "идёт напрямую" : "идёт через \(e.name)"
+        case .reject: return L("трафик блокируется")
+        case .exit(let e, _): return e.kind == .direct ? L("идёт напрямую") : L("идёт через \(e.name)")
         }
     }
 
@@ -404,7 +404,7 @@ final class AppModel {
 
     func entry(forKey key: String) -> AppEntry {
         if key == AppKey.system {
-            return AppEntry(key: key, name: "Системные службы", detail: "macOS", route: nil)
+            return AppEntry(key: key, name: L("Системные службы"), detail: "macOS", route: nil)
         }
         if let route = profile.routes.first(where: { $0.path == key }) {
             return AppEntry(key: key, bundleID: route.bundleID, name: route.name, detail: key, route: route)

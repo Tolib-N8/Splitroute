@@ -30,11 +30,11 @@ struct JournalView: View {
         let sum = max(totals.reduce(0) { $0 + $1.1 }, 1)
         VStack(alignment: .leading, spacing: 0) {
             ScreenHeader(
-                title: "Журнал",
+                title: L("Журнал"),
                 summary: "\(Format.bytes(totals.reduce(0) { $0 + $1.1 })) · \(Format.apps(Set(model.journal.entries.map(\.appKey)).count))",
-                footnote: "Хранится \(Journal.keepDays) дней · только на этом Mac"
+                footnote: L("Хранится \(Journal.keepDays) дней · только на этом Mac")
             ) {
-                Text("Сегодня · \(model.journal.todayCount) соединений").font(Theme.font(13)).foregroundStyle(Theme.text2)
+                Text(L("Сегодня · \(model.journal.todayCount) соединений")).font(Theme.font(13)).foregroundStyle(Theme.text2)
             }
 
             HStack(alignment: .bottom, spacing: 28) {
@@ -58,7 +58,7 @@ struct JournalView: View {
                 Button { model.journalLive.toggle() } label: {
                     HStack(spacing: 8) {
                         StatusDot(color: model.journalLive ? Theme.lime : Theme.text3)
-                        Text(model.journalLive ? "В реальном времени" : "На паузе")
+                        Text(model.journalLive ? L("В реальном времени") : L("На паузе"))
                     }
                     .font(Theme.font(13, .semibold))
                     .foregroundStyle(model.journalLive ? Theme.lime : Theme.text2)
@@ -66,19 +66,19 @@ struct JournalView: View {
                     .background(model.journalLive ? Theme.lime.opacity(0.1) : Theme.surface, in: Capsule())
                 }
                 .buttonStyle(.plain)
-                SearchField(placeholder: "Домен, приложение или IP", text: $query).frame(maxWidth: 280)
-                filterMenu(title: appFilter.map { model.entry(forKey: $0).name } ?? "Все приложения") {
-                    Button("Все приложения") { appFilter = nil }
+                SearchField(placeholder: L("Домен, приложение или IP"), text: $query).frame(maxWidth: 280)
+                filterMenu(title: appFilter.map { model.entry(forKey: $0).name } ?? L("Все приложения")) {
+                    Button(L("Все приложения")) { appFilter = nil }
                     ForEach(Array(Set(model.journal.entries.map(\.appKey))).sorted(), id: \.self) { key in
                         Button(model.entry(forKey: key).name) { appFilter = key }
                     }
                 }
-                filterMenu(title: exitFilter.flatMap { t in model.profile.allExits.first { $0.tag == t }?.name } ?? "Все маршруты") {
-                    Button("Все маршруты") { exitFilter = nil }
+                filterMenu(title: exitFilter.flatMap { t in model.profile.allExits.first { $0.tag == t }?.name } ?? L("Все маршруты")) {
+                    Button(L("Все маршруты")) { exitFilter = nil }
                     ForEach(model.profile.allExits) { e in Button(e.name) { exitFilter = e.tag } }
                 }
                 Spacer()
-                OutlineButton(title: "Экспорт", systemImage: "square.and.arrow.down") { export() }
+                OutlineButton(title: L("Экспорт"), systemImage: "square.and.arrow.down") { export() }
             }
             .padding(.top, 28)
 
@@ -90,7 +90,7 @@ struct JournalView: View {
                         Divider().overlay(Theme.line)
                     }
                     if entries.isEmpty {
-                        Text(model.state.isRunning ? "Соединений пока нет" : "Ядро остановлено — включите маршрутизацию")
+                        Text(model.state.isRunning ? L("Соединений пока нет") : L("Ядро остановлено — включите маршрутизацию"))
                             .font(Theme.font(13)).foregroundStyle(Theme.text2).padding(.top, 40)
                     }
                 }
@@ -134,7 +134,7 @@ struct FlowLegend: View {
             ForEach(totals, id: \.0.id) { exit, bytes in
                 HStack(spacing: 7) {
                     StatusDot(color: model.color(for: exit), size: 7)
-                    Text(exit.kind == .block ? "Заблокировано" : exit.name).font(Theme.font(12, .semibold))
+                    Text(exit.kind == .block ? L("Заблокировано") : exit.name).font(Theme.font(12, .semibold))
                     Text("\(Int((Double(bytes) / Double(sum) * 100).rounded()))% · \(Format.bytes(bytes))")
                         .font(Theme.font(12)).foregroundStyle(Theme.text3)
                 }
@@ -169,7 +169,7 @@ struct ExitHistogram: View {
             }
             .frame(height: 90, alignment: .bottom)
             HStack {
-                Text("−24 ч"); Spacer(); Text("−12 ч"); Spacer(); Text("сейчас")
+                Text(L("−24 ч")); Spacer(); Text(L("−12 ч")); Spacer(); Text(L("сейчас"))
             }
             .font(Theme.font(10)).foregroundStyle(Theme.text3)
         }
@@ -184,13 +184,13 @@ struct JournalHeader: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 12) {
-                Text("Время").frame(width: JCol.time, alignment: .leading)
-                Text("Приложение").frame(width: JCol.app, alignment: .leading)
-                Text("Хост").frame(maxWidth: .infinity, alignment: .leading)
-                Text("Маршрут").frame(width: JCol.route, alignment: .leading)
-                Text("Почему").frame(width: JCol.reason, alignment: .leading)
-                Text("Объём").frame(width: JCol.bytes, alignment: .leading)
-                Text("Длит.").frame(width: JCol.dur, alignment: .leading)
+                Text(L("Время")).frame(width: JCol.time, alignment: .leading)
+                Text(L("Приложение")).frame(width: JCol.app, alignment: .leading)
+                Text(L("Хост")).frame(maxWidth: .infinity, alignment: .leading)
+                Text(L("Маршрут")).frame(width: JCol.route, alignment: .leading)
+                Text(L("Почему")).frame(width: JCol.reason, alignment: .leading)
+                Text(L("Объём")).frame(width: JCol.bytes, alignment: .leading)
+                Text(L("Длит.")).frame(width: JCol.dur, alignment: .leading)
             }
             .font(Theme.font(11, .medium)).foregroundStyle(Theme.text2)
             .padding(.horizontal, 14).padding(.bottom, 10)
@@ -228,7 +228,7 @@ struct JournalRow: View {
                 .textSelection(.enabled)
             HStack(spacing: 6) {
                 StatusDot(color: exit.map(model.color(for:)) ?? Theme.text3)
-                Text(blocked ? "Заблокировано" : exit?.name ?? entry.exitTag).font(Theme.font(12, .medium)).lineLimit(1)
+                Text(blocked ? L("Заблокировано") : exit?.name ?? entry.exitTag).font(Theme.font(12, .medium)).lineLimit(1)
             }
             .frame(width: JCol.route, alignment: .leading)
             Text(entry.reason).font(Theme.font(12)).foregroundStyle(Theme.text2).lineLimit(1).frame(width: JCol.reason, alignment: .leading)
@@ -241,7 +241,7 @@ struct JournalRow: View {
 
     private var duration: String {
         let d = entry.duration
-        if entry.end == nil { return "идёт" }
-        return d < 60 ? String(format: "%.0f с", d) : String(format: "%.0f мин", d / 60)
+        if entry.end == nil { return L("идёт") }
+        return d < 60 ? String(format: L("%.0f с"), d) : String(format: L("%.0f мин"), d / 60)
     }
 }

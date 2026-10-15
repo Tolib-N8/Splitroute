@@ -177,8 +177,8 @@ struct ScreenHeader<Subtitle: View>: View {
 
 extension AppModel {
     var updatedText: String {
-        guard let lastUpdate else { return state.isRunning ? "Ожидание данных" : "Ядро остановлено" }
+        guard let lastUpdate else { return state.isRunning ? L("Ожидание данных") : L("Ядро остановлено") }
         let s = max(0, Int(Date().timeIntervalSince(lastUpdate)))
-        return "Обновлено \(s) сек. назад"
+        return L("Обновлено \(s) сек. назад")
     }
 }

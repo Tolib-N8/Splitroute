@@ -55,24 +55,28 @@ extension Color {
 
 enum Format {
     static func bytes(_ b: Int64) -> String {
-        let units = ["Б", "КБ", "МБ", "ГБ", "ТБ"]
+        let units = [L("Б"), L("КБ"), L("МБ"), L("ГБ"), L("ТБ")]
         var v = Double(b)
         var i = 0
         while v >= 1000 && i < units.count - 1 { v /= 1024; i += 1 }
-        if i == 0 { return "\(b) Б" }
+        if i == 0 { return L("\(b) Б") }
         return String(format: v >= 100 ? "%.0f %@" : "%.1f %@", v, units[i])
     }
 
     static func speed(_ bytesPerSecond: Int64) -> String {
-        bytes(bytesPerSecond) + "/с"
+        bytes(bytesPerSecond) + L("/с")
     }
 
     static func apps(_ n: Int) -> String {
-        "\(n) \(plural(n, "приложение", "приложения", "приложений"))"
+        L("\(n) \(plural(n, "приложение", "приложения", "приложений"))")
     }
 
     /// 1 соединение, 2 соединения, 5 соединений.
+    /// Формы — по-русски; для английского берётся перевод формы «один» или «много».
     static func plural(_ n: Int, _ one: String, _ few: String, _ many: String) -> String {
+        guard Lang.isRussian else {
+            return String(localized: String.LocalizationValue(n == 1 ? one : many))
+        }
         let mod10 = n % 10, mod100 = n % 100
         if mod10 == 1 && mod100 != 11 { return one }
         if (2...4).contains(mod10) && !(12...14).contains(mod100) { return few }

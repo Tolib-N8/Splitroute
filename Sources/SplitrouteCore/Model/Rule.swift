@@ -7,9 +7,9 @@ public struct Rule: Codable, Sendable, Equatable, Identifiable, Hashable {
 
         public var title: String {
             switch self {
-            case .domain: return "Домен"
-            case .ip: return "IP / подсеть"
-            case .port: return "Порт"
+            case .domain: return String(localized: "Домен")
+            case .ip: return String(localized: "IP / подсеть")
+            case .port: return String(localized: "Порт")
             }
         }
     }
@@ -69,13 +69,13 @@ public struct PresetInfo: Sendable, Identifiable {
     public static var allowedRuleSets: Set<String> { Set(catalog.flatMap(\.ruleSets)) }
 
     public static let catalog: [PresetInfo] = [
-        PresetInfo(id: "cn", title: "Китайские сервисы", subtitle: "WeChat, Alipay, Baidu, банки · напрямую",
+        PresetInfo(id: "cn", title: String(localized: "Китайские сервисы"), subtitle: String(localized: "WeChat, Alipay, Baidu, банки · напрямую"),
                    icon: "building.columns", ruleSets: ["geosite-cn", "geoip-cn"], defaultExit: .direct),
-        PresetInfo(id: "gfw", title: "Заблокированное в Китае", subtitle: "Google, YouTube, Telegram… · через VPN",
+        PresetInfo(id: "gfw", title: String(localized: "Заблокированное в Китае"), subtitle: String(localized: "Google, YouTube, Telegram… · через VPN"),
                    icon: "globe.badge.chevron.backward", ruleSets: ["geosite-geolocation-!cn"], defaultExit: .tunnel),
-        PresetInfo(id: "ads", title: "Блок рекламы и трекеров", subtitle: "Реклама, телеметрия",
+        PresetInfo(id: "ads", title: String(localized: "Блок рекламы и трекеров"), subtitle: String(localized: "Реклама, телеметрия"),
                    icon: "hand.raised.slash", ruleSets: ["geosite-category-ads-all"], defaultExit: .block),
-        PresetInfo(id: "lan", title: "Локальная сеть", subtitle: "192.168.0.0/16, 10.0.0.0/8, *.local",
+        PresetInfo(id: "lan", title: String(localized: "Локальная сеть"), subtitle: "192.168.0.0/16, 10.0.0.0/8, *.local",
                    icon: "house", ruleSets: [], defaultExit: .direct),
     ]
 

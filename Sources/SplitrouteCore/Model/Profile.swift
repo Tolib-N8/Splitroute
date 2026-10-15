@@ -36,8 +36,8 @@ public struct Exit: Codable, Sendable, Equatable, Identifiable, Hashable {
         self.autoConnect = autoConnect
     }
 
-    public static let direct = Exit(id: directID, name: "Напрямую", kind: .direct)
-    public static let block = Exit(id: blockID, name: "Блок", kind: .block)
+    public static let direct = Exit(id: directID, name: String(localized: "Напрямую"), kind: .direct)
+    public static let block = Exit(id: blockID, name: String(localized: "Блок"), kind: .block)
 
     /// Тег outbound/endpoint в конфиге sing-box.
     public var tag: String {

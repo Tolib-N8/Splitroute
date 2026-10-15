@@ -41,8 +41,8 @@ public enum UpdateFeed {
 
         public var errorDescription: String? {
             switch self {
-            case .checksum: return "Контрольная сумма обновления не совпадает"
-            case .signature: return "Подпись обновления недействительна"
+            case .checksum: return String(localized: "Контрольная сумма обновления не совпадает")
+            case .signature: return String(localized: "Подпись обновления недействительна")
             }
         }
     }

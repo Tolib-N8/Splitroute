@@ -35,7 +35,7 @@ enum HelperClient {
     /// Установка: один запрос пароля администратора.
     static func install() async throws {
         guard runningFromBundle else {
-            throw Failure(message: "Установка доступна только из собранного Splitroute.app (scripts/bundle.sh)")
+            throw Failure(message: L("Установка доступна только из собранного Splitroute.app (scripts/bundle.sh)"))
         }
         let cmd = [bundledHelper, "install", NSUserName(), Bundle.main.bundlePath].map(shellQuote).joined(separator: " ")
         let script = "do shell script \(appleScriptQuote(cmd)) with administrator privileges with prompt \"Splitroute устанавливает системный компонент для маршрутизации трафика.\""
@@ -80,7 +80,7 @@ enum HelperClient {
                     cont.resume(returning: out)
                 } else {
                     let msg = out.replacingOccurrences(of: "splitroute-helper: ", with: "")
-                    cont.resume(throwing: Failure(message: msg.isEmpty ? "Ошибка \(p.terminationStatus)" : msg))
+                    cont.resume(throwing: Failure(message: msg.isEmpty ? L("Ошибка \(p.terminationStatus)") : msg))
                 }
             }
         }

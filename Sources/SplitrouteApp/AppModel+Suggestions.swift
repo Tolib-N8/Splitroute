@@ -51,7 +51,7 @@ extension AppModel {
     }
 
     func detail(for s: BlockAdvisor.Suggestion) -> String {
-        let failures = "\(s.failures) \(Format.plural(s.failures, "неудачное соединение", "неудачных соединения", "неудачных соединений")) за 30 мин"
+        let failures = L("\(s.failures) \(Format.plural(s.failures, "неудачное соединение", "неудачных соединения", "неудачных соединений")) за 30 мин")
         switch s.target {
         case .app:
             return s.examples.isEmpty ? failures : failures + " · " + s.examples.joined(separator: ", ")

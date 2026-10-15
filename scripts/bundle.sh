@@ -19,6 +19,8 @@ cp Resources/Fonts/*.ttf "$APP/Contents/Resources/Fonts/" 2>/dev/null || true
 mkdir -p "$APP/Contents/Resources/licenses"
 cp Resources/licenses/* "$APP/Contents/Resources/licenses/"
 [ -f Resources/AppIcon.icns ] && cp Resources/AppIcon.icns "$APP/Contents/Resources/"
+# Переводы: ключи — русский текст, en.lproj — английский (scripts/strings.sh покажет непереведённое).
+cp -R Resources/en.lproj Resources/ru.lproj "$APP/Contents/Resources/"
 
 VERSION=$(cat VERSION)
 BUILD=$(git rev-list --count HEAD 2>/dev/null || echo 1)
@@ -28,6 +30,8 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 <plist version="1.0">
 <dict>
   <key>CFBundleName</key><string>Splitroute</string>
+  <key>CFBundleDevelopmentRegion</key><string>en</string>
+  <key>CFBundleLocalizations</key><array><string>en</string><string>ru</string></array>
   <key>CFBundleDisplayName</key><string>Splitroute</string>
   <key>CFBundleIdentifier</key><string>com.splitroute.app</string>
   <key>CFBundleExecutable</key><string>Splitroute</string>

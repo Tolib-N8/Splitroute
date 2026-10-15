@@ -86,18 +86,18 @@ final class Updater {
                 state = .upToDate
             }
         } catch {
-            state = userInitiated ? .failed("Не удалось проверить обновления: \(error.localizedDescription)") : .idle
+            state = userInitiated ? .failed(L("Не удалось проверить обновления: \(error.localizedDescription)")) : .idle
         }
     }
 
     func install(_ appcast: Appcast) async {
         guard !Self.isTranslocated else {
-            state = .failed("Переместите Splitroute в папку «Программы» — оттуда приложение может обновлять себя")
+            state = .failed(L("Переместите Splitroute в папку «Программы» — оттуда приложение может обновлять себя"))
             return
         }
         let target = Bundle.main.bundleURL
         guard FileManager.default.isWritableFile(atPath: target.deletingLastPathComponent().path) else {
-            state = .failed("Нет прав на запись в \(target.deletingLastPathComponent().path)")
+            state = .failed(L("Нет прав на запись в \(target.deletingLastPathComponent().path)"))
             return
         }
         state = .downloading(appcast, 0)
@@ -112,7 +112,7 @@ final class Updater {
             try Self.relaunch(replacing: target, with: staged)
             NSApp.terminate(nil)
         } catch {
-            state = .failed("Обновление не установлено: \(error.localizedDescription)")
+            state = .failed(L("Обновление не установлено: \(error.localizedDescription)"))
         }
     }
 
@@ -132,7 +132,7 @@ final class Updater {
         guard let info = NSDictionary(contentsOf: source.appendingPathComponent("Contents/Info.plist")),
               info["CFBundleShortVersionString"] as? String == appcast.version,
               info["CFBundleIdentifier"] as? String == Bundle.main.bundleIdentifier
-        else { throw UpdateError("в образе не та версия приложения") }
+        else { throw UpdateError(L("в образе не та версия приложения")) }
 
         let staged = target.deletingLastPathComponent().appendingPathComponent(".Splitroute-\(appcast.version)-\(UUID().uuidString.prefix(8)).app")
         try await shell("/usr/bin/ditto", [source.path, staged.path])

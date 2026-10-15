@@ -18,9 +18,9 @@ extension AppModel {
         scenarioStore.activeID = id          // раньше профиля: иначе его didSet запишет маршруты в старый сценарий
         profile = profile.applying(s)
         if automatically {
-            let network = networkSignature.map(NetworkState.describe) ?? "сеть"
-            Notifier.shared.post(.scenarios, key: "scenario:" + id, title: "Сценарий «\(s.name)»",
-                                 body: "Включён автоматически: \(network)", screen: .apps, throttle: 60)
+            let network = networkSignature.map(NetworkState.describe) ?? L("сеть")
+            Notifier.shared.post(.scenarios, key: "scenario:" + id, title: L("Сценарий «\(s.name)»"),
+                                 body: L("Включён автоматически: \(network)"), screen: .apps, throttle: 60)
         }
     }
 
@@ -28,13 +28,13 @@ extension AppModel {
     @discardableResult
     func createScenario() -> Scenario {
         if scenarioStore.scenarios.isEmpty {
-            let base = Scenario(name: "Основной", capturing: profile)
+            let base = Scenario(name: L("Основной"), capturing: profile)
             scenarioStore.scenarios.append(base)
             scenarioStore.activeID = base.id
         }
         var n = scenarioStore.scenarios.count + 1
-        while scenarioStore.scenarios.contains(where: { $0.name == "Сценарий \(n)" }) { n += 1 }
-        let s = Scenario(name: "Сценарий \(n)", capturing: profile)
+        while scenarioStore.scenarios.contains(where: { $0.name == L("Сценарий \(n)") }) { n += 1 }
+        let s = Scenario(name: L("Сценарий \(n)"), capturing: profile)
         scenarioStore.scenarios.append(s)
         scenarioStore.activeID = s.id
         return s
@@ -76,12 +76,12 @@ extension AppModel {
                   let exit = profile.exits.first(where: { $0.kind == .vpnApp(serviceID: s.id) }), isUsed(exit)
             else { continue }
             let apps = profile.routes.filter { $0.exitID == exit.id }.map(\.name)
-            let who = apps.isEmpty ? "Его правила" : apps.prefix(2).joined(separator: ", ") + (apps.count > 2 ? " и ещё \(apps.count - 2)" : "")
+            let who = apps.isEmpty ? L("Его правила") : apps.prefix(2).joined(separator: ", ") + (apps.count > 2 ? L(" и ещё \(apps.count - 2)") : "")
             if s.isConnected {
-                Notifier.shared.post(.vpn, key: "vpn-up:" + exit.id, title: "\(exit.name) снова подключён",
-                                     body: "\(who) снова идут через него", screen: .servers)
+                Notifier.shared.post(.vpn, key: "vpn-up:" + exit.id, title: L("\(exit.name) снова подключён"),
+                                     body: L("\(who) снова идут через него"), screen: .servers)
             } else {
-                Notifier.shared.post(.vpn, key: "vpn-down:" + exit.id, title: "\(exit.name) отключился",
+                Notifier.shared.post(.vpn, key: "vpn-down:" + exit.id, title: L("\(exit.name) отключился"),
                                      body: "\(who) — \(fallbackNote(for: exit))", screen: .servers)
             }
         }
@@ -93,9 +93,9 @@ extension AppModel {
         guard !new.isEmpty else { return }
         notifiedSuggestions.formUnion(new.map(\.id))
         let names = new.prefix(3).map(title(for:)).joined(separator: ", ")
-        let via = suggestionExit.map { " — можно пустить через \($0.name)" } ?? ""
-        Notifier.shared.post(.suggestions, key: "suggestions", title: "Не открывается напрямую",
-                             body: names + (new.count > 3 ? " и ещё \(new.count - 3)" : "") + via,
+        let via = suggestionExit.map { L(" — можно пустить через \($0.name)") } ?? ""
+        Notifier.shared.post(.suggestions, key: "suggestions", title: L("Не открывается напрямую"),
+                             body: names + (new.count > 3 ? L(" и ещё \(new.count - 3)") : "") + via,
                              screen: .apps, throttle: 600)
     }
 }
