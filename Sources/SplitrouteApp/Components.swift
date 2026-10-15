@@ -37,14 +37,30 @@ struct FilterPill: View {
     }
 }
 
+extension View {
+    /// Иконка отвечает на клик: «обновить»-подобные и шестерёнка крутятся, остальные подпрыгивают.
+    @ViewBuilder func liveSymbol(_ name: String?, value: Int) -> some View {
+        if let name, name.contains("clockwise") || name.contains("circlepath") || name.hasPrefix("gearshape") {
+            symbolEffect(.rotate, value: value)
+        } else {
+            symbolEffect(.bounce, value: value)
+        }
+    }
+}
+
 struct PrimaryButton: View {
     var title: String
     var systemImage: String = "plus"
     var action: () -> Void
+    @State private var taps = 0
 
     var body: some View {
-        Button(action: action) {
+        Button {
+            taps += 1
+            action()
+        } label: {
             Label(title, systemImage: systemImage)
+                .liveSymbol(systemImage, value: taps)
                 .font(Theme.font(13, .bold))
                 .foregroundStyle(Theme.bg)
                 .padding(.horizontal, 20)
@@ -59,11 +75,15 @@ struct OutlineButton: View {
     var title: String
     var systemImage: String?
     var action: () -> Void
+    @State private var taps = 0
 
     var body: some View {
-        Button(action: action) {
+        Button {
+            taps += 1
+            action()
+        } label: {
             HStack(spacing: 8) {
-                if let systemImage { Image(systemName: systemImage) }
+                if let systemImage { Image(systemName: systemImage).liveSymbol(systemImage, value: taps) }
                 Text(title)
             }
             .font(Theme.font(13, .semibold))

@@ -36,6 +36,8 @@ struct RootView: View {
     @AppStorage("onboardingDone") private var onboardingDone = false
     @Environment(Updater.self) private var updater
     @Environment(\.openWindow) private var openWindow
+    /// Приветствие — при первом открытии окна за запуск.
+    @State private var showSplash = !SplashView.shown
 
     var body: some View {
         ZStack {
@@ -43,6 +45,11 @@ struct RootView: View {
                 main
             } else {
                 OnboardingView().ignoresSafeArea()
+            }
+            if showSplash {
+                SplashView { showSplash = false }
+                    .ignoresSafeArea()
+                    .zIndex(10)
             }
         }
         .onAppear {
@@ -108,14 +115,14 @@ struct RootView: View {
 }
 
 struct Sidebar: View {
+    @Environment(AppModel.self) private var model
     @Binding var screen: Screen
+    /// Клик по пункту — иконка подпрыгивает.
+    @State private var taps: [Screen: Int] = [:]
 
     var body: some View {
         VStack(spacing: 22) {
-            RoundedRectangle(cornerRadius: 10)
-                .fill(Theme.lime)
-                .frame(width: 36, height: 36)
-                .overlay(Image(systemName: "arrow.triangle.branch").font(.system(size: 16, weight: .bold)).foregroundStyle(Theme.bg))
+            LogoMark(size: 36, traffic: model.liveTraffic)
                 .padding(.top, 56)
                 .padding(.bottom, 8)
             ForEach(Screen.main) { item($0) }
@@ -126,10 +133,14 @@ struct Sidebar: View {
     }
 
     private func item(_ s: Screen) -> some View {
-        Button { screen = s } label: {
+        Button {
+            taps[s, default: 0] += 1
+            screen = s
+        } label: {
             VStack(spacing: 6) {
                 Image(systemName: s.icon)
                     .font(.system(size: 16))
+                    .symbolEffect(.bounce, value: taps[s, default: 0])
                     .frame(width: 44, height: 34)
                     .background(screen == s ? Theme.surface2 : .clear, in: RoundedRectangle(cornerRadius: 9))
                 Text(s.title).font(Theme.font(11, screen == s ? .semibold : .regular))

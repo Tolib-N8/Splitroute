@@ -11,6 +11,11 @@ extension AppModel {
         }
     }
 
+    /// Для логотипа: байт/с, пока маршрутизация работает; nil — точки не бегут.
+    var liveTraffic: Double? {
+        state == .running ? Double(speed.down + speed.up) : nil
+    }
+
     var statusTitle: String {
         switch state {
         case .running: return L("Маршрутизация включена")
@@ -54,11 +59,7 @@ struct MenuBarPanel: View {
     private var header: some View {
         @Bindable var model = model
         return HStack(spacing: 12) {
-            RoundedRectangle(cornerRadius: 9)
-                .fill(LinearGradient(colors: [Color(red: 0.85, green: 1, blue: 0.42), Color(red: 0.61, green: 0.82, blue: 0.12)],
-                                     startPoint: .topLeading, endPoint: .bottomTrailing))
-                .frame(width: 32, height: 32)
-                .overlay(Image(systemName: "arrow.triangle.branch").font(.system(size: 15, weight: .bold)).foregroundStyle(Theme.bg))
+            LogoMark(size: 32, traffic: model.liveTraffic)
             VStack(alignment: .leading, spacing: 3) {
                 Text(verbatim: "Splitroute").font(Theme.font(15, .bold))
                 HStack(spacing: 6) {
@@ -231,14 +232,7 @@ struct MenuBarPanel: View {
     }
 
     private func circleButton(_ icon: String, help: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: icon).font(.system(size: 13)).foregroundStyle(Theme.text2)
-                .frame(width: 32, height: 32)
-                .overlay(Circle().stroke(Theme.line))
-                .contentShape(Circle())
-        }
-        .buttonStyle(.plain)
-        .help(help)
+        CircleIconButton(icon: icon, help: help, action: action)
     }
 
     private func openMain(_ target: Screen?) {
@@ -252,5 +246,28 @@ struct MenuBarPanel: View {
             content()
         }
         .padding(.horizontal, 16).padding(.top, 16)
+    }
+}
+
+/// Круглая кнопка мини-окна; иконка отвечает на клик (шестерёнка крутится, остальные подпрыгивают).
+private struct CircleIconButton: View {
+    var icon: String
+    var help: String
+    var action: () -> Void
+    @State private var taps = 0
+
+    var body: some View {
+        Button {
+            taps += 1
+            action()
+        } label: {
+            Image(systemName: icon).font(.system(size: 13)).foregroundStyle(Theme.text2)
+                .liveSymbol(icon, value: taps)
+                .frame(width: 32, height: 32)
+                .overlay(Circle().stroke(Theme.line))
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .help(help)
     }
 }

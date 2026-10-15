@@ -38,6 +38,7 @@ struct RoutesView: View {
                 OutlineButton(title: L("Добавить приложение"), systemImage: "plus") { showAdd = true }
                 Button { paused.toggle() } label: {
                     Image(systemName: paused ? "play.fill" : "pause.fill")
+                        .contentTransition(.symbolEffect(.replace))
                         .frame(width: 38, height: 38)
                         .overlay(Circle().stroke(Theme.text.opacity(0.85), lineWidth: 1.2))
                         .contentShape(Circle())
