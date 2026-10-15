@@ -43,6 +43,12 @@ public enum BlockAdvisor {
         /// Домены (для приложения) или приложения (для домена), где были сбои — для пояснения.
         public var examples: [String]
         public var id: String { target.id }
+
+        public init(target: Target, failures: Int, examples: [String]) {
+            self.target = target
+            self.failures = failures
+            self.examples = examples
+        }
     }
 
     public static let window: TimeInterval = 30 * 60

@@ -12,6 +12,16 @@ public struct VPNServiceInfo: Sendable, Equatable, Identifiable, Hashable {
     public var serverAddress: String?
     public var ipv6: Bool = false
 
+    public init(id: String, name: String, providerBundleID: String? = nil, interface: String? = nil,
+                serverAddress: String? = nil, ipv6: Bool = false) {
+        self.id = id
+        self.name = name
+        self.providerBundleID = providerBundleID
+        self.interface = interface
+        self.serverAddress = serverAddress
+        self.ipv6 = ipv6
+    }
+
     public var isConnected: Bool { interface != nil }
     /// Tailscale — это mesh-сеть, а не выход в интернет; в списке выходов его не показываем.
     public var isMesh: Bool { providerBundleID?.contains("tailscale") == true || name.localizedCaseInsensitiveContains("tailscale") }

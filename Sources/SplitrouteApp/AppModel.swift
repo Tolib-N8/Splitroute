@@ -32,7 +32,7 @@ final class AppModel {
 
     var profile: Profile {
         didSet {
-            guard profile != oldValue else { return }
+            guard profile != oldValue, !Demo.isOn else { return }
             try? profile.save(to: Paths.userProfile)
             captureIntoActiveScenario()
             scheduleApply()
@@ -40,8 +40,8 @@ final class AppModel {
     }
 
     /// Сценарии («Дом», «Офис»); правки маршрутов сразу запоминаются в активном.
-    var scenarioStore = ScenarioStore.load(from: AppModel.scenariosURL) {
-        didSet { if scenarioStore != oldValue { try? scenarioStore.save(to: AppModel.scenariosURL) } }
+    var scenarioStore = Demo.isOn ? Demo.scenarios : ScenarioStore.load(from: AppModel.scenariosURL) {
+        didSet { if scenarioStore != oldValue, !Demo.isOn { try? scenarioStore.save(to: AppModel.scenariosURL) } }
     }
     static var scenariosURL: URL { Paths.userProfile.deletingLastPathComponent().appendingPathComponent("scenarios.json") }
     /// Отпечаток текущей сети (роутер + MAC) — для автопереключения сценариев.
@@ -49,6 +49,7 @@ final class AppModel {
 
     var enabled: Bool {
         didSet {
+            if Demo.isOn { state = enabled ? .running : .stopped; return }
             UserDefaults.standard.set(enabled, forKey: "enabled")
             if enabled { scheduleApply(immediately: true) } else { Task { await stopCore() } }
         }
@@ -58,7 +59,7 @@ final class AppModel {
     private(set) var vpnServices: [VPNServiceInfo] = []
     private(set) var physicalInterface: String?
     private(set) var installedApps: [InstalledApp] = []
-    private(set) var stats = TrafficStats.load()
+    private(set) var stats = Demo.isOn ? Demo.stats : TrafficStats.load()
     private(set) var speed = TrafficSample(up: 0, down: 0)
     /// Скорость потоков «приложение → выход», байт/с (сглаженная).
     private(set) var flowRates: [String: Double] = [:]
@@ -68,7 +69,7 @@ final class AppModel {
     private(set) var pingHistory: [String: [Int]] = [:]
     private(set) var lastUpdate: Date?
     var lastError: String?
-    private(set) var journal = Journal.load()
+    private(set) var journal = Demo.isOn ? Journal() : Journal.load()
     /// «В реальном времени»: если выключено, журнал на экране не обновляется (запись продолжается).
     var journalLive = true
     private(set) var journalSnapshot: [JournalEntry] = []
@@ -102,6 +103,11 @@ final class AppModel {
     private var started = false
 
     init() {
+        if Demo.isOn {
+            profile = Demo.profile
+            enabled = true
+            return
+        }
         var loaded = (try? Profile.load(from: Paths.userProfile)) ?? Profile()
         // Правила на папку из ранних версий назывались по имени папки («versions»).
         for i in loaded.routes.indices {
@@ -124,6 +130,7 @@ final class AppModel {
         guard !started else { return }
         started = true
         Theme.registerFonts()
+        if Demo.isOn { startDemo(); return }
         Notifier.shared.start()
         Support.shared.start()
         Task { await refreshNetwork() }
@@ -166,7 +173,7 @@ final class AppModel {
     // MARK: Применение профиля
 
     func scheduleApply(immediately: Bool = false) {
-        guard HelperClient.isInstalled, state != .needsUpdate else { return }
+        guard !Demo.isOn, HelperClient.isInstalled, state != .needsUpdate else { return }
         applyTask?.cancel()
         applyTask = Task {
             if !immediately { try? await Task.sleep(for: .seconds(1)) }
@@ -192,7 +199,7 @@ final class AppModel {
 
     private func stopCore() async {
         applyTask?.cancel()
-        guard HelperClient.isInstalled else { return }
+        guard !Demo.isOn, HelperClient.isInstalled else { return }
         do {
             try await HelperClient.call("stop")
             state = .stopped
@@ -508,6 +515,45 @@ final class AppModel {
             guard state == .running else { continue }
             await measurePings()
             try? await Task.sleep(for: .seconds(55))
+        }
+    }
+
+    // MARK: Демо
+
+    /// Живые придуманные данные: ядро и сеть не опрашиваются, ничего не сохраняется.
+    private func startDemo() {
+        state = .running
+        vpnServices = Demo.vpnServices
+        environment = Demo.environment
+        physicalInterface = "en0"
+        suggestions = [Demo.suggestion]
+        pings = [Demo.tokyo.id: 64, Demo.hk.id: 38, Exit.directID: 12]
+        pingHistory = [Demo.tokyo.id: [61, 66, 63, 70, 64, 62, 65, 64], Demo.hk.id: [36, 40, 38, 41, 37, 39, 38, 38]]
+        Task.detached(priority: .utility) {
+            let apps = AppCatalog.scan()
+            await MainActor.run { self.installedApps = apps }
+        }
+        Task {
+            let flows = Demo.flows
+            var t = 0.0
+            while !Task.isCancelled {
+                let now = Date()
+                var rates: [String: Double] = [:]
+                var total = 0.0
+                for (i, f) in flows.enumerated() {
+                    // Средняя скорость за сутки ×8 и «дыхание», у каждого потока своё.
+                    let base = Double(f.bytes) / 86_400 * 8
+                    let r = base * (0.55 + 0.45 * sin(t * 0.9 + Double(i) * 1.7))
+                    rates[f.key] = r
+                    total += r
+                    activeApps[String(f.key.dropFirst(5).split(separator: "|")[0])] = now
+                }
+                flowRates = rates
+                speed = TrafficSample(up: Int64(total * 0.12), down: Int64(total))
+                lastUpdate = now
+                t += 1
+                try? await Task.sleep(for: .seconds(1))
+            }
         }
     }
 

@@ -71,6 +71,8 @@ struct SplashView: View {
     @MainActor static var shown = false
     /// SPLITROUTE_SPLASH_SLOW=1 — в 4 раза медленнее, чтобы рассмотреть кадры.
     private static let timeScale: Double = ProcessInfo.processInfo.environment["SPLITROUTE_SPLASH_SLOW"] == "1" ? 4 : 1
+    /// SPLITROUTE_SPLASH_DELAY=<с> — пауза на пустом фоне перед анимацией (запись ролика стартует не сразу).
+    private static let delay: Double = ProcessInfo.processInfo.environment["SPLITROUTE_SPLASH_DELAY"].flatMap(Double.init) ?? 0
     static let duration = 2.8
 
     var onFinish: () -> Void
@@ -103,7 +105,7 @@ struct SplashView: View {
     var body: some View {
         GeometryReader { geo in
             TimelineView(.animation) { context in
-                let t = (context.date.timeIntervalSinceReferenceDate - start) / Self.timeScale
+                let t = (context.date.timeIntervalSinceReferenceDate - start) / Self.timeScale - Self.delay
                 frame(t: t, size: geo.size)
             }
         }
@@ -113,13 +115,13 @@ struct SplashView: View {
         .onAppear {
             Self.shown = true
             if reduceMotion { onFinish(); return }
-            DispatchQueue.main.asyncAfter(deadline: .now() + Self.duration * Self.timeScale) { onFinish() }
+            DispatchQueue.main.asyncAfter(deadline: .now() + (Self.duration + Self.delay) * Self.timeScale) { onFinish() }
         }
     }
 
     private func skip() {
         guard skipAt == nil else { return }
-        skipAt = (Date.timeIntervalSinceReferenceDate - start) / Self.timeScale
+        skipAt = (Date.timeIntervalSinceReferenceDate - start) / Self.timeScale - Self.delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25 * Self.timeScale) { onFinish() }
     }
 

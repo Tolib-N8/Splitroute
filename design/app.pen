@@ -18972,6 +18972,1411 @@
           ]
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "CU9Db",
+      "x": 9260,
+      "y": 0,
+      "name": "Splitroute — Мини-окно (строка меню)",
+      "clip": true,
+      "width": 380,
+      "fill": "#111111",
+      "cornerRadius": 16,
+      "stroke": "$line",
+      "strokeWidth": 1,
+      "effect": {
+        "type": "shadow",
+        "shadowType": "outer",
+        "color": "#00000099",
+        "offset": {
+          "x": 0,
+          "y": 18
+        },
+        "blur": 48
+      },
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "ifFuE",
+          "name": "Header",
+          "width": "fill_container",
+          "gap": 12,
+          "padding": [
+            16,
+            16,
+            14,
+            16
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "uP0PD",
+              "name": "Logo Mark",
+              "width": 32,
+              "height": 32,
+              "fill": {
+                "type": "gradient",
+                "gradientType": "linear",
+                "enabled": true,
+                "rotation": 200,
+                "size": {
+                  "height": 1
+                },
+                "colors": [
+                  {
+                    "color": "#D9FF6B",
+                    "position": 0
+                  },
+                  {
+                    "color": "#9BD11E",
+                    "position": 1
+                  }
+                ]
+              },
+              "cornerRadius": 9,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "OqU9S",
+                  "name": "Icon",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "split",
+                  "library": "lucide",
+                  "fill": "#0A0A0A"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "fFTKT",
+              "name": "Title",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 3,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "iEAex",
+                  "name": "Name",
+                  "fill": "$text",
+                  "content": "Splitroute",
+                  "fontFamily": "$font",
+                  "fontSize": 15,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "n7xQG",
+                  "name": "Status",
+                  "gap": 6,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "uaA6H",
+                      "name": "Dot",
+                      "fill": "$lime",
+                      "width": 7,
+                      "height": 7
+                    },
+                    {
+                      "type": "text",
+                      "id": "qO55e",
+                      "name": "State",
+                      "fill": "$text-2",
+                      "content": "Маршрутизация включена",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "U6Rd4",
+              "name": "Toggle",
+              "width": 44,
+              "height": 26,
+              "fill": "$lime",
+              "cornerRadius": 13,
+              "padding": 3,
+              "justifyContent": "end",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "FeH4Y",
+                  "name": "Knob",
+                  "fill": "#0A0A0A",
+                  "width": 20,
+                  "height": 20
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "HMm57",
+          "name": "Flow Section",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 10,
+          "padding": [
+            0,
+            16
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "C8THGU",
+              "name": "Flow Card",
+              "clip": true,
+              "width": "fill_container",
+              "height": 176,
+              "fill": "#0A0A0A",
+              "cornerRadius": 12,
+              "stroke": "$line",
+              "strokeWidth": 1,
+              "layout": "none",
+              "children": [
+                {
+                  "type": "rectangle",
+                  "id": "b8kjYI",
+                  "x": 50,
+                  "y": 10,
+                  "name": "Particle Flow",
+                  "fill": {
+                    "type": "shader",
+                    "enabled": true,
+                    "url": "app-assets/flow.glsl"
+                  },
+                  "width": 198,
+                  "height": 156
+                },
+                {
+                  "type": "frame",
+                  "id": "zhM2z",
+                  "x": 12,
+                  "y": 14,
+                  "name": "App WhatsApp",
+                  "width": 24,
+                  "height": 24,
+                  "fill": "#1C1C1C",
+                  "cornerRadius": 6,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "PoOz1",
+                      "name": "Icon",
+                      "width": 14,
+                      "height": 14,
+                      "icon": "message-circle",
+                      "library": "lucide",
+                      "fill": "#25D366"
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 1,
+                  "id": "yVQJp",
+                  "x": 42,
+                  "y": 14,
+                  "name": "Bar WhatsApp",
+                  "fill": "#3A3A3A",
+                  "width": 2,
+                  "height": 24
+                },
+                {
+                  "type": "frame",
+                  "id": "Se7rI",
+                  "x": 12,
+                  "y": 46,
+                  "name": "App Chrome",
+                  "width": 24,
+                  "height": 24,
+                  "fill": "#1C1C1C",
+                  "cornerRadius": 6,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "QR6OV",
+                      "name": "Icon",
+                      "width": 14,
+                      "height": 14,
+                      "icon": "globe",
+                      "library": "lucide",
+                      "fill": "#4285F4"
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 1,
+                  "id": "t0gcyu",
+                  "x": 42,
+                  "y": 46,
+                  "name": "Bar Chrome",
+                  "fill": "#3A3A3A",
+                  "width": 2,
+                  "height": 24
+                },
+                {
+                  "type": "frame",
+                  "id": "sfVI0",
+                  "x": 12,
+                  "y": 78,
+                  "name": "App Telegram",
+                  "width": 24,
+                  "height": 24,
+                  "fill": "#1C1C1C",
+                  "cornerRadius": 6,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "NRdv3",
+                      "name": "Icon",
+                      "width": 14,
+                      "height": 14,
+                      "icon": "send",
+                      "library": "lucide",
+                      "fill": "#2AABEE"
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 1,
+                  "id": "xWvrn",
+                  "x": 42,
+                  "y": 78,
+                  "name": "Bar Telegram",
+                  "fill": "#3A3A3A",
+                  "width": 2,
+                  "height": 24
+                },
+                {
+                  "type": "frame",
+                  "id": "zZ3RG",
+                  "x": 12,
+                  "y": 110,
+                  "name": "App Code",
+                  "width": 24,
+                  "height": 24,
+                  "fill": "#1C1C1C",
+                  "cornerRadius": 6,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "q35Eh",
+                      "name": "Icon",
+                      "width": 14,
+                      "height": 14,
+                      "icon": "code-xml",
+                      "library": "lucide",
+                      "fill": "#3B9BE8"
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 1,
+                  "id": "mV79b",
+                  "x": 42,
+                  "y": 110,
+                  "name": "Bar Code",
+                  "fill": "#3A3A3A",
+                  "width": 2,
+                  "height": 24
+                },
+                {
+                  "type": "frame",
+                  "id": "c2mmAX",
+                  "x": 12,
+                  "y": 142,
+                  "name": "App Музыка",
+                  "width": 24,
+                  "height": 24,
+                  "fill": "#1C1C1C",
+                  "cornerRadius": 6,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "rGe66",
+                      "name": "Icon",
+                      "width": 14,
+                      "height": 14,
+                      "icon": "music",
+                      "library": "lucide",
+                      "fill": "#FFCC00"
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 1,
+                  "id": "ipXmo",
+                  "x": 42,
+                  "y": 142,
+                  "name": "Bar Музыка",
+                  "fill": "#3A3A3A",
+                  "width": 2,
+                  "height": 24
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 2,
+                  "id": "a1FdH",
+                  "x": 252,
+                  "y": 14,
+                  "name": "Bar AIRLINK VPN",
+                  "fill": "$lime",
+                  "width": 3,
+                  "height": 94
+                },
+                {
+                  "type": "frame",
+                  "id": "hJa7n",
+                  "x": 262,
+                  "y": 48,
+                  "name": "Exit AIRLINK VPN",
+                  "layout": "vertical",
+                  "gap": 1,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "iSJcd",
+                      "name": "Name",
+                      "fill": "$text",
+                      "content": "AIRLINK VPN",
+                      "fontFamily": "$font",
+                      "fontSize": 11,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "YyI3W",
+                      "name": "Sub",
+                      "fill": "$text-3",
+                      "content": "6 прил.",
+                      "fontFamily": "$font",
+                      "fontSize": 10,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 2,
+                  "id": "ZBfaB",
+                  "x": 252,
+                  "y": 118,
+                  "name": "Bar Напрямую",
+                  "fill": "$blue",
+                  "width": 3,
+                  "height": 34
+                },
+                {
+                  "type": "frame",
+                  "id": "oelws",
+                  "x": 262,
+                  "y": 122,
+                  "name": "Exit Напрямую",
+                  "layout": "vertical",
+                  "gap": 1,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "O7Hb0F",
+                      "name": "Name",
+                      "fill": "$text",
+                      "content": "Напрямую",
+                      "fontFamily": "$font",
+                      "fontSize": 11,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "oP1eu",
+                      "name": "Sub",
+                      "fill": "$text-3",
+                      "content": "3 прил.",
+                      "fontFamily": "$font",
+                      "fontSize": 10,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 2,
+                  "id": "aqX4Y",
+                  "x": 252,
+                  "y": 160,
+                  "name": "Bar Блок",
+                  "fill": "$coral",
+                  "width": 3,
+                  "height": 10
+                },
+                {
+                  "type": "frame",
+                  "id": "UjxEd",
+                  "x": 262,
+                  "y": 156,
+                  "name": "Exit Блок",
+                  "layout": "vertical",
+                  "gap": 1,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "EKPoe",
+                      "name": "Name",
+                      "fill": "$text",
+                      "content": "Блок",
+                      "fontFamily": "$font",
+                      "fontSize": 11,
+                      "fontWeight": "700"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "WTMAJ",
+              "name": "Stats Row",
+              "width": "fill_container",
+              "gap": 14,
+              "padding": [
+                0,
+                2
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "aPhNs",
+                  "name": "Speed arrow-down",
+                  "gap": 4,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "mO663",
+                      "name": "Icon",
+                      "width": 12,
+                      "height": 12,
+                      "icon": "arrow-down",
+                      "library": "lucide",
+                      "fill": "$text-3"
+                    },
+                    {
+                      "type": "text",
+                      "id": "hRXo0",
+                      "name": "Value",
+                      "fill": "$text-2",
+                      "content": "1.4 МБ/с",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "K1i1g2",
+                  "name": "Speed arrow-up",
+                  "gap": 4,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "RhYeo",
+                      "name": "Icon",
+                      "width": 12,
+                      "height": 12,
+                      "icon": "arrow-up",
+                      "library": "lucide",
+                      "fill": "$text-3"
+                    },
+                    {
+                      "type": "text",
+                      "id": "lAKhb",
+                      "name": "Value",
+                      "fill": "$text-2",
+                      "content": "236 КБ/с",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "min7d",
+                  "name": "Spacer",
+                  "width": "fill_container",
+                  "height": 1
+                },
+                {
+                  "type": "frame",
+                  "id": "fl9Ss",
+                  "name": "Scenario Pill",
+                  "fill": "$surface-2",
+                  "cornerRadius": 12,
+                  "gap": 6,
+                  "padding": [
+                    5,
+                    10
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "LU5gG",
+                      "name": "Icon",
+                      "width": 12,
+                      "height": 12,
+                      "icon": "layers",
+                      "library": "lucide",
+                      "fill": "$text-2"
+                    },
+                    {
+                      "type": "text",
+                      "id": "hdYKN",
+                      "name": "Label",
+                      "fill": "$text",
+                      "content": "Дом",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "l4N6u7",
+                      "name": "Chevron",
+                      "width": 11,
+                      "height": 11,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$text-3"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "e1VvGm",
+          "name": "VPN Section",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 8,
+          "padding": [
+            16,
+            16,
+            0,
+            16
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "i4oMu",
+              "name": "Title",
+              "fill": "$text-3",
+              "content": "VPN",
+              "fontFamily": "$font",
+              "fontSize": 11,
+              "fontWeight": "700",
+              "letterSpacing": 0.8
+            },
+            {
+              "type": "frame",
+              "id": "FJ2w7",
+              "name": "VPN AIRLINK VPN",
+              "width": "fill_container",
+              "fill": "$surface",
+              "cornerRadius": 10,
+              "gap": 10,
+              "padding": [
+                9,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "vTpm0",
+                  "name": "Dot",
+                  "fill": "$lime",
+                  "width": 8,
+                  "height": 8
+                },
+                {
+                  "type": "text",
+                  "id": "CCy0B",
+                  "name": "Name",
+                  "fill": "$text",
+                  "content": "AIRLINK VPN",
+                  "fontFamily": "$font",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "frame",
+                  "id": "iohFf",
+                  "name": "Spacer",
+                  "width": "fill_container",
+                  "height": 1
+                },
+                {
+                  "type": "text",
+                  "id": "y3oq0",
+                  "name": "State",
+                  "fill": "$text-3",
+                  "content": "подключён · utun0",
+                  "fontFamily": "$font",
+                  "fontSize": 11,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "FPpp6",
+              "name": "VPN ZoogVPN",
+              "width": "fill_container",
+              "fill": "$surface",
+              "cornerRadius": 10,
+              "gap": 10,
+              "padding": [
+                9,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "f8DXrN",
+                  "name": "Dot",
+                  "fill": "#F5C542",
+                  "width": 8,
+                  "height": 8
+                },
+                {
+                  "type": "text",
+                  "id": "qri9S",
+                  "name": "Name",
+                  "fill": "$text",
+                  "content": "ZoogVPN",
+                  "fontFamily": "$font",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "frame",
+                  "id": "ql18j",
+                  "name": "Spacer",
+                  "width": "fill_container",
+                  "height": 1
+                },
+                {
+                  "type": "text",
+                  "id": "GeYyg",
+                  "name": "State",
+                  "fill": "#F5C542",
+                  "content": "отключён → AIRLINK VPN",
+                  "fontFamily": "$font",
+                  "fontSize": 11,
+                  "fontWeight": "500"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "zKJ2m",
+          "name": "Active Section",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 8,
+          "padding": [
+            16,
+            16,
+            0,
+            16
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "q7wTC",
+              "name": "Title",
+              "fill": "$text-3",
+              "content": "СЕЙЧАС В СЕТИ",
+              "fontFamily": "$font",
+              "fontSize": 11,
+              "fontWeight": "700",
+              "letterSpacing": 0.8
+            },
+            {
+              "type": "frame",
+              "id": "JC0pJ",
+              "name": "Active WhatsApp",
+              "width": "fill_container",
+              "gap": 10,
+              "padding": [
+                2,
+                0
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "N3wuQ",
+                  "name": "Icon",
+                  "width": 26,
+                  "height": 26,
+                  "fill": "#1C1C1C",
+                  "cornerRadius": 7,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "OQfLD",
+                      "name": "Glyph",
+                      "width": 15,
+                      "height": 15,
+                      "icon": "message-circle",
+                      "library": "lucide",
+                      "fill": "#25D366"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "W1Yvy",
+                  "name": "Name",
+                  "fill": "$text",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "WhatsApp",
+                  "fontFamily": "$font",
+                  "fontSize": 13,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "frame",
+                  "id": "BQ1e2",
+                  "name": "Segment",
+                  "fill": "$bg",
+                  "cornerRadius": 8,
+                  "stroke": "$line",
+                  "strokeWidth": 1,
+                  "gap": 2,
+                  "padding": 2,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "hUTsl",
+                      "name": "Seg VPN",
+                      "fill": "$surface-2",
+                      "cornerRadius": 6,
+                      "gap": 4,
+                      "padding": [
+                        4,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "ellipse",
+                          "id": "DSJPk",
+                          "name": "Dot",
+                          "fill": "$lime",
+                          "width": 5,
+                          "height": 5
+                        },
+                        {
+                          "type": "text",
+                          "id": "MJdTs",
+                          "name": "Label",
+                          "fill": "$text",
+                          "content": "VPN",
+                          "fontFamily": "$font",
+                          "fontSize": 11,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ClaH6",
+                      "name": "Seg Напрямую",
+                      "fill": "#00000000",
+                      "cornerRadius": 6,
+                      "gap": 4,
+                      "padding": [
+                        4,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "zAlo8",
+                          "name": "Label",
+                          "fill": "$text-3",
+                          "content": "Напрямую",
+                          "fontFamily": "$font",
+                          "fontSize": 11,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "a7wKYa",
+                      "name": "Seg Блок",
+                      "fill": "#00000000",
+                      "cornerRadius": 6,
+                      "gap": 4,
+                      "padding": [
+                        4,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "iAUhZ",
+                          "name": "Label",
+                          "fill": "$text-3",
+                          "content": "Блок",
+                          "fontFamily": "$font",
+                          "fontSize": 11,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "kgwxo",
+              "name": "Active Google Chrome",
+              "width": "fill_container",
+              "gap": 10,
+              "padding": [
+                2,
+                0
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "NuSIq",
+                  "name": "Icon",
+                  "width": 26,
+                  "height": 26,
+                  "fill": "#1C1C1C",
+                  "cornerRadius": 7,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "PfifX",
+                      "name": "Glyph",
+                      "width": 15,
+                      "height": 15,
+                      "icon": "globe",
+                      "library": "lucide",
+                      "fill": "#4285F4"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "NSGO5",
+                  "name": "Name",
+                  "fill": "$text",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Google Chrome",
+                  "fontFamily": "$font",
+                  "fontSize": 13,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "frame",
+                  "id": "GTiN1",
+                  "name": "Segment",
+                  "fill": "$bg",
+                  "cornerRadius": 8,
+                  "stroke": "$line",
+                  "strokeWidth": 1,
+                  "gap": 2,
+                  "padding": 2,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "twExj",
+                      "name": "Seg VPN",
+                      "fill": "$surface-2",
+                      "cornerRadius": 6,
+                      "gap": 4,
+                      "padding": [
+                        4,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "ellipse",
+                          "id": "lKou1",
+                          "name": "Dot",
+                          "fill": "$lime",
+                          "width": 5,
+                          "height": 5
+                        },
+                        {
+                          "type": "text",
+                          "id": "S5FE7",
+                          "name": "Label",
+                          "fill": "$text",
+                          "content": "VPN",
+                          "fontFamily": "$font",
+                          "fontSize": 11,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "fWjTF",
+                      "name": "Seg Напрямую",
+                      "fill": "#00000000",
+                      "cornerRadius": 6,
+                      "gap": 4,
+                      "padding": [
+                        4,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ISlHd",
+                          "name": "Label",
+                          "fill": "$text-3",
+                          "content": "Напрямую",
+                          "fontFamily": "$font",
+                          "fontSize": 11,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "pYntz",
+                      "name": "Seg Блок",
+                      "fill": "#00000000",
+                      "cornerRadius": 6,
+                      "gap": 4,
+                      "padding": [
+                        4,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "H5Hz3",
+                          "name": "Label",
+                          "fill": "$text-3",
+                          "content": "Блок",
+                          "fontFamily": "$font",
+                          "fontSize": 11,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "FeG9k",
+              "name": "Active WeChat",
+              "width": "fill_container",
+              "gap": 10,
+              "padding": [
+                2,
+                0
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "K4jBN",
+                  "name": "Icon",
+                  "width": 26,
+                  "height": 26,
+                  "fill": "#1C1C1C",
+                  "cornerRadius": 7,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "oK6ph",
+                      "name": "Glyph",
+                      "width": 15,
+                      "height": 15,
+                      "icon": "message-square",
+                      "library": "lucide",
+                      "fill": "#07C160"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "X5JKDK",
+                  "name": "Name",
+                  "fill": "$text",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "WeChat",
+                  "fontFamily": "$font",
+                  "fontSize": 13,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "frame",
+                  "id": "YqOK4",
+                  "name": "Segment",
+                  "fill": "$bg",
+                  "cornerRadius": 8,
+                  "stroke": "$line",
+                  "strokeWidth": 1,
+                  "gap": 2,
+                  "padding": 2,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "H6GjQk",
+                      "name": "Seg VPN",
+                      "fill": "#00000000",
+                      "cornerRadius": 6,
+                      "gap": 4,
+                      "padding": [
+                        4,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "IhnsV",
+                          "name": "Label",
+                          "fill": "$text-3",
+                          "content": "VPN",
+                          "fontFamily": "$font",
+                          "fontSize": 11,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "H4QbO",
+                      "name": "Seg Напрямую",
+                      "fill": "$surface-2",
+                      "cornerRadius": 6,
+                      "gap": 4,
+                      "padding": [
+                        4,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "ellipse",
+                          "id": "AJ2QJ",
+                          "name": "Dot",
+                          "fill": "$blue",
+                          "width": 5,
+                          "height": 5
+                        },
+                        {
+                          "type": "text",
+                          "id": "Cc3BN",
+                          "name": "Label",
+                          "fill": "$text",
+                          "content": "Напрямую",
+                          "fontFamily": "$font",
+                          "fontSize": 11,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Bx7Sv",
+                      "name": "Seg Блок",
+                      "fill": "#00000000",
+                      "cornerRadius": 6,
+                      "gap": 4,
+                      "padding": [
+                        4,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Z1QNW",
+                          "name": "Label",
+                          "fill": "$text-3",
+                          "content": "Блок",
+                          "fontFamily": "$font",
+                          "fontSize": 11,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "I5S3o1",
+          "name": "Suggestion Wrap",
+          "width": "fill_container",
+          "padding": [
+            14,
+            16,
+            0,
+            16
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "Y9BHr",
+              "name": "Suggestion",
+              "width": "fill_container",
+              "fill": "#F5C5420F",
+              "cornerRadius": 10,
+              "stroke": "#F5C5424D",
+              "strokeWidth": 1,
+              "gap": 10,
+              "padding": [
+                10,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "X6rrq",
+                  "name": "Icon",
+                  "width": 15,
+                  "height": 15,
+                  "icon": "wand-sparkles",
+                  "library": "lucide",
+                  "fill": "#F5C542"
+                },
+                {
+                  "type": "frame",
+                  "id": "E6jA7",
+                  "name": "Text",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 2,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "OPNWj",
+                      "name": "Title",
+                      "fill": "$text",
+                      "content": "2 сайта не открываются напрямую",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "WDtyg",
+                      "name": "Detail",
+                      "fill": "$text-2",
+                      "content": "googleapis.com, instagram.com",
+                      "fontFamily": "$font",
+                      "fontSize": 11,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "icon",
+                  "id": "nnh0P",
+                  "name": "Chevron",
+                  "width": 14,
+                  "height": 14,
+                  "icon": "chevron-right",
+                  "library": "lucide",
+                  "fill": "$text-2"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "qW7TF",
+          "name": "Gap",
+          "width": "fill_container",
+          "height": 14
+        },
+        {
+          "type": "frame",
+          "id": "FyHYV",
+          "name": "Footer",
+          "width": "fill_container",
+          "stroke": "$line",
+          "strokeWidth": {
+            "top": 1
+          },
+          "gap": 8,
+          "padding": [
+            12,
+            16,
+            14,
+            16
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "uIla5",
+              "name": "Open Button",
+              "fill": "$lime",
+              "cornerRadius": 16,
+              "gap": 7,
+              "padding": [
+                8,
+                14
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "eQwDm",
+                  "name": "Icon",
+                  "width": 14,
+                  "height": 14,
+                  "icon": "app-window",
+                  "library": "lucide",
+                  "fill": "#0A0A0A"
+                },
+                {
+                  "type": "text",
+                  "id": "f7AzD",
+                  "name": "Label",
+                  "fill": "#0A0A0A",
+                  "content": "Открыть Splitroute",
+                  "fontFamily": "$font",
+                  "fontSize": 12,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "U44qy",
+              "name": "Spacer",
+              "width": "fill_container",
+              "height": 1
+            },
+            {
+              "type": "frame",
+              "id": "nGPKo",
+              "name": "Settings",
+              "width": 32,
+              "height": 32,
+              "cornerRadius": 16,
+              "stroke": "$line",
+              "strokeWidth": 1,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "j15dKV",
+                  "name": "Icon",
+                  "width": 15,
+                  "height": 15,
+                  "icon": "settings",
+                  "library": "lucide",
+                  "fill": "$text-2"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "q5eVC0",
+              "name": "Quit",
+              "width": 32,
+              "height": 32,
+              "cornerRadius": 16,
+              "stroke": "$line",
+              "strokeWidth": 1,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "NMQz5",
+                  "name": "Icon",
+                  "width": 15,
+                  "height": 15,
+                  "icon": "power",
+                  "library": "lucide",
+                  "fill": "$text-2"
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "variables": {

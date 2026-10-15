@@ -1,0 +1,15 @@
+{
+  "name": "splitroute-promo",
+  "private": true,
+  "description": "Instagram Reels promo for Splitroute (Remotion)",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts Reel out/splitroute-reel.mp4"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.535",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "remotion": "^4.0.535"
+  }
+}

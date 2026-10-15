@@ -58,7 +58,7 @@ struct RootView: View {
                 onboardingDone = true
             }
             model.start()
-            updater.start()
+            if !Demo.isOn { updater.start() }
             model.registerHotKeys { MainWindow.open() }
             MainWindow.opener = { openWindow(id: "main") }
             MainWindow.didOpen()
