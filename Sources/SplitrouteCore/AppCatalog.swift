@@ -42,9 +42,13 @@ public enum AppCatalog {
     }
 
     /// Программы, путь к которым содержит номер версии: правило ставится на общую папку.
-    static let versionedFolders: [(marker: String, name: String)] = [
-        ("/.local/share/claude/versions/", "Claude Code"),
-        ("/Library/Application Support/Claude/claude-code/", "Claude Code в приложении Claude"),
+    /// `inHome` — папка в домашнем каталоге (её можно найти и предложить при добавлении).
+    static let versionedFolders: [(marker: String, name: String, inHome: Bool)] = [
+        ("/.local/share/claude/versions/", "Claude Code", true),
+        ("/Library/Application Support/Claude/claude-code/", "Claude Code в приложении Claude", true),
+        ("/.codex/packages/standalone/releases/", "Codex CLI", true),
+        ("/Caskroom/codex/", "Codex CLI", false),
+        ("/node_modules/@openai/codex/", "Codex CLI", false),
     ]
 
     /// Папка для версионной программы, если путь внутри одной из известных.
@@ -58,7 +62,7 @@ public enum AppCatalog {
     /// Папки версионных программ, которые есть на этом Mac (для подсказок при добавлении).
     public static var installedVersionedFolders: [(path: String, name: String)] {
         let home = NSHomeDirectory()
-        return versionedFolders.map { (home + $0.marker, $0.name) }.filter { FileManager.default.fileExists(atPath: $0.0) }
+        return versionedFolders.filter(\.inHome).map { (home + $0.marker, $0.name) }.filter { FileManager.default.fileExists(atPath: $0.0) }
     }
 
     /// Что поставить в правило для процесса: бандл .app или папку (с «/» на конце),

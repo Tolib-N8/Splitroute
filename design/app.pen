@@ -11876,7 +11876,8 @@
                               "fill": "$text",
                               "content": "youtube.com",
                               "fontFamily": "JetBrains Mono",
-                              "fontSize": 13
+                              "fontSize": 13,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -15903,6 +15904,3064 @@
                           "fontFamily": "$font",
                           "fontSize": 12,
                           "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "kQuxt",
+      "x": 7700,
+      "y": 0,
+      "name": "Splitroute — Настройки",
+      "clip": true,
+      "width": 1440,
+      "height": 960,
+      "fill": "$bg",
+      "cornerRadius": 14,
+      "stroke": "#232323",
+      "strokeWidth": 1,
+      "children": [
+        {
+          "type": "frame",
+          "id": "t3K0wZ",
+          "name": "Sidebar",
+          "width": 92,
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 8,
+          "padding": [
+            18,
+            0,
+            22,
+            0
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "c3J7H",
+              "name": "Traffic Lights",
+              "gap": 8,
+              "padding": [
+                0,
+                0,
+                18,
+                0
+              ],
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "rMwnK",
+                  "name": "Light",
+                  "fill": "#FF5F57",
+                  "width": 12,
+                  "height": 12
+                },
+                {
+                  "type": "ellipse",
+                  "id": "O6rsEV",
+                  "name": "Light",
+                  "fill": "#FEBC2E",
+                  "width": 12,
+                  "height": 12
+                },
+                {
+                  "type": "ellipse",
+                  "id": "l7W72Z",
+                  "name": "Light",
+                  "fill": "#28C840",
+                  "width": 12,
+                  "height": 12
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "lYOqF",
+              "name": "Logo",
+              "padding": [
+                0,
+                0,
+                18,
+                0
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "rSHbh",
+                  "name": "Logo Mark",
+                  "width": 36,
+                  "height": 36,
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 200,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "#D9FF6B",
+                        "position": 0
+                      },
+                      {
+                        "color": "#9BD11E",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "cornerRadius": 10,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "tDYXO",
+                      "name": "Icon",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "split",
+                      "library": "lucide",
+                      "fill": "#0A0A0A"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "AmvVm",
+              "name": "Nav Маршруты",
+              "width": 80,
+              "layout": "vertical",
+              "gap": 6,
+              "padding": [
+                0,
+                0,
+                10,
+                0
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "v4g7Ex",
+                  "name": "Icon Wrap",
+                  "width": 44,
+                  "height": 36,
+                  "fill": "#00000000",
+                  "cornerRadius": 10,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "C6586m",
+                      "name": "Icon",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "route",
+                      "library": "lucide",
+                      "fill": "$text-2"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "e7tArV",
+                  "name": "Label",
+                  "fill": "$text-2",
+                  "content": "Маршруты",
+                  "fontFamily": "$font",
+                  "fontSize": 11,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "p7Jw3",
+              "name": "Nav Приложения",
+              "width": 80,
+              "layout": "vertical",
+              "gap": 6,
+              "padding": [
+                0,
+                0,
+                10,
+                0
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "AFIAP",
+                  "name": "Icon Wrap",
+                  "width": 44,
+                  "height": 36,
+                  "fill": "#00000000",
+                  "cornerRadius": 10,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "vCW6d",
+                      "name": "Icon",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "layout-grid",
+                      "library": "lucide",
+                      "fill": "$text-2"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "jsjI0",
+                  "name": "Label",
+                  "fill": "$text-2",
+                  "content": "Приложения",
+                  "fontFamily": "$font",
+                  "fontSize": 11,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "h0T1ge",
+              "name": "Nav Серверы",
+              "width": 80,
+              "layout": "vertical",
+              "gap": 6,
+              "padding": [
+                0,
+                0,
+                10,
+                0
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "OolX6",
+                  "name": "Icon Wrap",
+                  "width": 44,
+                  "height": 36,
+                  "cornerRadius": 10,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "wDEy9",
+                      "name": "Icon",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "globe",
+                      "library": "lucide",
+                      "fill": "$text-2"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "AFvx2",
+                  "name": "Label",
+                  "fill": "$text-2",
+                  "content": "Серверы",
+                  "fontFamily": "$font",
+                  "fontSize": 11,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "yJzbh",
+              "name": "Nav Правила",
+              "width": 80,
+              "layout": "vertical",
+              "gap": 6,
+              "padding": [
+                0,
+                0,
+                10,
+                0
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "N9dKbk",
+                  "name": "Icon Wrap",
+                  "width": 44,
+                  "height": 36,
+                  "cornerRadius": 10,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "BCVaY",
+                      "name": "Icon",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "list-filter",
+                      "library": "lucide",
+                      "fill": "$text-2"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "U0NJU9",
+                  "name": "Label",
+                  "fill": "$text-2",
+                  "content": "Правила",
+                  "fontFamily": "$font",
+                  "fontSize": 11,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Imqdx",
+              "name": "Nav Журнал",
+              "width": 80,
+              "layout": "vertical",
+              "gap": 6,
+              "padding": [
+                0,
+                0,
+                10,
+                0
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Y28S8z",
+                  "name": "Icon Wrap",
+                  "width": 44,
+                  "height": 36,
+                  "fill": "#1F2410",
+                  "cornerRadius": 10,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "AgwiH",
+                      "name": "Icon",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "activity",
+                      "library": "lucide",
+                      "fill": "$text-2"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "AMCwP",
+                  "name": "Label",
+                  "fill": "$text-2",
+                  "content": "Журнал",
+                  "fontFamily": "$font",
+                  "fontSize": 11,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Zh2bs",
+              "name": "Spacer",
+              "width": 1,
+              "height": "fill_container"
+            },
+            {
+              "type": "frame",
+              "id": "E3oXu",
+              "name": "Nav Настройки",
+              "width": 80,
+              "layout": "vertical",
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ngADL",
+                  "name": "Icon Wrap",
+                  "width": 44,
+                  "height": 36,
+                  "fill": "#1F2410",
+                  "cornerRadius": 10,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "Y183D",
+                      "name": "Icon",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "settings-2",
+                      "library": "lucide",
+                      "fill": "$lime"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "nYOqb",
+                  "name": "Label",
+                  "fill": "$lime",
+                  "content": "Настройки",
+                  "fontFamily": "$font",
+                  "fontSize": 11,
+                  "fontWeight": "700"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "dO5do",
+          "name": "Main",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "padding": [
+            14,
+            24,
+            28,
+            0
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "rc4FG",
+              "name": "Top Bar",
+              "width": "fill_container",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "b9MEV",
+                  "name": "Connection",
+                  "width": "fill_container",
+                  "height": 46,
+                  "fill": "$surface",
+                  "cornerRadius": 10,
+                  "stroke": "$line",
+                  "strokeWidth": 1,
+                  "gap": 14,
+                  "padding": [
+                    0,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ZrIfO",
+                      "name": "Status Dot",
+                      "width": 18,
+                      "height": 18,
+                      "fill": "#C8F54226",
+                      "cornerRadius": 9,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "ellipse",
+                          "id": "IG8Fd",
+                          "name": "Dot",
+                          "fill": "$lime",
+                          "width": 8,
+                          "height": 8
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "WtIDW",
+                      "name": "Status Text",
+                      "gap": 6,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "aYk6p",
+                          "name": "State",
+                          "fill": "$text",
+                          "content": "VPN подключён",
+                          "fontFamily": "$font",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "cwYfL",
+                          "name": "Server",
+                          "fill": "$text-2",
+                          "content": "· Амстердам · WireGuard · 18 мс",
+                          "fontFamily": "$font",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "I0bfCf",
+                      "name": "Spacer",
+                      "width": "fill_container",
+                      "height": 1
+                    },
+                    {
+                      "type": "frame",
+                      "id": "D2itC6",
+                      "name": "Speed",
+                      "gap": 18,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "pBDKu",
+                          "name": "Speed arrow-down",
+                          "gap": 5,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "QoM4v",
+                              "name": "Icon",
+                              "width": 13,
+                              "height": 13,
+                              "icon": "arrow-down",
+                              "library": "lucide",
+                              "fill": "$text-3"
+                            },
+                            {
+                              "type": "text",
+                              "id": "eQOoO",
+                              "name": "Value",
+                              "fill": "$text-2",
+                              "content": "24.6 МБ/с",
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "PW0iq",
+                          "name": "Speed arrow-up",
+                          "gap": 5,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "VNx8h",
+                              "name": "Icon",
+                              "width": 13,
+                              "height": 13,
+                              "icon": "arrow-up",
+                              "library": "lucide",
+                              "fill": "$text-3"
+                            },
+                            {
+                              "type": "text",
+                              "id": "m33GHR",
+                              "name": "Value",
+                              "fill": "$text-2",
+                              "content": "3.1 МБ/с",
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "mKgAO",
+                      "name": "Toggle",
+                      "width": 38,
+                      "height": 22,
+                      "fill": "$lime",
+                      "cornerRadius": 11,
+                      "padding": 3,
+                      "justifyContent": "end",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "ellipse",
+                          "id": "SwRad",
+                          "name": "Knob",
+                          "fill": "#0A0A0A",
+                          "width": 16,
+                          "height": 16
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "qmpet",
+                  "name": "Actions",
+                  "gap": 18,
+                  "padding": [
+                    0,
+                    4
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "YXyw8",
+                      "name": "Icon share",
+                      "width": 19,
+                      "height": 19,
+                      "icon": "share",
+                      "library": "lucide",
+                      "fill": "$text-2"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "vwJpB",
+                      "name": "Icon bell",
+                      "width": 19,
+                      "height": 19,
+                      "icon": "bell",
+                      "library": "lucide",
+                      "fill": "$text-2"
+                    },
+                    {
+                      "type": "ellipse",
+                      "id": "fcQtC",
+                      "name": "Avatar",
+                      "fill": {
+                        "type": "gradient",
+                        "gradientType": "linear",
+                        "enabled": true,
+                        "rotation": 135,
+                        "size": {
+                          "height": 1
+                        },
+                        "colors": [
+                          {
+                            "color": "#C8F542",
+                            "position": 0
+                          },
+                          {
+                            "color": "#3B82F6",
+                            "position": 1
+                          }
+                        ]
+                      },
+                      "width": 26,
+                      "height": 26
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "R9DDI",
+              "name": "Header",
+              "width": "fill_container",
+              "padding": [
+                30,
+                8,
+                0,
+                8
+              ],
+              "justifyContent": "space_between",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "phRZO",
+                  "name": "Title Block",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "W5tZfF",
+                      "name": "Title",
+                      "fill": "$text",
+                      "content": "Настройки",
+                      "fontFamily": "$font",
+                      "fontSize": 30,
+                      "fontWeight": "600",
+                      "letterSpacing": -0.6
+                    },
+                    {
+                      "type": "frame",
+                      "id": "AmsGY",
+                      "name": "Subtitle",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "pMOaZ",
+                          "name": "Text",
+                          "fill": "$text-2",
+                          "content": "Splitroute 2.4.1 · установлена последняя версия",
+                          "fontFamily": "$font",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "j8Xu4",
+                          "name": "Chevron",
+                          "width": 14,
+                          "height": 14,
+                          "icon": "chevron-right",
+                          "library": "lucide",
+                          "fill": "$text-2"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "b5IaJ6",
+                  "name": "Stats",
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": [
+                    6,
+                    0,
+                    0,
+                    0
+                  ],
+                  "alignItems": "end",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "GfGwT",
+                      "name": "Total",
+                      "fill": "$text-2",
+                      "content": "Pro · активна до 12 марта 2027",
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "CC9TH",
+                      "name": "Updated",
+                      "fill": "$text-3",
+                      "content": "Изменения применяются сразу",
+                      "fontFamily": "$font",
+                      "fontSize": 11,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "txmvy",
+              "name": "Body",
+              "width": "fill_container",
+              "height": "fill_container",
+              "gap": 20,
+              "padding": [
+                28,
+                8,
+                0,
+                8
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "pY1XW",
+                  "name": "Section Index",
+                  "width": 200,
+                  "height": "fill_container",
+                  "layout": "vertical",
+                  "gap": 2,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "g30CaM",
+                      "name": "Section Основные",
+                      "width": "fill_container",
+                      "height": 38,
+                      "fill": "$surface-2",
+                      "cornerRadius": 10,
+                      "gap": 10,
+                      "padding": [
+                        0,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "H3rDGx",
+                          "name": "Icon",
+                          "width": 16,
+                          "height": 16,
+                          "icon": "sliders-horizontal",
+                          "library": "lucide",
+                          "fill": "$lime"
+                        },
+                        {
+                          "type": "text",
+                          "id": "ZN0UF",
+                          "name": "Label",
+                          "fill": "$text",
+                          "content": "Основные",
+                          "fontFamily": "$font",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "P9lad",
+                      "name": "Section Подключение",
+                      "width": "fill_container",
+                      "height": 38,
+                      "cornerRadius": 10,
+                      "gap": 10,
+                      "padding": [
+                        0,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "EwL8T",
+                          "name": "Icon",
+                          "width": 16,
+                          "height": 16,
+                          "icon": "plug-zap",
+                          "library": "lucide",
+                          "fill": "$text-3"
+                        },
+                        {
+                          "type": "text",
+                          "id": "yyzSH",
+                          "name": "Label",
+                          "fill": "$text-2",
+                          "content": "Подключение",
+                          "fontFamily": "$font",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "uvvZw",
+                      "name": "Section DNS и утечки",
+                      "width": "fill_container",
+                      "height": 38,
+                      "cornerRadius": 10,
+                      "gap": 10,
+                      "padding": [
+                        0,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "qafo0",
+                          "name": "Icon",
+                          "width": 16,
+                          "height": 16,
+                          "icon": "shield-half",
+                          "library": "lucide",
+                          "fill": "$text-3"
+                        },
+                        {
+                          "type": "text",
+                          "id": "E6iv8r",
+                          "name": "Label",
+                          "fill": "$text-2",
+                          "content": "DNS и утечки",
+                          "fontFamily": "$font",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "hgY5M",
+                      "name": "Section Приватность",
+                      "width": "fill_container",
+                      "height": 38,
+                      "cornerRadius": 10,
+                      "gap": 10,
+                      "padding": [
+                        0,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "PZg3h",
+                          "name": "Icon",
+                          "width": 16,
+                          "height": 16,
+                          "icon": "eye-off",
+                          "library": "lucide",
+                          "fill": "$text-3"
+                        },
+                        {
+                          "type": "text",
+                          "id": "l6iks7",
+                          "name": "Label",
+                          "fill": "$text-2",
+                          "content": "Приватность",
+                          "fontFamily": "$font",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "rj7Jd",
+                      "name": "Section Уведомления",
+                      "width": "fill_container",
+                      "height": 38,
+                      "cornerRadius": 10,
+                      "gap": 10,
+                      "padding": [
+                        0,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "jCvnG",
+                          "name": "Icon",
+                          "width": 16,
+                          "height": 16,
+                          "icon": "bell",
+                          "library": "lucide",
+                          "fill": "$text-3"
+                        },
+                        {
+                          "type": "text",
+                          "id": "HW30a",
+                          "name": "Label",
+                          "fill": "$text-2",
+                          "content": "Уведомления",
+                          "fontFamily": "$font",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "lBXfx",
+                      "name": "Section Горячие клавиши",
+                      "width": "fill_container",
+                      "height": 38,
+                      "cornerRadius": 10,
+                      "gap": 10,
+                      "padding": [
+                        0,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "QPuy3",
+                          "name": "Icon",
+                          "width": 16,
+                          "height": 16,
+                          "icon": "keyboard",
+                          "library": "lucide",
+                          "fill": "$text-3"
+                        },
+                        {
+                          "type": "text",
+                          "id": "BHuFS",
+                          "name": "Label",
+                          "fill": "$text-2",
+                          "content": "Горячие клавиши",
+                          "fontFamily": "$font",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "v75KTq",
+                      "name": "Section О программе",
+                      "width": "fill_container",
+                      "height": 38,
+                      "cornerRadius": 10,
+                      "gap": 10,
+                      "padding": [
+                        0,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "WoZpk",
+                          "name": "Icon",
+                          "width": 16,
+                          "height": 16,
+                          "icon": "info",
+                          "library": "lucide",
+                          "fill": "$text-3"
+                        },
+                        {
+                          "type": "text",
+                          "id": "eoU1g",
+                          "name": "Label",
+                          "fill": "$text-2",
+                          "content": "О программе",
+                          "fontFamily": "$font",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "bfPaX",
+                  "name": "Content",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "layout": "vertical",
+                  "gap": 24,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "s72jnU",
+                      "name": "Columns",
+                      "width": "fill_container",
+                      "gap": 36,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "I0AM4W",
+                          "name": "Column A",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 30,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "t7haBJ",
+                              "name": "Group Запуск",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "SYpah",
+                                  "name": "Label",
+                                  "fill": "$text-2",
+                                  "content": "Запуск",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12,
+                                  "fontWeight": "700"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "MRFRu",
+                                  "name": "Rows",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "H6x6O",
+                                      "name": "Row Открывать при входе в систему",
+                                      "width": "fill_container",
+                                      "stroke": "$line",
+                                      "strokeWidth": {
+                                        "bottom": 1
+                                      },
+                                      "gap": 16,
+                                      "padding": [
+                                        14,
+                                        0
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "YmCLI",
+                                          "name": "Text",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 3,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "k8FIc",
+                                              "name": "Title",
+                                              "fill": "$text",
+                                              "content": "Открывать при входе в систему",
+                                              "fontFamily": "$font",
+                                              "fontSize": 13,
+                                              "fontWeight": "700"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "BoWJA",
+                                              "name": "Sub",
+                                              "fill": "$text-3",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Splitroute стартует вместе с macOS",
+                                              "lineHeight": 1.4,
+                                              "fontFamily": "$font",
+                                              "fontSize": 11,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "mu0jT",
+                                          "name": "Toggle",
+                                          "width": 34,
+                                          "height": 20,
+                                          "fill": "$lime",
+                                          "cornerRadius": 10,
+                                          "padding": 3,
+                                          "justifyContent": "end",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "ellipse",
+                                              "id": "QG59s",
+                                              "name": "Knob",
+                                              "fill": "#0A0A0A",
+                                              "width": 14,
+                                              "height": 14
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "THzBi",
+                                      "name": "Row Подключаться автоматически",
+                                      "width": "fill_container",
+                                      "stroke": "$line",
+                                      "strokeWidth": {
+                                        "bottom": 1
+                                      },
+                                      "gap": 16,
+                                      "padding": [
+                                        14,
+                                        0
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "S5BP3p",
+                                          "name": "Text",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 3,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "RVyCH",
+                                              "name": "Title",
+                                              "fill": "$text",
+                                              "content": "Подключаться автоматически",
+                                              "fontFamily": "$font",
+                                              "fontSize": 13,
+                                              "fontWeight": "700"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "ROKnk",
+                                              "name": "Sub",
+                                              "fill": "$text-3",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "К последнему серверу сразу после запуска",
+                                              "lineHeight": 1.4,
+                                              "fontFamily": "$font",
+                                              "fontSize": 11,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "I0JgWW",
+                                          "name": "Toggle",
+                                          "width": 34,
+                                          "height": 20,
+                                          "fill": "$lime",
+                                          "cornerRadius": 10,
+                                          "padding": 3,
+                                          "justifyContent": "end",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "ellipse",
+                                              "id": "P55LPM",
+                                              "name": "Knob",
+                                              "fill": "#0A0A0A",
+                                              "width": 14,
+                                              "height": 14
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "s6WKM",
+                                      "name": "Row Значок в строке меню",
+                                      "width": "fill_container",
+                                      "stroke": "$line",
+                                      "strokeWidth": {
+                                        "bottom": 1
+                                      },
+                                      "gap": 16,
+                                      "padding": [
+                                        14,
+                                        0
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "Hzxk3",
+                                          "name": "Text",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 3,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "oqnUC",
+                                              "name": "Title",
+                                              "fill": "$text",
+                                              "content": "Значок в строке меню",
+                                              "fontFamily": "$font",
+                                              "fontSize": 13,
+                                              "fontWeight": "700"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "Ap1XL",
+                                              "name": "Sub",
+                                              "fill": "$text-3",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Переключать маршруты, не открывая окно",
+                                              "lineHeight": 1.4,
+                                              "fontFamily": "$font",
+                                              "fontSize": 11,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "ZR8iT",
+                                          "name": "Toggle",
+                                          "width": 34,
+                                          "height": 20,
+                                          "fill": "$lime",
+                                          "cornerRadius": 10,
+                                          "padding": 3,
+                                          "justifyContent": "end",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "ellipse",
+                                              "id": "XtsKu",
+                                              "name": "Knob",
+                                              "fill": "#0A0A0A",
+                                              "width": 14,
+                                              "height": 14
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "oa4U9",
+                              "name": "Group Туннель",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "yyat6",
+                                  "name": "Label",
+                                  "fill": "$text-2",
+                                  "content": "Туннель",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12,
+                                  "fontWeight": "700"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "t7T8a",
+                                  "name": "Rows",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "R5cM3K",
+                                      "name": "Row Протокол",
+                                      "width": "fill_container",
+                                      "stroke": "$line",
+                                      "strokeWidth": {
+                                        "bottom": 1
+                                      },
+                                      "layout": "vertical",
+                                      "gap": 12,
+                                      "padding": [
+                                        14,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "qYJwU",
+                                          "name": "Text",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 3,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "vxCQs",
+                                              "name": "Title",
+                                              "fill": "$text",
+                                              "content": "Протокол",
+                                              "fontFamily": "$font",
+                                              "fontSize": 13,
+                                              "fontWeight": "700"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "kpgjp",
+                                              "name": "Sub",
+                                              "fill": "$text-3",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "WireGuard быстрее, VLESS лучше проходит через блокировки",
+                                              "lineHeight": 1.4,
+                                              "fontFamily": "$font",
+                                              "fontSize": 11,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "sUlcJ",
+                                          "name": "Segmented",
+                                          "width": "fill_container",
+                                          "height": 36,
+                                          "fill": "#0F0F0F",
+                                          "cornerRadius": 10,
+                                          "stroke": "$line",
+                                          "strokeWidth": 1,
+                                          "gap": 3,
+                                          "padding": 3,
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "klFSd",
+                                              "name": "Seg WireGuard",
+                                              "width": "fill_container",
+                                              "height": "fill_container",
+                                              "fill": "$surface-2",
+                                              "cornerRadius": 7,
+                                              "justifyContent": "center",
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "DvQrk",
+                                                  "name": "Label",
+                                                  "fill": "$text",
+                                                  "content": "WireGuard",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "700"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "ftsuN",
+                                              "name": "Seg VLESS · Reality",
+                                              "width": "fill_container",
+                                              "height": "fill_container",
+                                              "cornerRadius": 7,
+                                              "justifyContent": "center",
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "h5zNE",
+                                                  "name": "Label",
+                                                  "fill": "$text-3",
+                                                  "content": "VLESS · Reality",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "600"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "PrTb5",
+                                              "name": "Seg OpenVPN",
+                                              "width": "fill_container",
+                                              "height": "fill_container",
+                                              "cornerRadius": 7,
+                                              "justifyContent": "center",
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "AO3Ho",
+                                                  "name": "Label",
+                                                  "fill": "$text-3",
+                                                  "content": "OpenVPN",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "600"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "OgGhn",
+                                      "name": "Row Маршрут по умолчанию",
+                                      "width": "fill_container",
+                                      "stroke": "$line",
+                                      "strokeWidth": {
+                                        "bottom": 1
+                                      },
+                                      "gap": 16,
+                                      "padding": [
+                                        14,
+                                        0
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "hY0HC",
+                                          "name": "Text",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 3,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "Umdr1",
+                                              "name": "Title",
+                                              "fill": "$text",
+                                              "content": "Маршрут по умолчанию",
+                                              "fontFamily": "$font",
+                                              "fontSize": 13,
+                                              "fontWeight": "700"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "neQPC",
+                                              "name": "Sub",
+                                              "fill": "$text-3",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Для приложений и доменов без правил",
+                                              "lineHeight": 1.4,
+                                              "fontFamily": "$font",
+                                              "fontSize": 11,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "npel4",
+                                          "name": "Dropdown",
+                                          "height": 34,
+                                          "cornerRadius": 10,
+                                          "stroke": "$line",
+                                          "strokeWidth": 1,
+                                          "gap": 8,
+                                          "padding": [
+                                            0,
+                                            10,
+                                            0,
+                                            12
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "p3Hhm0",
+                                              "name": "Label",
+                                              "fill": "$text",
+                                              "content": "Напрямую",
+                                              "fontFamily": "$font",
+                                              "fontSize": 12,
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "icon",
+                                              "id": "ooxau",
+                                              "name": "Icon",
+                                              "width": 13,
+                                              "height": 13,
+                                              "icon": "chevron-down",
+                                              "library": "lucide",
+                                              "fill": "$text-3"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "gPISY",
+                                      "name": "Row Глобальный kill switch",
+                                      "width": "fill_container",
+                                      "stroke": "$line",
+                                      "strokeWidth": {
+                                        "bottom": 1
+                                      },
+                                      "gap": 16,
+                                      "padding": [
+                                        14,
+                                        0
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "i5Gy7g",
+                                          "name": "Text",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 3,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "vKAB7",
+                                              "name": "Title",
+                                              "fill": "$text",
+                                              "content": "Глобальный kill switch",
+                                              "fontFamily": "$font",
+                                              "fontSize": 13,
+                                              "fontWeight": "700"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "jm86V",
+                                              "name": "Sub",
+                                              "fill": "$text-3",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Блокировать весь VPN‑трафик, если туннель упал",
+                                              "lineHeight": 1.4,
+                                              "fontFamily": "$font",
+                                              "fontSize": 11,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "JHpgw",
+                                          "name": "Toggle",
+                                          "width": 34,
+                                          "height": 20,
+                                          "fill": "$lime",
+                                          "cornerRadius": 10,
+                                          "padding": 3,
+                                          "justifyContent": "end",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "ellipse",
+                                              "id": "g4hXlV",
+                                              "name": "Knob",
+                                              "fill": "#0A0A0A",
+                                              "width": 14,
+                                              "height": 14
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "B4vdk",
+                          "name": "Column B",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 30,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "fD3FK",
+                              "name": "Group DNS",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "yLTcH",
+                                  "name": "Label",
+                                  "fill": "$text-2",
+                                  "content": "DNS",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12,
+                                  "fontWeight": "700"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "S5swVP",
+                                  "name": "Rows",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "TSptm",
+                                      "name": "Row Режим DNS",
+                                      "width": "fill_container",
+                                      "stroke": "$line",
+                                      "strokeWidth": {
+                                        "bottom": 1
+                                      },
+                                      "layout": "vertical",
+                                      "gap": 12,
+                                      "padding": [
+                                        14,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "wmDrA",
+                                          "name": "Text",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 3,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "FT5Pv",
+                                              "name": "Title",
+                                              "fill": "$text",
+                                              "content": "Режим DNS",
+                                              "fontFamily": "$font",
+                                              "fontSize": 13,
+                                              "fontWeight": "700"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "LpV1r",
+                                              "name": "Sub",
+                                              "fill": "$text-3",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Куда отправлять DNS‑запросы VPN‑приложений",
+                                              "lineHeight": 1.4,
+                                              "fontFamily": "$font",
+                                              "fontSize": 11,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "gtSGW",
+                                          "name": "Segmented",
+                                          "width": "fill_container",
+                                          "height": 36,
+                                          "fill": "#0F0F0F",
+                                          "cornerRadius": 10,
+                                          "stroke": "$line",
+                                          "strokeWidth": 1,
+                                          "gap": 3,
+                                          "padding": 3,
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "Cw0AE",
+                                              "name": "Seg Системный",
+                                              "width": "fill_container",
+                                              "height": "fill_container",
+                                              "cornerRadius": 7,
+                                              "justifyContent": "center",
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "wAq7o",
+                                                  "name": "Label",
+                                                  "fill": "$text-3",
+                                                  "content": "Системный",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "600"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "OUQS5",
+                                              "name": "Seg Через туннель",
+                                              "width": "fill_container",
+                                              "height": "fill_container",
+                                              "fill": "$surface-2",
+                                              "cornerRadius": 7,
+                                              "justifyContent": "center",
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "P47y9",
+                                                  "name": "Label",
+                                                  "fill": "$text",
+                                                  "content": "Через туннель",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "700"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "LIsyd",
+                                              "name": "Seg Свой DoH",
+                                              "width": "fill_container",
+                                              "height": "fill_container",
+                                              "cornerRadius": 7,
+                                              "justifyContent": "center",
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "giaLk",
+                                                  "name": "Label",
+                                                  "fill": "$text-3",
+                                                  "content": "Свой DoH",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "600"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "xiwNj",
+                                      "name": "Row Адрес DoH‑сервера",
+                                      "width": "fill_container",
+                                      "stroke": "$line",
+                                      "strokeWidth": {
+                                        "bottom": 1
+                                      },
+                                      "layout": "vertical",
+                                      "gap": 12,
+                                      "padding": [
+                                        14,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "A8ePp",
+                                          "name": "Text",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 3,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "k2LEcq",
+                                              "name": "Title",
+                                              "fill": "$text",
+                                              "content": "Адрес DoH‑сервера",
+                                              "fontFamily": "$font",
+                                              "fontSize": 13,
+                                              "fontWeight": "700"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "yERmp",
+                                          "name": "Field",
+                                          "width": "fill_container",
+                                          "height": 40,
+                                          "fill": "#0F0F0F",
+                                          "cornerRadius": 10,
+                                          "stroke": "$line",
+                                          "strokeWidth": 1,
+                                          "gap": 9,
+                                          "padding": [
+                                            0,
+                                            12
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "QfZdO",
+                                              "name": "Icon",
+                                              "width": 15,
+                                              "height": 15,
+                                              "icon": "lock",
+                                              "library": "lucide",
+                                              "fill": "$text-3"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "b8KFFi",
+                                              "name": "Value",
+                                              "fill": "$text-3",
+                                              "content": "https://dns.cloudflare.com/dns-query",
+                                              "fontFamily": "JetBrains Mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "NhITO",
+                                      "name": "Row Защита от утечек DNS",
+                                      "width": "fill_container",
+                                      "stroke": "$line",
+                                      "strokeWidth": {
+                                        "bottom": 1
+                                      },
+                                      "gap": 16,
+                                      "padding": [
+                                        14,
+                                        0
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "n0RY9",
+                                          "name": "Text",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 3,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "TgcHz",
+                                              "name": "Title",
+                                              "fill": "$text",
+                                              "content": "Защита от утечек DNS",
+                                              "fontFamily": "$font",
+                                              "fontSize": 13,
+                                              "fontWeight": "700"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "HyXLJ",
+                                              "name": "Sub",
+                                              "fill": "$text-3",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Перехватывать запросы мимо выбранного сервера",
+                                              "lineHeight": 1.4,
+                                              "fontFamily": "$font",
+                                              "fontSize": 11,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "ZljFp",
+                                          "name": "Toggle",
+                                          "width": 34,
+                                          "height": 20,
+                                          "fill": "$lime",
+                                          "cornerRadius": 10,
+                                          "padding": 3,
+                                          "justifyContent": "end",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "ellipse",
+                                              "id": "BSr8R",
+                                              "name": "Knob",
+                                              "fill": "#0A0A0A",
+                                              "width": 14,
+                                              "height": 14
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "CNfdM",
+                                      "name": "Row Отключить IPv6",
+                                      "width": "fill_container",
+                                      "stroke": "$line",
+                                      "strokeWidth": {
+                                        "bottom": 1
+                                      },
+                                      "gap": 16,
+                                      "padding": [
+                                        14,
+                                        0
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "eYeBb",
+                                          "name": "Text",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 3,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "wzSgJ",
+                                              "name": "Title",
+                                              "fill": "$text",
+                                              "content": "Отключить IPv6",
+                                              "fontFamily": "$font",
+                                              "fontSize": 13,
+                                              "fontWeight": "700"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "mlNea",
+                                              "name": "Sub",
+                                              "fill": "$text-3",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Исключает утечку адреса в обход туннеля",
+                                              "lineHeight": 1.4,
+                                              "fontFamily": "$font",
+                                              "fontSize": 11,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "CS5z3",
+                                          "name": "Toggle",
+                                          "width": 34,
+                                          "height": 20,
+                                          "fill": "#2A2A2A",
+                                          "cornerRadius": 10,
+                                          "padding": 3,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "ellipse",
+                                              "id": "P3QN7",
+                                              "name": "Knob",
+                                              "fill": "#8A8A8A",
+                                              "width": 14,
+                                              "height": 14
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "d1EC5",
+                              "name": "Group Интерфейс",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "o4TChB",
+                                  "name": "Label",
+                                  "fill": "$text-2",
+                                  "content": "Интерфейс",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12,
+                                  "fontWeight": "700"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "G4cXhW",
+                                  "name": "Rows",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "zMpy7",
+                                      "name": "Row Язык",
+                                      "width": "fill_container",
+                                      "stroke": "$line",
+                                      "strokeWidth": {
+                                        "bottom": 1
+                                      },
+                                      "gap": 16,
+                                      "padding": [
+                                        14,
+                                        0
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "j3X21",
+                                          "name": "Text",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 3,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "QXSuz",
+                                              "name": "Title",
+                                              "fill": "$text",
+                                              "content": "Язык",
+                                              "fontFamily": "$font",
+                                              "fontSize": 13,
+                                              "fontWeight": "700"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "MN2OS",
+                                          "name": "Dropdown",
+                                          "height": 34,
+                                          "cornerRadius": 10,
+                                          "stroke": "$line",
+                                          "strokeWidth": 1,
+                                          "gap": 8,
+                                          "padding": [
+                                            0,
+                                            10,
+                                            0,
+                                            12
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "NBQ4o",
+                                              "name": "Label",
+                                              "fill": "$text",
+                                              "content": "Русский",
+                                              "fontFamily": "$font",
+                                              "fontSize": 12,
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "icon",
+                                              "id": "cIMUR",
+                                              "name": "Icon",
+                                              "width": 13,
+                                              "height": 13,
+                                              "icon": "chevron-down",
+                                              "library": "lucide",
+                                              "fill": "$text-3"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "FMVB0",
+                                      "name": "Row Уведомлять о смене маршрута",
+                                      "width": "fill_container",
+                                      "stroke": "$line",
+                                      "strokeWidth": {
+                                        "bottom": 1
+                                      },
+                                      "gap": 16,
+                                      "padding": [
+                                        14,
+                                        0
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "X8uym",
+                                          "name": "Text",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 3,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "O1GPS6",
+                                              "name": "Title",
+                                              "fill": "$text",
+                                              "content": "Уведомлять о смене маршрута",
+                                              "fontFamily": "$font",
+                                              "fontSize": 13,
+                                              "fontWeight": "700"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "TBxQZ",
+                                              "name": "Sub",
+                                              "fill": "$text-3",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Показывать, когда приложение уходит в VPN или напрямую",
+                                              "lineHeight": 1.4,
+                                              "fontFamily": "$font",
+                                              "fontSize": 11,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "X3fCD",
+                                          "name": "Toggle",
+                                          "width": 34,
+                                          "height": 20,
+                                          "fill": "#2A2A2A",
+                                          "cornerRadius": 10,
+                                          "padding": 3,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "ellipse",
+                                              "id": "w0ZeXQ",
+                                              "name": "Knob",
+                                              "fill": "#8A8A8A",
+                                              "width": 14,
+                                              "height": 14
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "tW1Lo",
+                      "name": "Spacer",
+                      "width": 1,
+                      "height": "fill_container"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "phEXZ",
+                      "name": "Reset",
+                      "width": "fill_container",
+                      "fill": "#FF6B5E0A",
+                      "cornerRadius": 12,
+                      "stroke": "#FF6B5E33",
+                      "strokeWidth": 1,
+                      "gap": 14,
+                      "padding": [
+                        14,
+                        16
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "kaUsP",
+                          "name": "Icon",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "rotate-ccw",
+                          "library": "lucide",
+                          "fill": "$coral"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "lZ8Op",
+                          "name": "Text",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 3,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "RUxNh",
+                              "name": "Title",
+                              "fill": "$text",
+                              "content": "Сбросить все настройки",
+                              "fontFamily": "$font",
+                              "fontSize": 13,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "o49kM",
+                              "name": "Sub",
+                              "fill": "$text-3",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Правила, маршруты приложений и свои конфигурации вернутся к исходным. Журнал сохранится.",
+                              "fontFamily": "$font",
+                              "fontSize": 11,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "app7R",
+                          "name": "Reset Button",
+                          "height": 34,
+                          "cornerRadius": 17,
+                          "stroke": "$coral",
+                          "strokeWidth": 1,
+                          "padding": [
+                            0,
+                            16
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "mD1Iw",
+                              "name": "Label",
+                              "fill": "$coral",
+                              "content": "Сбросить…",
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "vaYHd",
+                  "name": "System Panel",
+                  "width": 340,
+                  "height": "fill_container",
+                  "fill": "$surface",
+                  "cornerRadius": 14,
+                  "stroke": "$line",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 20,
+                  "padding": 22,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "QjdFD",
+                      "name": "Head",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "R8UJ5",
+                          "name": "Eyebrow",
+                          "fill": "$lime",
+                          "content": "СИСТЕМНОЕ РАСШИРЕНИЕ",
+                          "fontFamily": "$font",
+                          "fontSize": 10,
+                          "fontWeight": "800",
+                          "letterSpacing": 1
+                        },
+                        {
+                          "type": "frame",
+                          "id": "ETchw",
+                          "name": "Status",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "ZVKFr",
+                              "name": "Icon",
+                              "width": 22,
+                              "height": 22,
+                              "icon": "shield-check",
+                              "library": "lucide",
+                              "fill": "$lime"
+                            },
+                            {
+                              "type": "text",
+                              "id": "U06kY",
+                              "name": "Value",
+                              "fill": "$text",
+                              "content": "Работает",
+                              "fontFamily": "$font",
+                              "fontSize": 26,
+                              "fontWeight": "700",
+                              "letterSpacing": -0.5
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "pyW64",
+                          "name": "Desc",
+                          "fill": "$text-2",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Network Extension разрешено в Системных настройках · перехватывает трафик всех приложений",
+                          "lineHeight": 1.45,
+                          "fontFamily": "$font",
+                          "fontSize": 12,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "xgqqS",
+                      "name": "Stats",
+                      "clip": true,
+                      "width": "fill_container",
+                      "fill": "$line",
+                      "cornerRadius": 10,
+                      "layout": "vertical",
+                      "gap": 1,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "Bpxdg",
+                          "name": "Stat Row",
+                          "width": "fill_container",
+                          "gap": 1,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "w2RUTZ",
+                              "name": "Stat Ядро",
+                              "width": "fill_container",
+                              "fill": "#111111",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "padding": [
+                                12,
+                                14
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "gzQlI",
+                                  "name": "Key",
+                                  "fill": "$text-3",
+                                  "content": "Ядро",
+                                  "fontFamily": "$font",
+                                  "fontSize": 11,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "vZYtF",
+                                  "name": "Value",
+                                  "fill": "$text",
+                                  "content": "sing-box 1.10",
+                                  "fontFamily": "$font",
+                                  "fontSize": 15,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "cBMY1",
+                              "name": "Stat Базы доменов",
+                              "width": "fill_container",
+                              "fill": "#111111",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "padding": [
+                                12,
+                                14
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "ht9ek",
+                                  "name": "Key",
+                                  "fill": "$text-3",
+                                  "content": "Базы доменов",
+                                  "fontFamily": "$font",
+                                  "fontSize": 11,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "MWeXC",
+                                  "name": "Value",
+                                  "fill": "$text",
+                                  "content": "сегодня, 09:12",
+                                  "fontFamily": "$font",
+                                  "fontSize": 15,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "T18rDN",
+                          "name": "Stat Row",
+                          "width": "fill_container",
+                          "gap": 1,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "EzaLG",
+                              "name": "Stat Своих правил",
+                              "width": "fill_container",
+                              "fill": "#111111",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "padding": [
+                                12,
+                                14
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "jy2sM",
+                                  "name": "Key",
+                                  "fill": "$text-3",
+                                  "content": "Своих правил",
+                                  "fontFamily": "$font",
+                                  "fontSize": 11,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "wKvm9",
+                                  "name": "Value",
+                                  "fill": "$text",
+                                  "content": "23",
+                                  "fontFamily": "$font",
+                                  "fontSize": 15,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Z7zYo8",
+                              "name": "Stat Конфигураций",
+                              "width": "fill_container",
+                              "fill": "#111111",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "padding": [
+                                12,
+                                14
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "f3mXem",
+                                  "name": "Key",
+                                  "fill": "$text-3",
+                                  "content": "Конфигураций",
+                                  "fontFamily": "$font",
+                                  "fontSize": 11,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "pRGOY",
+                                  "name": "Value",
+                                  "fill": "$text",
+                                  "content": "3",
+                                  "fontFamily": "$font",
+                                  "fontSize": 15,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "bg6yC",
+                      "name": "Shortcuts",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 12,
+                      "padding": [
+                        4,
+                        0,
+                        0,
+                        0
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "tlwdS",
+                          "name": "Label",
+                          "fill": "$text-2",
+                          "content": "Горячие клавиши",
+                          "fontFamily": "$font",
+                          "fontSize": 12,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "ZcTfb",
+                          "name": "Shortcut Вкл / выкл VPN",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "QNIUx",
+                              "name": "Action",
+                              "fill": "$text",
+                              "content": "Вкл / выкл VPN",
+                              "fontFamily": "$font",
+                              "fontSize": 13,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "otMqR",
+                              "name": "Keys",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "DMjsa",
+                                  "name": "Key ⌥",
+                                  "width": 24,
+                                  "height": 24,
+                                  "fill": "$surface-2",
+                                  "cornerRadius": 6,
+                                  "stroke": "#333333",
+                                  "strokeWidth": {
+                                    "bottom": 2
+                                  },
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "DxUit",
+                                      "name": "Glyph",
+                                      "fill": "$text-2",
+                                      "content": "⌥",
+                                      "fontFamily": "$font",
+                                      "fontSize": 11,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "GyiBi",
+                                  "name": "Key ⌘",
+                                  "width": 24,
+                                  "height": 24,
+                                  "fill": "$surface-2",
+                                  "cornerRadius": 6,
+                                  "stroke": "#333333",
+                                  "strokeWidth": {
+                                    "bottom": 2
+                                  },
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "G4c7Z",
+                                      "name": "Glyph",
+                                      "fill": "$text-2",
+                                      "content": "⌘",
+                                      "fontFamily": "$font",
+                                      "fontSize": 11,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "lzwpx",
+                                  "name": "Key V",
+                                  "width": 24,
+                                  "height": 24,
+                                  "fill": "$surface-2",
+                                  "cornerRadius": 6,
+                                  "stroke": "#333333",
+                                  "strokeWidth": {
+                                    "bottom": 2
+                                  },
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "ifjIs",
+                                      "name": "Glyph",
+                                      "fill": "$text-2",
+                                      "content": "V",
+                                      "fontFamily": "$font",
+                                      "fontSize": 11,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "RFN6N",
+                          "name": "Shortcut Следующий сервер",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "a4YCx",
+                              "name": "Action",
+                              "fill": "$text",
+                              "content": "Следующий сервер",
+                              "fontFamily": "$font",
+                              "fontSize": 13,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "pUjkF",
+                              "name": "Keys",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "J7I3Aq",
+                                  "name": "Key ⌥",
+                                  "width": 24,
+                                  "height": 24,
+                                  "fill": "$surface-2",
+                                  "cornerRadius": 6,
+                                  "stroke": "#333333",
+                                  "strokeWidth": {
+                                    "bottom": 2
+                                  },
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "I2E3D5",
+                                      "name": "Glyph",
+                                      "fill": "$text-2",
+                                      "content": "⌥",
+                                      "fontFamily": "$font",
+                                      "fontSize": 11,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "SuhKK",
+                                  "name": "Key ⌘",
+                                  "width": 24,
+                                  "height": 24,
+                                  "fill": "$surface-2",
+                                  "cornerRadius": 6,
+                                  "stroke": "#333333",
+                                  "strokeWidth": {
+                                    "bottom": 2
+                                  },
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "T5jkMv",
+                                      "name": "Glyph",
+                                      "fill": "$text-2",
+                                      "content": "⌘",
+                                      "fontFamily": "$font",
+                                      "fontSize": 11,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "zcBqE",
+                                  "name": "Key S",
+                                  "width": 24,
+                                  "height": 24,
+                                  "fill": "$surface-2",
+                                  "cornerRadius": 6,
+                                  "stroke": "#333333",
+                                  "strokeWidth": {
+                                    "bottom": 2
+                                  },
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "wmdAs",
+                                      "name": "Glyph",
+                                      "fill": "$text-2",
+                                      "content": "S",
+                                      "fontFamily": "$font",
+                                      "fontSize": 11,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "l8Dllp",
+                          "name": "Shortcut Открыть журнал",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "cyNHk",
+                              "name": "Action",
+                              "fill": "$text",
+                              "content": "Открыть журнал",
+                              "fontFamily": "$font",
+                              "fontSize": 13,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "glCl1",
+                              "name": "Keys",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "FtSyO",
+                                  "name": "Key ⌥",
+                                  "width": 24,
+                                  "height": 24,
+                                  "fill": "$surface-2",
+                                  "cornerRadius": 6,
+                                  "stroke": "#333333",
+                                  "strokeWidth": {
+                                    "bottom": 2
+                                  },
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "V4DBvQ",
+                                      "name": "Glyph",
+                                      "fill": "$text-2",
+                                      "content": "⌥",
+                                      "fontFamily": "$font",
+                                      "fontSize": 11,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "Q3nIGa",
+                                  "name": "Key ⌘",
+                                  "width": 24,
+                                  "height": 24,
+                                  "fill": "$surface-2",
+                                  "cornerRadius": 6,
+                                  "stroke": "#333333",
+                                  "strokeWidth": {
+                                    "bottom": 2
+                                  },
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "R2RDTh",
+                                      "name": "Glyph",
+                                      "fill": "$text-2",
+                                      "content": "⌘",
+                                      "fontFamily": "$font",
+                                      "fontSize": 11,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "E5f15",
+                                  "name": "Key J",
+                                  "width": 24,
+                                  "height": 24,
+                                  "fill": "$surface-2",
+                                  "cornerRadius": 6,
+                                  "stroke": "#333333",
+                                  "strokeWidth": {
+                                    "bottom": 2
+                                  },
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "Yz6XS",
+                                      "name": "Glyph",
+                                      "fill": "$text-2",
+                                      "content": "J",
+                                      "fontFamily": "$font",
+                                      "fontSize": 11,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "x4qDTC",
+                      "name": "Spacer",
+                      "width": 1,
+                      "height": "fill_container"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "n8wMGy",
+                      "name": "Actions",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 10,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "YQ52K",
+                          "name": "Backup Row",
+                          "width": "fill_container",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "D1rsy",
+                              "name": "Экспорт Button",
+                              "width": "fill_container",
+                              "height": 40,
+                              "cornerRadius": 20,
+                              "stroke": "$line",
+                              "strokeWidth": 1,
+                              "gap": 7,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "lAUaW",
+                                  "name": "Icon",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "download",
+                                  "library": "lucide",
+                                  "fill": "$text-2"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "F3NFau",
+                                  "name": "Label",
+                                  "fill": "$text-2",
+                                  "content": "Экспорт",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "i31Kh",
+                              "name": "Импорт Button",
+                              "width": "fill_container",
+                              "height": 40,
+                              "cornerRadius": 20,
+                              "stroke": "$line",
+                              "strokeWidth": 1,
+                              "gap": 7,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "i6jkt",
+                                  "name": "Icon",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "upload",
+                                  "library": "lucide",
+                                  "fill": "$text-2"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "aR2sG",
+                                  "name": "Label",
+                                  "fill": "$text-2",
+                                  "content": "Импорт",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "x194Y",
+                          "name": "Diagnostics Button",
+                          "width": "fill_container",
+                          "height": 42,
+                          "cornerRadius": 21,
+                          "stroke": "$text",
+                          "strokeWidth": 1.5,
+                          "gap": 8,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "vuXno",
+                              "name": "Icon",
+                              "width": 15,
+                              "height": 15,
+                              "icon": "stethoscope",
+                              "library": "lucide",
+                              "fill": "$text"
+                            },
+                            {
+                              "type": "text",
+                              "id": "kcr19",
+                              "name": "Label",
+                              "fill": "$text",
+                              "content": "Собрать отчёт для поддержки",
+                              "fontFamily": "$font",
+                              "fontSize": 13,
+                              "fontWeight": "700"
+                            }
+                          ]
                         }
                       ]
                     }

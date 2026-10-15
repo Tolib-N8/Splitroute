@@ -124,6 +124,11 @@ struct LinkParserTests {
         #expect(claude.path == "/Users/u/.local/share/claude/versions/" && claude.name == "Claude Code")
         let desktop = AppCatalog.routeTarget(forProcessPath: "/Users/u/Library/Application Support/Claude/claude-code/2.1.295/9d64/claude.app/Contents/MacOS/claude")
         #expect(desktop.path == "/Users/u/Library/Application Support/Claude/claude-code/")
+        let codex = AppCatalog.routeTarget(forProcessPath: "/Users/u/.codex/packages/standalone/releases/0.162.1-aarch64-apple-darwin/bin/codex")
+        #expect(codex.path == "/Users/u/.codex/packages/standalone/releases/" && codex.name == "Codex CLI")
+        #expect(AppCatalog.routeTarget(forProcessPath: "/opt/homebrew/Caskroom/codex/0.5.0/codex-aarch64-apple-darwin").path == "/opt/homebrew/Caskroom/codex/")
+        #expect(AppCatalog.routeTarget(forProcessPath: "/opt/homebrew/lib/node_modules/@openai/codex/vendor/aarch64-apple-darwin/codex/codex").path
+                == "/opt/homebrew/lib/node_modules/@openai/codex/")
         let cli = AppCatalog.routeTarget(forProcessPath: "/opt/tools/bin/mytool")
         #expect(cli.path == "/opt/tools/bin/" && cli.name == "mytool")
         #expect(AppCatalog.routeTarget(forProcessPath: "/Applications/X.app/Contents/MacOS/X").path == "/Applications/X.app")

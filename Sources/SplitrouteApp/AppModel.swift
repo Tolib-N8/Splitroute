@@ -213,9 +213,16 @@ final class AppModel {
     /// Сам Splitroute (скачивание баз и подписок) — через VPN, если он есть: напрямую из Китая
     /// GitHub и многие подписки недоступны. Это обычный маршрут приложения, его можно поменять.
     private func ensureSelfRoute() {
-        guard HelperClient.runningFromBundle, let id = Bundle.main.bundleIdentifier,
-              profile.route(for: id) == nil, let tunnel = tunnelExits.first(where: isAvailable)
-        else { return }
+        guard HelperClient.runningFromBundle, let id = Bundle.main.bundleIdentifier else { return }
+        // Приложение перенесли (например, из build/ или «Загрузок» в «Программы») — правило едет за ним.
+        if var route = profile.route(for: id) {
+            if route.path != Bundle.main.bundlePath {
+                route.path = Bundle.main.bundlePath
+                profile.setRoute(route)
+            }
+            return
+        }
+        guard let tunnel = tunnelExits.first(where: isAvailable) else { return }
         profile.setRoute(AppRoute(bundleID: id, name: "Splitroute", path: Bundle.main.bundlePath, exitID: tunnel.id))
     }
 
