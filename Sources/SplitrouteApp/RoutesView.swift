@@ -84,17 +84,29 @@ struct FlowGraph {
             .sorted { $0.1 != $1.1 ? $0.1 > $1.1 : $0.0.key < $1.0.key }
             .prefix(maxApps)
 
+        // Куда приложение может уйти по правилам доменов/IP/портов и наборам — помимо своего маршрута.
+        let profile = model.profile
+        let ruleTags = Set((profile.rules.filter(\.enabled).map(\.exitID) + profile.presets.filter(\.enabled).map(\.exitID))
+            .compactMap { profile.exit(id: $0)?.tag })
+
         var exitWeights: [String: Double] = [:]
         var exitApps: [String: Int] = [:]
         for (entry, bytes) in entries {
-            // Реальные потоки из статистики; если трафика ещё не было — показываем настроенный маршрут.
+            // Граф показывает текущую настройку: маршрут приложения и выходы правил. Статистика за 24 ч
+            // только распределяет толщину лент — иначе после смены выхода приложение ещё сутки
+            // «вело» бы в старый.
+            let exit = model.exit(for: entry)
+            let ownTag = exit.tag
+            var allowed = ruleTags.union([ownTag])
+            if exit.kind != .block, !model.isAvailable(exit) { allowed.insert("block") }   // kill switch
             // keys(prefix:) — Set с произвольным порядком; сортируем, чтобы порядок не менялся между пересчётами.
             var appFlows: [(String, Double)] = stats.keys(prefix: "flow:\(entry.key)|").sorted()
                 .map { (String($0.split(separator: "|").last ?? ""), Double(stats.total($0))) }
-                .filter { $0.1 > 0 }
-            if appFlows.isEmpty {
-                let exit = model.exit(for: entry)
-                appFlows = [(exit.kind == .block ? "block" : exit.tag, 1)]
+                .filter { $0.1 > 0 && allowed.contains($0.0) }
+            if !appFlows.contains(where: { $0.0 == ownTag }) {
+                // Своего выхода в статистике ещё нет (маршрут только что сменили) — лента всё равно нужна.
+                let rest = appFlows.reduce(0) { $0 + $1.1 }
+                appFlows.append((ownTag, max(rest * 0.25, 1)))
             }
             let sum = appFlows.reduce(0) { $0 + $1.1 }
             let appWeight = max(Double(bytes), 1)
