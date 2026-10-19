@@ -172,9 +172,14 @@ struct ConfigBuilderTests {
         profile.exits += [Exit(id: "wg", name: wg.name, kind: .proxy(wg.config)), Exit(id: "ovpn", name: ovpn.name, kind: .proxy(ovpn.config))]
         profile.routes.append(AppRoute(bundleID: "a.b", name: "B", path: "/Applications/B.app", exitID: "wg"))
         profile.routes.append(AppRoute(bundleID: "a.c", name: "C", path: "/Applications/C.app", exitID: "ovpn"))
+        profile.routes.append(AppRoute(bundleID: "a.d", name: "D", path: "/Applications/D.app", exitID: Exit.autoID))
 
-        let env = connected ? Self.connected : NetworkEnvironment(physicalInterface: nil)
-        let data = try ConfigBuilder(profile: profile, environment: env, options: Self.options).build().encoded()
+        // Проба выходов и «Авто» (urltest), один свой конфиг «не отвечает».
+        var env = connected ? Self.connected : NetworkEnvironment(physicalInterface: nil)
+        env.unhealthy = ["ovpn"]
+        var options = Self.options
+        options.probeListen = "127.0.0.1:9096"
+        let data = try ConfigBuilder(profile: profile, environment: env, options: options).build().encoded()
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("splitroute-check-\(connected).json")
         try data.write(to: url)
 

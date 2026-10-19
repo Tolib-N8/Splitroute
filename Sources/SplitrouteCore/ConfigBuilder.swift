@@ -22,11 +22,18 @@ public struct NetworkEnvironment: Sendable, Equatable {
     public var physicalIPv6: Bool
     /// Подключённые VPN-сервисы по ID сервиса.
     public var vpnServices: [String: VPNService]
+    /// Выходы (id), которые подключены, но не пропускают трафик — по проверке приложения (health.json).
+    public var unhealthy: Set<String>
+    /// Адрес TUN ядра (/30), не пересекающийся с чужими интерфейсами — см. `ConfigBuilder.chooseTunAddress`.
+    public var tunAddress: String
 
-    public init(physicalInterface: String?, physicalIPv6: Bool = false, vpnServices: [String: VPNService] = [:]) {
+    public init(physicalInterface: String?, physicalIPv6: Bool = false, vpnServices: [String: VPNService] = [:],
+                unhealthy: Set<String> = [], tunAddress: String = ConfigBuilder.tunAddress4) {
         self.physicalInterface = physicalInterface
         self.physicalIPv6 = physicalIPv6
         self.vpnServices = vpnServices
+        self.unhealthy = unhealthy
+        self.tunAddress = tunAddress
     }
 }
 
@@ -38,11 +45,14 @@ public struct ConfigOptions: Sendable, Equatable {
     /// Папка с файлами `<tag>.srs` и какие из них на месте. Наборы без файлов пропускаются.
     public var ruleSetsDir: String
     public var availableRuleSets: Set<String>
+    /// Локальный вход для проверки выходов (замер скорости, живость): `host:port` или nil — без него.
+    public var probeListen: String?
 
     public init(
         apiListen: String = "127.0.0.1:9095", apiSecret: String, cacheFilePath: String? = nil, logLevel: String = "warn",
-        ruleSetsDir: String = Paths.ruleSetsDir, availableRuleSets: Set<String> = []
+        ruleSetsDir: String = Paths.ruleSetsDir, availableRuleSets: Set<String> = [], probeListen: String? = nil
     ) {
+        self.probeListen = probeListen
         self.apiListen = apiListen
         self.apiSecret = apiSecret
         self.cacheFilePath = cacheFilePath
@@ -57,9 +67,51 @@ public struct ConfigBuilder: Sendable {
     /// Адрес TUN не должен попадать ни в один исключённый диапазон, иначе ответы ядра
     /// уйдут мимо TUN и ни одно соединение не заработает (так было с 172.19.0.1 внутри 172.16.0.0/12).
     public static let tunAddress4 = "198.18.0.1/30"
+    /// Запасные адреса TUN: 198.18.0.0/15 любят клиенты на Xray/sing-box (ZoogVPN занимает 198.18.0.0/16
+    /// целиком), и тогда маршруты через «наш» 198.18.0.1 уходят в чужой туннель — весь трафик мимо Splitroute.
+    public static let tunCandidates = ["198.18.0.1/30", "198.19.254.1/30", "203.0.113.1/30", "192.0.2.1/30"]
     public static let tunAddress6 = "fdfe:dcba:9876::1/126"
     /// DNS ядра внутри TUN: следующий адрес после tunAddress4; sing-box перехватывает запросы к нему.
     public static let tunDNS = "198.18.0.2"
+
+    /// DNS ядра внутри TUN — следующий адрес после адреса TUN.
+    public static func dnsAddress(forTun tun: String) -> String {
+        guard let (addr, _) = parseCIDR(tun) else { return tunDNS }
+        return formatIPv4(addr + 1)
+    }
+
+    /// Первый адрес-кандидат, не пересекающийся с чужими интерфейсами. Свой TUN (тот же адрес, /30) —
+    /// не помеха: так адрес не прыгает при каждом пересчёте. Свободный свой — в приоритете.
+    public static func chooseTunAddress(occupied: [(address: UInt32, prefix: Int)]) -> String {
+        func network(_ a: UInt32, _ p: Int) -> (UInt32, UInt32) {
+            let mask: UInt32 = p == 0 ? 0 : ~UInt32(0) << UInt32(32 - p)
+            return (a & mask, mask)
+        }
+        func free(_ cidr: String) -> (free: Bool, ours: Bool) {
+            guard let (addr, prefix) = parseCIDR(cidr) else { return (false, false) }
+            var ours = false
+            for o in occupied {
+                if o.address == addr && o.prefix == prefix { ours = true; continue }
+                let p = min(prefix, o.prefix)
+                if network(addr, p).0 == network(o.address, p).0 { return (false, ours) }
+            }
+            return (true, ours)
+        }
+        let checked = tunCandidates.map { ($0, free($0)) }
+        return checked.first { $0.1.free && $0.1.ours }?.0 ?? checked.first { $0.1.free }?.0 ?? tunAddress4
+    }
+
+    static func parseCIDR(_ s: String) -> (UInt32, Int)? {
+        let parts = s.split(separator: "/")
+        let octets = parts[0].split(separator: ".").compactMap { UInt32($0) }
+        guard octets.count == 4, octets.allSatisfy({ $0 < 256 }) else { return nil }
+        let prefix = parts.count > 1 ? Int(parts[1]) ?? 32 : 32
+        return (octets[0] << 24 | octets[1] << 16 | octets[2] << 8 | octets[3], prefix)
+    }
+
+    static func formatIPv4(_ a: UInt32) -> String {
+        "\(a >> 24 & 255).\(a >> 16 & 255).\(a >> 8 & 255).\(a & 255)"
+    }
     /// Локальные имена всегда резолвит роутер.
     public static let localDomains = ["lan", "local", "home.arpa", "localhost"]
 
@@ -109,6 +161,7 @@ public struct ConfigBuilder: Sendable {
         case .direct: return environment.physicalIPv6
         case .block: return true
         case .proxy: return true
+        case .auto: return profile.autoCandidates(in: environment).allSatisfy { supportsIPv6(exitID: $0.id) }
         case .vpnApp(let serviceID): return environment.vpnServices[serviceID]?.ipv6 ?? false
         }
     }
@@ -145,9 +198,17 @@ public struct ConfigBuilder: Sendable {
             case .proxy(let proxy):
                 let (isEndpoint, json) = Self.proxyJSON(proxy, tag: exit.tag)
                 if isEndpoint { endpoints.append(json) } else { outbounds.append(json) }
-            case .direct, .block:
+            case .direct, .block, .auto:
                 continue
             }
+        }
+        // «Авто»: ядро само держит самый быстрый из рабочих туннелей.
+        let candidates = profile.autoCandidates(in: environment).map { JSONValue.string($0.tag) }
+        if !candidates.isEmpty {
+            outbounds.append([
+                "type": "urltest", "tag": .string(Exit.auto.tag), "outbounds": .array(candidates),
+                "url": "https://www.gstatic.com/generate_204", "interval": "1m", "tolerance": 50,
+            ])
         }
 
         var config: [String: JSONValue] = [
@@ -158,7 +219,7 @@ public struct ConfigBuilder: Sendable {
                 ("final", .string(finalDNSTag)),
                 ("strategy", ipv6Network ? nil : "ipv4_only"),
             ]),
-            "inbounds": [tunInbound()],
+            "inbounds": .array([tunInbound()] + (probeInbound().map { [$0] } ?? [])),
             "outbounds": .array(outbounds),
             "route": route(),
             "experimental": experimental(),
@@ -192,15 +253,50 @@ public struct ConfigBuilder: Sendable {
         [
             "type": "tun", "tag": "tun-in",
             // IPv6 на TUN — только если он есть в сети: иначе macOS начинает предпочитать IPv6.
-            "address": .strings(ipv6Network ? [Self.tunAddress4, Self.tunAddress6] : [Self.tunAddress4]),
+            "address": .strings(ipv6Network ? [environment.tunAddress, Self.tunAddress6] : [environment.tunAddress]),
             "auto_route": true,
             "strict_route": false,
             "route_exclude_address": .strings(Self.baseExcludedRoutes + vpnServerAddresses),
         ]
     }
 
+    // MARK: - Проба выходов
+
+    /// Теги, через которые можно пустить пробу: напрямую, «Авто» и все туннели, что есть в конфиге.
+    var probeTags: [String] {
+        var tags = ["direct"]
+        if !profile.autoCandidates(in: environment).isEmpty { tags.append(Exit.auto.tag) }
+        for exit in profile.exits {
+            switch exit.kind {
+            case .vpnApp(let id) where environment.vpnServices[id] != nil: tags.append(exit.tag)
+            case .proxy: tags.append(exit.tag)
+            default: break
+            }
+        }
+        return tags
+    }
+
+    /// SOCKS/HTTP на localhost: пользователь = тег выхода, пароль = секрет API.
+    /// Приложение качает через него тестовый файл конкретным выходом; без секрета — отказ.
+    private func probeInbound() -> JSONValue? {
+        guard let listen = options.probeListen, let colon = listen.lastIndex(of: ":"),
+              let port = Int(listen[listen.index(after: colon)...]) else { return nil }
+        return [
+            "type": "mixed", "tag": "probe-in",
+            "listen": .string(String(listen[..<colon])), "listen_port": .int(port),
+            "users": .array(probeTags.map { ["username": .string($0), "password": .string(options.apiSecret)] }),
+        ]
+    }
+
     private func route() -> JSONValue {
-        var rules: [JSONValue] = [
+        var rules: [JSONValue] = []
+        if options.probeListen != nil {
+            for tag in probeTags {
+                rules.append(["inbound": ["probe-in"], "auth_user": .strings([tag]), "outbound": .string(tag)])
+            }
+            rules.append(["inbound": ["probe-in"], "action": "reject"])
+        }
+        rules += [
             ["action": "sniff"],
             ["protocol": "dns", "action": "hijack-dns"],
         ]

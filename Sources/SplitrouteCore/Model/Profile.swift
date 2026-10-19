@@ -11,10 +11,13 @@ public struct Exit: Codable, Sendable, Equatable, Identifiable, Hashable {
         case vpnApp(serviceID: String)
         /// Свой конфиг, который поднимает sing-box.
         case proxy(ProxyConfig)
+        /// Самый быстрый из рабочих туннелей (urltest в ядре).
+        case auto
     }
 
     public static let directID = "direct"
     public static let blockID = "block"
+    public static let autoID = "auto"
     /// `fallbackID` «без резерва»: сразу kill switch (или напрямую, если он выключен).
     public static let noFallbackID = "none"
 
@@ -38,12 +41,15 @@ public struct Exit: Codable, Sendable, Equatable, Identifiable, Hashable {
 
     public static let direct = Exit(id: directID, name: String(localized: "Напрямую"), kind: .direct)
     public static let block = Exit(id: blockID, name: String(localized: "Блок"), kind: .block)
+    /// Встроенный выход: ядро само выбирает самый быстрый из подключённых и отвечающих туннелей.
+    public static let auto = Exit(id: autoID, name: String(localized: "Авто"), kind: .auto)
 
     /// Тег outbound/endpoint в конфиге sing-box.
     public var tag: String {
         switch kind {
         case .direct: return "direct"
         case .block: return "block"
+        case .auto: return "auto"
         default: return "exit-\(id)"
         }
     }
@@ -51,7 +57,7 @@ public struct Exit: Codable, Sendable, Equatable, Identifiable, Hashable {
     /// Выход, который считается «VPN» в фильтрах и цветах интерфейса.
     public var isTunnel: Bool {
         switch kind {
-        case .vpnApp, .proxy: return true
+        case .vpnApp, .proxy, .auto: return true
         case .direct, .block: return false
         }
     }
@@ -141,7 +147,7 @@ public struct Profile: Codable, Sendable, Equatable {
     }
 
     /// Все выходы, включая встроенные.
-    public var allExits: [Exit] { [.direct] + exits + [.block] }
+    public var allExits: [Exit] { [.direct, .auto] + exits + [.block] }
 
     public func exit(id: String) -> Exit? { allExits.first { $0.id == id } }
 

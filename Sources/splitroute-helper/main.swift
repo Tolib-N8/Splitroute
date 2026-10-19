@@ -54,6 +54,18 @@ func invokingUser() throws -> (name: String, uid: uid_t, gid: gid_t, home: Strin
 }
 
 /// Читает профиль из домашней папки пользователя без перехода по симлинкам и только если файл принадлежит ему.
+/// Какие выходы не отвечают. Нет файла или он странный — считаем, что все отвечают.
+func readHealth(home: String, uid: uid_t) -> Set<String> {
+    let fd = open(Paths.health(home: home), O_RDONLY | O_NOFOLLOW)
+    guard fd >= 0 else { return [] }
+    let handle = FileHandle(fileDescriptor: fd, closeOnDealloc: true)
+    var st = stat()
+    guard fstat(fd, &st) == 0, (st.st_mode & S_IFMT) == S_IFREG, st.st_uid == uid, st.st_size < 64 * 1024,
+          let data = try? handle.readToEnd(), let report = try? JSONDecoder().decode(HealthReport.self, from: data)
+    else { return [] }
+    return Set(report.unhealthy.prefix(64))
+}
+
 func readProfile(home: String, uid: uid_t) throws -> Profile {
     let path = Paths.profile(home: home)
     let fd = open(path, O_RDONLY | O_NOFOLLOW)
@@ -186,12 +198,14 @@ func apply() throws {
     let user = try invokingUser()
     let profile = try readProfile(home: user.home, uid: user.uid)
 
-    let credentials = APICredentials.load() ?? APICredentials(listen: "127.0.0.1:9095", secret: randomSecret())
-    let env = NetworkState.environment()
+    var credentials = APICredentials.load() ?? APICredentials(listen: "127.0.0.1:9095", secret: randomSecret())
+    if credentials.probe == nil { credentials.probe = APICredentials.defaultProbe }   // api.json прошлых версий
+    var env = NetworkState.environment()
+    env.unhealthy = readHealth(home: user.home, uid: user.uid)
     let ruleSets = syncRuleSets(home: user.home, uid: user.uid)
     let options = ConfigOptions(
         apiListen: credentials.listen, apiSecret: credentials.secret, cacheFilePath: Paths.cacheFile,
-        availableRuleSets: ruleSets
+        availableRuleSets: ruleSets, probeListen: credentials.probe
     )
     let data = try ConfigBuilder(profile: profile, environment: env, options: options).build().encoded()
 
@@ -208,7 +222,10 @@ func apply() throws {
     } else {
         try? fm.removeItem(atPath: Paths.dnsHijackFlag)
     }
-    let restartNeeded = hijackBefore != profile.hijackSystemDNS
+    // Сменился адрес TUN (чужой VPN занял нашу сеть) — DNS ядра публикуется при запуске, нужен перезапуск.
+    let tunBefore = (try? String(contentsOfFile: Paths.tunAddressFile, encoding: .utf8)) ?? ConfigBuilder.tunAddress4
+    try writeFile(Data(env.tunAddress.utf8), to: Paths.tunAddressFile, mode: 0o644)
+    let restartNeeded = hijackBefore != profile.hijackSystemDNS || tunBefore != env.tunAddress
 
     let credData = try JSONEncoder().encode(credentials)
     try writeFile(credData, to: Paths.apiCredentials, mode: 0o600, owner: user.uid, group: user.gid)
@@ -236,7 +253,8 @@ func runCore() -> Never {
         // SearchOrder для сервиса вне ServiceOrder игнорируется (резолвер получал order 102000,
         // ниже Tailscale), а вместе с SupplementalMatchOrders ломал приоритет.
         let dns: [String: Any] = [
-            "ServerAddresses": [ConfigBuilder.tunDNS],
+            "ServerAddresses": [ConfigBuilder.dnsAddress(
+                forTun: (try? String(contentsOfFile: Paths.tunAddressFile, encoding: .utf8)) ?? ConfigBuilder.tunAddress4)],
             "SupplementalMatchDomains": [""],   // все домены; более точные (ts.net) остаются у Tailscale
             "SupplementalMatchOrders": [1],
         ]
@@ -317,7 +335,9 @@ do {
         let dir = Paths.userRuleSets(home: NSHomeDirectory())
         let sets = PresetInfo.allowedRuleSets.filter { fm.fileExists(atPath: "\(dir)/\($0).srs") }
         let options = ConfigOptions(apiSecret: "preview", cacheFilePath: Paths.cacheFile, ruleSetsDir: dir, availableRuleSets: sets)
-        let data = try ConfigBuilder(profile: profile, environment: NetworkState.environment(), options: options).build().encoded()
+        var env = NetworkState.environment()
+        env.unhealthy = readHealth(home: NSHomeDirectory(), uid: getuid())
+        let data = try ConfigBuilder(profile: profile, environment: env, options: options).build().encoded()
         print(String(data: data, encoding: .utf8)!)
     case "env":
         let env = NetworkState.environment()

@@ -398,6 +398,28 @@
 "Не открываются напрямую: %lld" = "Not reachable directly: %lld";
 "Выйти. Ядро продолжит работать, но без слежения за сетью" = "Quit. The core keeps running, but without network monitoring";
 
+"%@ не отвечает" = "%@ is not responding";
+"%@ снова отвечает" = "%@ is responding again";
+"Приложения вернулись на него" = "Apps are back on it";
+"Обновите системный компонент — без него скорость не измерить" = "Update the system component to measure speed";
+"Нет рабочих туннелей · " = "No working tunnels · ";
+"Самый быстрый · сейчас %@" = "Fastest · now %@";
+"Самый быстрый из рабочих туннелей" = "Fastest of the working tunnels";
+"Не отвечает · " = "Not responding · ";
+"Авто — самый быстрый" = "Auto — fastest";
+"не отвечает" = "not responding";
+"Авто" = "Auto";
+"НЕ ОТВЕЧАЕТ" = "NOT RESPONDING";
+"Не отвечает" = "Not responding";
+"Скорость" = "Speed";
+"Проверено" = "Checked";
+"Сейчас" = "Now";
+"Меряю скорость…" = "Measuring speed…";
+"Проверить скорость" = "Test speed";
+"меряю…" = "testing…";
+"нет связи" = "no connection";
+"Скачать тестовый файл через каждый выход и сравнить скорость" = "Download a test file through every exit and compare speeds";
+
 /* Plural forms passed to Format.plural at runtime */
 "приложение" = "app";
 "приложения" = "apps";

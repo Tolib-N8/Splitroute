@@ -2,12 +2,17 @@
 # Сквозная проверка на живой системе (компонент должен быть установлен из Splitroute.app).
 #   - две копии curl: одна → VPN-приложение, другая → напрямую; IP на выходе должны различаться;
 #   - Tailscale (100.100.100.100) продолжает отвечать;
-#   - kill switch: если VPN-сервис «пропал», VPN-копия получает отказ, а не прямой IP.
-# Текущий профиль сохраняется и восстанавливается в конце.
+#   - kill switch: если VPN-сервис «пропал», VPN-копия получает отказ, а не прямой IP;
+#   - вход проверки выходов (probe-in): без пароля — отказ, с тегом выхода — через этот выход;
+#   - выход из health.json («не отвечает») уходит в резерв.
+# Текущий профиль и health.json сохраняются и восстанавливаются в конце.
 set -u
 VPN_NAME=${1:-ZoogVPN}
 HELPER=/Library/PrivilegedHelperTools/com.splitroute/splitroute-helper
 PROFILE="$HOME/Library/Application Support/Splitroute/profile.json"
+HEALTH="$HOME/Library/Application Support/Splitroute/health.json"
+HEALTH_BACKUP=$(mktemp)
+cp "$HEALTH" "$HEALTH_BACKUP" 2>/dev/null || echo '{"unhealthy":[]}' > "$HEALTH_BACKUP"
 BACKUP=$(mktemp)
 # IP на выходе: Cloudflare trace, а если он недоступен — myip.ipip.net. ip-api не годится: некоторые VPN
 # (AIRLINK) сами пускают его напрямую, и VPN-копия показывала бы прямой IP.
@@ -19,7 +24,18 @@ fail=0
 
 [ -x "$HELPER" ] || { echo "Компонент не установлен"; exit 1; }
 cp "$PROFILE" "$BACKUP" 2>/dev/null || echo '{}' > "$BACKUP"
-restore() { cp "$BACKUP" "$PROFILE"; sudo -n "$HELPER" apply >/dev/null; rm -f "$BACKUP"; }
+# Запущенный Splitroute держит свой профиль в памяти и при любой пересборке записал бы его поверх тестового —
+# на время проверки закрываем приложение и открываем обратно в конце.
+APP_WAS_RUNNING=0
+if pgrep -f "/Applications/Splitroute.app/Contents/MacOS/Splitroute" >/dev/null; then
+  APP_WAS_RUNNING=1
+  osascript -e 'quit app "Splitroute"' >/dev/null 2>&1
+  for _ in $(seq 40); do pgrep -f "/Applications/Splitroute.app/Contents/MacOS/Splitroute" >/dev/null || break; sleep 0.25; done
+fi
+restore() {
+  cp "$BACKUP" "$PROFILE"; cp "$HEALTH_BACKUP" "$HEALTH"; sudo -n "$HELPER" apply >/dev/null; rm -f "$BACKUP" "$HEALTH_BACKUP"
+  [ "$APP_WAS_RUNNING" = 1 ] && open /Applications/Splitroute.app
+}
 trap restore EXIT
 
 for d in sr-vpn sr-direct; do
@@ -109,5 +125,36 @@ check "правило по домену перебивает маршрут пр
 check "без правил работает маршрут приложения (напрямую)" '[ -n "$APP_DIRECT" ] && [ "$APP_DIRECT" = "$DIRECT_IP" ]'
 check "без правил работает маршрут приложения (VPN)" '[ -n "$APP_VPN" ] && [ "$APP_VPN" = "$VPN_IP" ]'
 check "набор «Китайские сервисы» перебивает маршрут приложения" '[ -n "$PRESET_IP" ] && [ "$PRESET_IP" = "$DIRECT_IP" ]'
+
+echo "4. Вход проверки выходов (probe-in)"
+write_profile "$SERVICE"
+sudo -n "$HELPER" apply || exit 1
+sleep 3
+SECRET=$(python3 -c 'import json;print(json.load(open("/Library/Application Support/Splitroute/api.json"))["secret"])')
+PROBE=$(python3 -c 'import json;print(json.load(open("/Library/Application Support/Splitroute/api.json")).get("probe") or "")')
+P_NOAUTH=$(curl -s -m 8 --socks5-hostname "$PROBE" https://www.cloudflare.com/cdn-cgi/trace | sed -n 's/^ip=//p')
+P_VPN=$(curl -s -m 8 --socks5-hostname "$PROBE" --proxy-user "exit-e2e-vpn:$SECRET" https://www.cloudflare.com/cdn-cgi/trace | sed -n 's/^ip=//p')
+P_DIRECT=$(curl -s -m 8 --socks5-hostname "$PROBE" --proxy-user "direct:$SECRET" https://www.cloudflare.com/cdn-cgi/trace | sed -n 's/^ip=//p')
+P_AUTO=$(curl -s -m 8 --socks5-hostname "$PROBE" --proxy-user "auto:$SECRET" https://www.cloudflare.com/cdn-cgi/trace | sed -n 's/^ip=//p')
+echo "  без пароля: ${P_NOAUTH:-отказ} · VPN: $P_VPN · напрямую: $P_DIRECT · авто: $P_AUTO"
+check "без пароля — отказ" '[ -z "$P_NOAUTH" ]'
+check "проба через VPN-выход даёт IP VPN" '[ -n "$P_VPN" ] && [ "$P_VPN" = "$VPN_IP" ]'
+check "проба напрямую даёт прямой IP" '[ -n "$P_DIRECT" ] && [ "$P_DIRECT" = "$DIRECT_IP" ]'
+check "«Авто» выбрал работающий VPN" '[ -n "$P_AUTO" ] && [ "$P_AUTO" = "$VPN_IP" ]'
+
+echo "5. Выход «не отвечает» (health.json) → резерв"
+cat > "$PROFILE" <<JSON
+{"version":1,"defaultExitID":"direct","killSwitch":true,"tunnelDNS":"1.1.1.1",
+ "exits":[{"id":"e2e-dead","name":"dead","kind":{"vpnApp":{"serviceID":"$SERVICE"}}},
+          {"id":"e2e-spare","name":"spare","kind":{"vpnApp":{"serviceID":"$SERVICE"}}}],
+ "routes":[{"bundleID":"e2e.vpn","name":"curl-vpn","path":"/private/tmp/sr-vpn/","exitID":"e2e-dead"}]}
+JSON
+echo '{"unhealthy":["e2e-dead"]}' > "$HEALTH"
+sudo -n "$HELPER" apply || exit 1
+sleep 3
+H_IP=$(myip /tmp/sr-vpn/curl)
+RULE=$("$HELPER" preview 2>/dev/null | python3 -c 'import json,sys;c=json.load(sys.stdin);print([r.get("outbound") for r in c["route"]["rules"] if "/private/tmp/sr-vpn/" in str(r.get("process_path_regex","")) and "ip_version" not in r][0])' 2>/dev/null)
+echo "  VPN-копия → ${RULE:-?}, IP ${H_IP:-отказ}"
+check "неотвечающий выход ушёл в резерв" '[ "$RULE" = "exit-e2e-spare" ] && [ "$H_IP" = "$VPN_IP" ]'
 
 exit $fail

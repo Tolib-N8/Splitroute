@@ -3,7 +3,7 @@ import Foundation
 /// Версия протокола между приложением и root-helper'ом. Повышается, только когда меняется то,
 /// что делает helper (сборка конфига, команды, версия sing-box) — тогда приложение попросит обновить компонент.
 public enum HelperProtocol {
-    public static let version = 6
+    public static let version = 8
 }
 
 /// Пути, общие для приложения и root-helper'а.
@@ -22,6 +22,8 @@ public enum Paths {
     public static let log = "/Library/Logs/Splitroute/core.log"
     /// Флаг: публиковать DNS ядра как системный резолвер (читает `helper run` при старте).
     public static let dnsHijackFlag = dataDir + "/dns-hijack"
+    /// Какой адрес TUN выбран при последнем apply — по нему run публикует DNS ядра.
+    public static let tunAddressFile = dataDir + "/tun-address"
     /// Ключ SCDynamicStore с DNS ядра — временный, живёт, пока жив `helper run`.
     public static let dnsStoreKey = "State:/Network/Service/com.splitroute.dns/DNS"
     /// Файлы готовых наборов (.srs), которые helper скопировал из папки пользователя.
@@ -35,6 +37,15 @@ public enum Paths {
         home + "/Library/Application Support/Splitroute/profile.json"
     }
 
+    /// Какие выходы не отвечают — пишет приложение, читает helper при сборке конфига.
+    public static func health(home: String) -> String {
+        home + "/Library/Application Support/Splitroute/health.json"
+    }
+
+    public static var userHealth: URL {
+        URL(fileURLWithPath: health(home: NSHomeDirectory()))
+    }
+
     public static var userProfile: URL {
         URL(fileURLWithPath: profile(home: NSHomeDirectory()))
     }
@@ -43,16 +54,28 @@ public enum Paths {
 public struct APICredentials: Codable, Sendable, Equatable {
     public var listen: String
     public var secret: String
+    /// Вход для проверки выходов (`127.0.0.1:9096`); nil — у компонента старой версии его нет.
+    public var probe: String?
 
-    public init(listen: String, secret: String) {
+    public static let defaultProbe = "127.0.0.1:9096"
+
+    public init(listen: String, secret: String, probe: String? = APICredentials.defaultProbe) {
         self.listen = listen
         self.secret = secret
+        self.probe = probe
     }
 
     public static func load() -> APICredentials? {
         guard let data = FileManager.default.contents(atPath: Paths.apiCredentials) else { return nil }
         return try? JSONDecoder().decode(APICredentials.self, from: data)
     }
+}
+
+/// health.json: выходы, которые подключены, но не пропускают трафик (проверяет приложение).
+public struct HealthReport: Codable, Sendable, Equatable {
+    public var unhealthy: [String]
+
+    public init(unhealthy: [String]) { self.unhealthy = unhealthy }
 }
 
 /// Соединение из `/connections`.
@@ -151,5 +174,13 @@ public struct ClashAPI: Sendable {
         let (data, response) = try await URLSession.shared.data(for: req)
         guard (response as? HTTPURLResponse)?.statusCode == 200 else { throw URLError(.timedOut) }
         return try JSONDecoder().decode(R.self, from: data).delay
+    }
+
+    /// Что сейчас выбрал выход-группа (у «Авто» — самый быстрый туннель): тег или nil.
+    public func selected(group tag: String) async throws -> String? {
+        struct R: Decodable { var now: String? }
+        let (data, response) = try await URLSession.shared.data(for: request("proxies/\(tag)"))
+        guard (response as? HTTPURLResponse)?.statusCode == 200 else { return nil }
+        return try JSONDecoder().decode(R.self, from: data).now
     }
 }

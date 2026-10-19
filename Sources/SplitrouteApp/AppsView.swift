@@ -228,11 +228,12 @@ struct ExitCell: View {
     var body: some View {
         if exit.isTunnel && editable {
             Menu {
-                ForEach(model.tunnelExits) { e in
+                ForEach([Exit.auto] + model.tunnelExits) { e in
                     Button {
                         onSelect(e)
                     } label: {
-                        Text(e.name + (model.isAvailable(e) ? "" : L(" — отключён, ") + model.fallbackNote(for: e)))
+                        Text((e.kind == .auto ? L("Авто — самый быстрый") : e.name)
+                             + (model.isAvailable(e) ? "" : L(" — отключён, ") + model.fallbackNote(for: e)))
                     }
                 }
             } label: {
@@ -242,6 +243,8 @@ struct ExitCell: View {
                     Text(exit.name).font(Theme.font(12, .medium)).foregroundStyle(Theme.text).lineLimit(1)
                     if let fallback {
                         Text("→ " + fallback.name).font(Theme.font(11)).foregroundStyle(Theme.amber).lineLimit(1)
+                    } else if exit.kind == .auto, let current = model.autoCurrent {
+                        Text("→ " + current.name).font(Theme.font(11)).foregroundStyle(Theme.text2).lineLimit(1)
                     }
                     Image(systemName: "chevron.up.chevron.down").font(.system(size: 9)).foregroundStyle(Theme.text2)
                 }

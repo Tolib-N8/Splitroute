@@ -15,21 +15,37 @@ public enum ExitResolution: Equatable, Sendable {
 }
 
 extension Profile {
-    /// Работает ли выход прямо сейчас. Свои конфиги ядро проверить не может — считаем доступными.
+    /// Работает ли выход прямо сейчас: VPN-приложение подключено, выход отвечает
+    /// (не в `unhealthy`), у «Авто» есть хоть один рабочий туннель.
     public func isAvailable(_ exit: Exit, in env: NetworkEnvironment) -> Bool {
-        if case .vpnApp(let id) = exit.kind { return env.vpnServices[id] != nil }
-        return true
+        if env.unhealthy.contains(exit.id) { return false }
+        switch exit.kind {
+        case .vpnApp(let id): return env.vpnServices[id] != nil
+        case .auto: return !autoCandidates(in: env).isEmpty
+        case .direct, .block, .proxy: return true
+        }
+    }
+
+    /// Из чего «Авто» выбирает самый быстрый: подключённые и отвечающие VPN-приложения и свои конфиги.
+    public func autoCandidates(in env: NetworkEnvironment) -> [Exit] {
+        exits.filter { e in
+            switch e.kind {
+            case .vpnApp, .proxy: return isAvailable(e, in: env)
+            case .direct, .block, .auto: return false
+            }
+        }
     }
 
     /// Выход → фактический выход с учётом резерва и kill switch.
-    /// Отключённый VPN: назначенный резерв, если доступен; иначе (если резерв не выключен)
-    /// первый подключённый VPN из списка; иначе блок или напрямую по kill switch.
+    /// Недоступный туннель (VPN отключён или не отвечает, свой конфиг не отвечает, у «Авто» нет кандидатов):
+    /// назначенный резерв, если доступен; иначе (если резерв не выключен) первый подключённый VPN
+    /// из списка; иначе блок или напрямую по kill switch.
     public func resolve(exitID id: String, in env: NetworkEnvironment) -> ExitResolution {
         guard let exit = exit(id: id) else { return resolve(exitID: Exit.directID, in: env) }
         switch exit.kind {
-        case .direct, .proxy: return .exit(exit, fallbackFrom: nil)
+        case .direct: return .exit(exit, fallbackFrom: nil)
         case .block: return .reject
-        case .vpnApp:
+        case .vpnApp, .proxy, .auto:
             if isAvailable(exit, in: env) { return .exit(exit, fallbackFrom: nil) }
             if exit.fallbackID != Exit.noFallbackID {
                 if let fid = exit.fallbackID, fid != exit.id, let f = self.exit(id: fid), f.isTunnel, isAvailable(f, in: env) {

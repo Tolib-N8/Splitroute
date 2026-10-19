@@ -136,9 +136,14 @@ struct MenuBarPanel: View {
     }
 
     private func vpnState(_ exit: Exit, up: Bool) -> String {
-        if up { return L("подключён") + (model.vpnService(for: exit)?.interface.map { " · \($0)" } ?? "") }
-        if let f = model.activeFallback(for: exit) { return L("отключён → \(f.name)") }
-        return L("отключён") + ", " + model.fallbackNote(for: exit)
+        if up {
+            // После замера — скорость, она полезнее имени интерфейса.
+            if let r = model.speedResults[exit.id], !r.failed { return Format.speed(Int64(r.bytesPerSecond)) }
+            return L("подключён") + (model.vpnService(for: exit)?.interface.map { " · \($0)" } ?? "")
+        }
+        let state = model.unhealthy.contains(exit.id) ? L("не отвечает") : L("отключён")
+        if let f = model.activeFallback(for: exit) { return state + " → " + f.name }
+        return state + ", " + model.fallbackNote(for: exit)
     }
 
     // MARK: Сейчас в сети

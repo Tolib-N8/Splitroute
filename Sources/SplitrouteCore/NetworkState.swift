@@ -33,7 +33,25 @@ public enum NetworkState {
     public static func environment() -> NetworkEnvironment { snapshot().environment }
 
     /// Одно чтение: список VPN-сервисов и окружение для конфига. Медленно (десятки мс) — не на главном потоке.
-    /// `signature` — отпечаток текущей сети (роутер и его MAC), по нему включаются сценарии.
+/// IPv4-адреса всех интерфейсов (адрес, длина префикса) — чтобы TUN не занял чужую сеть.
+    public static func ipv4Interfaces() -> [(address: UInt32, prefix: Int)] {
+        var result: [(address: UInt32, prefix: Int)] = []
+        var head: UnsafeMutablePointer<ifaddrs>?
+        guard getifaddrs(&head) == 0 else { return [] }
+        defer { freeifaddrs(head) }
+        var p = head
+        while let ifa = p?.pointee {
+            if let addr = ifa.ifa_addr, addr.pointee.sa_family == UInt8(AF_INET), let mask = ifa.ifa_netmask {
+                let a = addr.withMemoryRebound(to: sockaddr_in.self, capacity: 1) { UInt32(bigEndian: $0.pointee.sin_addr.s_addr) }
+                let m = mask.withMemoryRebound(to: sockaddr_in.self, capacity: 1) { UInt32(bigEndian: $0.pointee.sin_addr.s_addr) }
+                if a >> 24 != 127 { result.append((a, m.nonzeroBitCount)) }
+            }
+            p = ifa.ifa_next
+        }
+        return result
+    }
+
+        /// `signature` — отпечаток текущей сети (роутер и его MAC), по нему включаются сценарии.
     public static func snapshot() -> (services: [VPNServiceInfo], environment: NetworkEnvironment, signature: String?) {
         let services = vpnServices()
         var vpn: [String: NetworkEnvironment.VPNService] = [:]
@@ -43,7 +61,9 @@ public enum NetworkState {
             }
         }
         let physical = physicalService()
-        return (services, NetworkEnvironment(physicalInterface: physical?.interface, physicalIPv6: physical?.ipv6 ?? false, vpnServices: vpn),
+        let tun = ConfigBuilder.chooseTunAddress(occupied: ipv4Interfaces())
+        return (services, NetworkEnvironment(physicalInterface: physical?.interface, physicalIPv6: physical?.ipv6 ?? false,
+                                             vpnServices: vpn, tunAddress: tun),
                 physical?.signature)
     }
 

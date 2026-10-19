@@ -66,6 +66,15 @@ final class AppModel {
     /// Приложения, замеченные в соединениях, → время последней активности.
     private(set) var activeApps: [String: Date] = [:]
     private(set) var pings: [String: Int] = [:]
+    /// Выходы, которые подключены, но не пропускают трафик (см. AppModel+Health).
+    var unhealthy: Set<String> = []
+    /// Подряд удачных (>0) или неудачных (<0) проверок выхода.
+    @ObservationIgnored var healthStreak: [String: Int] = [:]
+    /// Что сейчас выбрал «Авто» (тег выхода).
+    var autoNow: String?
+    /// Замер скорости: результаты по id выхода и какой выход меряется сейчас.
+    var speedResults: [String: SpeedResult] = [:]
+    var speedTesting: String?
     private(set) var pingHistory: [String: [Int]] = [:]
     private(set) var lastUpdate: Date?
     var lastError: String?
@@ -188,7 +197,9 @@ final class AppModel {
         do {
             try profile.save(to: Paths.userProfile)
             try await HelperClient.call("apply")
-            appliedEnvironment = await Task.detached(priority: .utility) { NetworkState.environment() }.value
+            var applied = await Task.detached(priority: .utility) { NetworkState.environment() }.value
+            applied.unhealthy = unhealthy
+            appliedEnvironment = applied
             state = .running
             lastError = nil
         } catch {
@@ -231,14 +242,15 @@ final class AppModel {
         }
         if vpnServices != snap.services { vpnServices = snap.services }
         if physicalInterface != snap.environment.physicalInterface { physicalInterface = snap.environment.physicalInterface }
-        if environment != snap.environment { environment = snap.environment }
+        var env = snap.environment
+        env.unhealthy = unhealthy                       // живость выходов знает только приложение
+        if environment != env { environment = env }
         notifyVPNChanges(from: previousServices, to: snap.services)
         ensureVPNExits()
         ensureSelfRoute()
         autoConnectVPNs()
 
         // Сменился utun у VPN-приложения или Wi‑Fi — пересобираем конфиг.
-        let env = snap.environment
         if state == .running, let applied = appliedEnvironment, applied != env {
             appliedEnvironment = env
             scheduleApply(immediately: true)
@@ -285,16 +297,29 @@ final class AppModel {
 
     /// Доступен ли выход прямо сейчас.
     func isAvailable(_ exit: Exit) -> Bool {
+        profile.isAvailable(exit, in: environment)
+    }
+
+    /// Подключён ли туннель (VPN-приложение — по системе; свой конфиг — всегда), даже если не отвечает.
+    func isPresent(_ exit: Exit) -> Bool {
         switch exit.kind {
-        case .direct, .block, .proxy: return true
         case .vpnApp: return vpnService(for: exit)?.isConnected == true
+        case .proxy: return true
+        case .direct, .block, .auto: return false
         }
+    }
+
+    /// Новое множество неотвечающих выходов — в окружение (для интерфейса и сравнения с применённым).
+    func setUnhealthy(_ ids: Set<String>) {
+        unhealthy = ids
+        environment.unhealthy = ids
     }
 
     func color(for exit: Exit) -> Color {
         switch exit.kind {
         case .direct: return Theme.blue
         case .block: return Theme.coral
+        case .auto: return Color(hex: 0x7EE8C0)
         default:
             let i = profile.exits.firstIndex(of: exit) ?? 0
             return Theme.tunnelPalette[i % Theme.tunnelPalette.count]
@@ -312,9 +337,15 @@ final class AppModel {
         case .block: return L("Трафик отклонён")
         case .vpnApp:
             guard let s = vpnService(for: exit) else { return L("VPN-приложение · не найдено") }
+            if unhealthy.contains(exit.id) { return L("Не отвечает · ") + fallbackNote(for: exit) }
             if let iface = s.interface { return L("VPN-приложение · \(iface)") }
             return L("Отключён · ") + fallbackNote(for: exit)
-        case .proxy(let p): return "\(p.protocolName) · \(p.server)"
+        case .auto:
+            guard isAvailable(exit) else { return L("Нет рабочих туннелей · ") + fallbackNote(for: exit) }
+            return autoCurrent.map { L("Самый быстрый · сейчас \($0.name)") } ?? L("Самый быстрый из рабочих туннелей")
+        case .proxy(let p):
+            if unhealthy.contains(exit.id) { return L("Не отвечает · ") + fallbackNote(for: exit) }
+            return "\(p.protocolName) · \(p.server)"
         }
     }
 
@@ -514,7 +545,7 @@ final class AppModel {
             try? await Task.sleep(for: .seconds(state == .running ? 5 : 2))
             guard state == .running else { continue }
             await measurePings()
-            try? await Task.sleep(for: .seconds(55))
+            try? await Task.sleep(for: .seconds(healthCheckInterval))
         }
     }
 
@@ -557,10 +588,13 @@ final class AppModel {
         }
     }
 
+    /// Задержка каждого подключённого туннеля через ядро — она же проверка живости (AppModel+Health).
     func measurePings() async {
         guard let api else { return }
-        for exit in tunnelExits where isAvailable(exit) {
+        var results: [String: Int?] = [:]
+        for exit in tunnelExits where isPresent(exit) {
             let ms = try? await api.delay(tag: exit.tag)
+            results[exit.id] = ms
             pings[exit.id] = ms
             if let ms {
                 pingHistory[exit.id, default: []].append(ms)
@@ -568,5 +602,7 @@ final class AppModel {
             }
         }
         if let ms = try? await api.delay(tag: "direct") { pings[Exit.directID] = ms }
+        autoNow = isAvailable(.auto) ? (try? await api.selected(group: Exit.auto.tag)) ?? nil : nil
+        updateHealth(results)
     }
 }

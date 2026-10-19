@@ -15,6 +15,9 @@ WhatsApp, Chrome and Claude go through the VPN while WeChat and banking apps go 
   (VLESS/Reality, Shadowsocks, Trojan, Hysteria2, WireGuard `.conf`, OpenVPN `.ovpn`, subscriptions), direct, or blocked.
 - **Fallback VPN:** if the VPN an app is assigned to disconnects, its traffic moves to another connected VPN
   instead of being blocked. Pick a specific fallback per exit, or let Splitroute use any available VPN.
+- **Auto exit:** Splitroute keeps every app that uses it on the fastest working tunnel and switches when that one slows down.
+- **Speed test:** downloads a test file through every exit and compares real throughput, not just ping.
+- **Dead-VPN detection:** a VPN that is connected but passes no traffic is detected within a minute, and its apps move to the fallback.
 - **Auto-connect:** Splitroute can turn a VPN app on by itself when apps need it, retrying less and less often if it fails.
 - **“Not reachable directly” suggestions:** Splitroute notices programs and sites whose direct connections die
   without a single byte — a typical sign of blocking — and offers to route them through a VPN in one click.

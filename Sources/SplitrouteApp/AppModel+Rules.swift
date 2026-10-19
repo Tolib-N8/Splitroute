@@ -246,6 +246,7 @@ extension Exit.Kind {
         case .block: return "block"
         case .vpnApp: return "vpn-app"
         case .proxy(let p): return p.protocolName
+        case .auto: return "auto"
         }
     }
 }

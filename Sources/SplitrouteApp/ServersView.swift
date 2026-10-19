@@ -10,7 +10,7 @@ struct ServersView: View {
     @State private var showImport = false
 
     private var exits: [Exit] {
-        ([Exit.direct] + model.tunnelExits).filter { e in
+        ([Exit.direct, Exit.auto] + model.tunnelExits).filter { e in
             let isConfig: Bool = { if case .proxy = e.kind { return true }; return false }()
             return (query.isEmpty || e.name.localizedCaseInsensitiveContains(query))
                 && (onlyConfigs == nil || onlyConfigs == isConfig)
@@ -43,6 +43,18 @@ struct ServersView: View {
                         FilterPill(title: L("VPN-приложения"), selected: onlyConfigs == false) { onlyConfigs = false }
                         FilterPill(title: L("Свои конфигурации"), selected: onlyConfigs == true) { onlyConfigs = true }
                         Spacer()
+                        if model.speedTesting != nil {
+                            HStack(spacing: 8) {
+                                ProgressView().controlSize(.small)
+                                Text(L("Меряю скорость…")).font(Theme.font(12)).foregroundStyle(Theme.text2)
+                            }
+                        } else {
+                            OutlineButton(title: L("Проверить скорость"), systemImage: "gauge.with.dots.needle.67percent") {
+                                Task { await model.runSpeedTest() }
+                            }
+                            .disabled(model.state != .running)
+                            .help(L("Скачать тестовый файл через каждый выход и сравнить скорость"))
+                        }
                     }
                     ServersTableHeader().padding(.top, 22)
                     ScrollView {
@@ -79,6 +91,7 @@ struct ServersTableHeader: View {
                 Text(L("Выход")).frame(maxWidth: .infinity, alignment: .leading)
                 Text(L("Приложения")).frame(width: 120, alignment: .leading)
                 Text(L("Трафик · 24 ч")).frame(width: 110, alignment: .leading)
+                Text(L("Скорость")).frame(width: 110, alignment: .leading)
                 Text(L("Пинг")).frame(width: 80, alignment: .leading)
             }
             .font(Theme.font(11, .medium))
@@ -132,7 +145,12 @@ struct ServerRow: View {
                 VStack(alignment: .leading, spacing: 3) {
                     HStack(spacing: 8) {
                         Text(exit.name).font(Theme.font(14, .medium))
-                        if case .vpnApp = exit.kind {
+                        if model.unhealthy.contains(exit.id) {
+                            Text(L("НЕ ОТВЕЧАЕТ"))
+                                .font(Theme.font(9, .bold)).foregroundStyle(Theme.bg)
+                                .padding(.horizontal, 6).padding(.vertical, 2)
+                                .background(Theme.amber, in: RoundedRectangle(cornerRadius: 4))
+                        } else if case .vpnApp = exit.kind {
                             Text(available ? L("ПОДКЛЮЧЁН") : L("ОТКЛЮЧЁН"))
                                 .font(Theme.font(9, .bold))
                                 .foregroundStyle(available ? Theme.bg : Theme.text2)
@@ -147,6 +165,7 @@ struct ServerRow: View {
             let n = model.appsCount(exitID: exit.id)
             Text(n == 0 ? "—" : Format.apps(n)).font(Theme.font(12)).foregroundStyle(Theme.text2).frame(width: 120, alignment: .leading)
             Text(Format.bytes(model.stats.total("exit:" + exit.tag))).font(Theme.font(12)).foregroundStyle(Theme.text2).frame(width: 110, alignment: .leading)
+            SpeedCell(exit: exit).frame(width: 110, alignment: .leading)
             HStack(spacing: 6) {
                 StatusDot(color: pingColor)
                 Text(model.pings[exit.id].map { L("\($0) мс") } ?? "—").font(Theme.font(12))
@@ -212,6 +231,7 @@ struct ExitDetailPanel: View {
         case .proxy(let p): return p.server
         case .direct: return model.physicalInterface ?? "—"
         case .block: return "—"
+        case .auto: return model.autoCurrent?.name ?? "—"
         }
     }
 
@@ -228,10 +248,15 @@ struct ExitDetailPanel: View {
                 Grid(horizontalSpacing: 1, verticalSpacing: 1) {
                     GridRow {
                         stat(L("Пинг"), model.pings[exit.id].map { L("\($0) мс") } ?? "—")
-                        stat(L("Статус"), model.isAvailable(exit) ? L("Доступен") : L("Недоступен"))
+                        stat(L("Статус"), model.unhealthy.contains(exit.id) ? L("Не отвечает")
+                             : model.isAvailable(exit) ? L("Доступен") : L("Недоступен"))
                     }
                     GridRow {
-                        stat(exit.kind == .direct ? L("Интерфейс") : L("Сервер"), serverAddress)
+                        stat(L("Скорость"), model.speedResults[exit.id].map { $0.failed ? L("нет связи") : Format.speed(Int64($0.bytesPerSecond)) } ?? "—")
+                        stat(L("Проверено"), model.speedResults[exit.id].map { $0.at.formatted(date: .omitted, time: .shortened) } ?? "—")
+                    }
+                    GridRow {
+                        stat(exit.kind == .direct ? L("Интерфейс") : exit.kind == .auto ? L("Сейчас") : L("Сервер"), serverAddress)
                         stat(L("За 24 ч"), Format.bytes(model.stats.total("exit:" + exit.tag)))
                     }
                 }
@@ -316,7 +341,7 @@ struct ExitDetailPanel: View {
                 Spacer()
                 Menu {
                     Button(L("Любой доступный VPN")) { model.setFallback(nil, for: exit) }
-                    let others = model.tunnelExits.filter { $0.id != exit.id }
+                    let others = [Exit.auto] + model.tunnelExits.filter { $0.id != exit.id }
                     if !others.isEmpty {
                         Divider()
                         ForEach(others) { e in
@@ -488,5 +513,39 @@ struct ImportSheet: View {
         }
         model.addProxies(items)
         dismiss()
+    }
+}
+
+/// Скорость выхода из последнего замера: полоска и МБ/с, «нет связи», «меряю…» или «—».
+struct SpeedCell: View {
+    @Environment(AppModel.self) private var model
+    var exit: Exit
+
+    var body: some View {
+        if model.speedTesting == exit.id {
+            HStack(spacing: 6) {
+                ProgressView().controlSize(.mini)
+                Text(L("меряю…")).font(Theme.font(11)).foregroundStyle(Theme.text3)
+            }
+        } else if let r = model.speedResults[exit.id] {
+            if r.failed {
+                Text(L("нет связи")).font(Theme.font(12)).foregroundStyle(Theme.coral)
+            } else {
+                let best = model.speedResults.values.map(\.bytesPerSecond).max() ?? r.bytesPerSecond
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(Format.speed(Int64(r.bytesPerSecond))).font(Theme.font(12, .semibold))
+                        .foregroundStyle(r.bytesPerSecond >= best ? Theme.lime : Theme.text)
+                    GeometryReader { g in
+                        Capsule().fill(Theme.line)
+                            .overlay(alignment: .leading) {
+                                Capsule().fill(model.color(for: exit)).frame(width: g.size.width * min(1, r.bytesPerSecond / max(best, 1)))
+                            }
+                    }
+                    .frame(width: 84, height: 3)
+                }
+            }
+        } else {
+            Text("—").font(Theme.font(12)).foregroundStyle(Theme.text3)
+        }
     }
 }
